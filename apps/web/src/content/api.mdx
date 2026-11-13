@@ -12,7 +12,9 @@ Hasta is ESM. Adapters support React 19, Vue 3.5+, and Svelte 5.32+; install onl
 | `hasta/react`   | `useHasta`, `useHastaTarget`                                     |
 | `hasta/vue`     | Same helpers, accepting reactive refs/getters                    |
 | `hasta/svelte`  | `useHasta`; action `hastaTarget`; attachment `attachHastaTarget` |
-| `hasta/core`    | DOM-free geometry, predictor, and spatial index                  |
+| `hasta/core`    | DOM-free geometry, `KalmanPredictor`, and spatial index          |
+
+`hasta/core` also exports `KalmanOptions` for the predictor's options and `KalmanPrediction` for its two-point forecast. `KalmanPredictor` exposes `update(sample)`, `predict(now, horizonMs)`, `intersectRect(now, horizonMs, rect)`, and `reset()`.
 
 Prefer the controller for a shared API across frameworks. The lower-level `createHasta()` requires a browser document: call `track(element)`, then `target.when(condition, callback, options)`, which returns an unsubscribe function. Its targets expose `getBounds()`, `invalidate()`, and `untrack()`.
 

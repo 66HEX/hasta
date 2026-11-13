@@ -26,7 +26,7 @@ test('public ESM entry points import without browser globals', () => {
     assert.equal(root.LinearSpatialIndex, core.LinearSpatialIndex);
     assert.equal(typeof core.firstSegmentRectIntersection, 'function');
     assert.equal(typeof root.createHasta, 'function');
-    assert.equal(root.ConstantVelocityPredictor, core.ConstantVelocityPredictor);
+    assert.equal(root.KalmanPredictor, core.KalmanPredictor);
     assert.throws(() => root.createHasta(), /requires a document/);
   `,
     ],

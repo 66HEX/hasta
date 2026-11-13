@@ -1,7 +1,6 @@
 /* oxlint-disable max-classes-per-file -- Each private class implements one part of this experimental comparison */
-import { ConstantVelocityPredictor as ProductionPredictor } from '../../dist/core/index.js';
-import { KalmanPredictor } from '../../dist/core/prediction/kalman-predictor.js';
-import { ConstantVelocityPredictor } from './baseline-23e16ac/core/prediction/constant-velocity.js';
+import { KalmanPredictor } from '../../dist/core/index.js';
+import { ConstantVelocityPredictor as BaselinePredictor } from './baseline-23e16ac/core/prediction/constant-velocity.js';
 import { Random } from './random.mjs';
 
 function nonnegative(value, name, allowZero = false) {
@@ -449,7 +448,7 @@ export function createModel(config, seed = 0x451ab3) {
   const maxAge = nonnegative(config.maxSampleAgeMs ?? 100, 'maxSampleAgeMs');
 
   if (config.kind === 'production') {
-    return new ProductionPredictor({ maxSampleAgeMs: maxAge });
+    return new KalmanPredictor({ maxSampleAgeMs: maxAge });
   }
 
   if (config.kind === 'kalman-candidate') {
@@ -457,7 +456,7 @@ export function createModel(config, seed = 0x451ab3) {
   }
 
   if (config.kind === 'cv') {
-    return new ConstantVelocityPredictor({ maxSampleAgeMs: maxAge });
+    return new BaselinePredictor({ maxSampleAgeMs: maxAge });
   }
 
   if (config.kind === 'regression') {

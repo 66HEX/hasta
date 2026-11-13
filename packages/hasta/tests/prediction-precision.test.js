@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ConstantVelocityPredictor } from '../dist/core/index.js';
+import { KalmanPredictor } from '../dist/core/index.js';
 
 test('fractional sample intervals do not turn exact corner contacts into misses', () => {
   for (const dt of [0.1, 0.2, 0.3, 0.7, 1.1, 4.1, 7.25, 13.37]) {
     for (const dx of [-29, -7, -3, -1, 1, 3, 7, 29]) {
       for (const dy of [-29, -7, -3, -1, 1, 3, 7, 29]) {
-        const predictor = new ConstantVelocityPredictor();
+        const predictor = new KalmanPredictor();
         predictor.update({ x: 0, y: 0, timeStamp: 0 });
         predictor.update({ x: dx, y: dy, timeStamp: dt });
 
@@ -34,7 +34,7 @@ test('nearly equal crossing ratios retain a real gap across coordinate scales', 
   const n = 2 ** 28;
 
   for (const scale of [2 ** -600, 2 ** -20, 1, 2 ** 500]) {
-    const predictor = new ConstantVelocityPredictor();
+    const predictor = new KalmanPredictor();
     predictor.update({ x: -n * scale, y: -(n - 1) * scale, timeStamp: 0 });
     predictor.update({ x: 0, y: 0, timeStamp: 1 });
     // (n - 1) / n exceeds (n - 2) / (n - 1) even when both round to the same double
@@ -54,7 +54,7 @@ test('corner ETAs are independent of forecast length, frame age and direction', 
   for (const dx of [-11, -3, -1, 1, 3, 11]) {
     for (const dy of [-7, -1, 1, 7]) {
       for (const dt of [3, 7, 13, 49]) {
-        const predictor = new ConstantVelocityPredictor();
+        const predictor = new KalmanPredictor();
         predictor.update({ x: 0, y: 0, timeStamp: 1000 });
         predictor.update({ x: dx, y: dy, timeStamp: 1000 + dt });
 
@@ -79,7 +79,7 @@ test('corner ETAs are independent of forecast length, frame age and direction', 
 });
 
 test('corner misses stay misses down to a representable gap without enlarging targets', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: 3, y: 1, timeStamp: 7 });
 
@@ -94,7 +94,7 @@ test('corner misses stay misses down to a representable gap without enlarging ta
 });
 
 test('prediction intersections honor warmup, expiry, replacement, reset and overflow', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   const box = { minX: 2, maxX: 3, minY: 0, maxY: 6 };
   assert.equal(predictor.intersectRect(0, 120, box), null);
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
@@ -121,7 +121,7 @@ test('prediction intersections honor warmup, expiry, replacement, reset and over
 });
 
 test('stationary and subnormal motion have finite contact points and ETAs', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   const box = { minX: 0, maxX: 1, minY: 0, maxY: 1 };
   predictor.update({ x: 0.5, y: 0.5, timeStamp: 0 });
   predictor.update({ x: 0.5, y: 0.5, timeStamp: Number.MIN_VALUE });
@@ -136,7 +136,7 @@ test('stationary and subnormal motion have finite contact points and ETAs', () =
 });
 
 test('finite intersection times survive overflow and underflow in intermediate products', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: -1e308, y: 0, timeStamp: 0 });
   predictor.update({ x: 0, y: 0, timeStamp: 50 });
   assert.deepEqual(
@@ -166,7 +166,7 @@ test('finite intersection times survive overflow and underflow in intermediate p
 test('a partially underflowing product cannot shift a contact past its horizon', () => {
   const dx = 2 ** -1000;
   const dt = 2 ** -74;
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: dx, y: 0, timeStamp: dt });
   const rect = { minX: 2.5 * dx, maxX: 3 * dx, minY: 0, maxY: 1 };
@@ -179,7 +179,7 @@ test('a partially underflowing product cannot shift a contact past its horizon',
 
 test('exact horizon boundaries and current contact do not drift with sampling cadence', () => {
   for (let dt = 1; dt < 100; dt++) {
-    const predictor = new ConstantVelocityPredictor();
+    const predictor = new KalmanPredictor();
     predictor.update({ x: -dt, y: -dt, timeStamp: 0 });
     predictor.update({ x: 0, y: 0, timeStamp: dt });
 
@@ -269,7 +269,7 @@ test('matches exact edge-crossing arithmetic on 10000 seeded subpixel tracks', (
     const box = { minX: integer(1001) - 500, minY: integer(1001) - 500 };
     box.maxX = box.minX + 1 + integer(300);
     box.maxY = box.minY + 1 + integer(300);
-    const predictor = new ConstantVelocityPredictor();
+    const predictor = new KalmanPredictor();
     predictor.update({ x: (sample.x - dx) / 64, y: (sample.y - dy) / 64, timeStamp: 0 });
     predictor.update({ x: sample.x / 64, y: sample.y / 64, timeStamp: dt });
     const rect = Object.fromEntries(Object.entries(box).map(([key, value]) => [key, value / 64]));

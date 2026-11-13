@@ -64,9 +64,9 @@ test('the packed vanilla/core package installs and imports without any framework
       import assert from 'node:assert/strict';
       import * as root from 'hasta';
       import * as vanilla from 'hasta/vanilla';
-      import { ConstantVelocityPredictor } from 'hasta/core';
+      import { KalmanPredictor } from 'hasta/core';
       assert.equal(root.createHasta, vanilla.createHasta);
-      assert.equal(typeof ConstantVelocityPredictor, 'function');
+      assert.equal(typeof KalmanPredictor, 'function');
       const controller = vanilla.createHastaController();
       controller.destroy();
     `,

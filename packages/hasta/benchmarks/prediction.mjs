@@ -1,4 +1,4 @@
-import { ConstantVelocityPredictor } from '../dist/core/index.js';
+import { KalmanPredictor } from '../dist/core/index.js';
 
 const horizonMs = 60;
 const durationMs = 2000;
@@ -81,7 +81,7 @@ function estimate(samples, method, windowMs) {
 
 function measure(scenario, sampleMs, noisePx, quantizePx, jitter, timeQuantumMs) {
   const random = randomSource(0x51ab731);
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   const samples = [];
 
   const errors = new Map(

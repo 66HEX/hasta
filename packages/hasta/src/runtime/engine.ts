@@ -1,7 +1,7 @@
 import { firstSegmentRectIntersection } from '../core/geometry.js';
 import { LinearSpatialIndex } from '../core/linear-spatial-index.js';
-import type { ConstantVelocityPrediction } from '../core/prediction/constant-velocity.js';
-import { ConstantVelocityPredictor } from '../core/prediction/constant-velocity.js';
+import type { KalmanPrediction } from '../core/prediction/kalman-predictor.js';
+import { KalmanPredictor } from '../core/prediction/kalman-predictor.js';
 import type { PointerSample, Prediction, Rect } from '../core/types.js';
 import { createDebugOverlay } from './debug/overlay.js';
 import type { DebugOptions, DebugSnapshot, DebugRule } from './debug/types.js';
@@ -109,7 +109,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
   };
 
-  const predictor = new ConstantVelocityPredictor({ maxSampleAgeMs });
+  const predictor = new KalmanPredictor({ maxSampleAgeMs });
   const observedPath = new ObservedPath(maxSampleAgeMs);
   const targets = new Map<HTMLElement, TargetRecord>();
   const index = new LinearSpatialIndex<number>();
@@ -525,7 +525,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
     }
 
-    const forecasts = new Map<number, ConstantVelocityPrediction | null>();
+    const forecasts = new Map<number, KalmanPrediction | null>();
     let prediction = predictor.predict(now, maxHorizon);
     forecasts.set(maxHorizon, prediction);
 

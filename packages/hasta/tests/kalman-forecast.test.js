@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ConstantVelocityPredictor } from '../dist/core/prediction/constant-velocity.js';
+import { KalmanPredictor } from '../dist/core/prediction/kalman-predictor.js';
 
 test('propagates the last measurement to evaluation time before applying the horizon', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 40, timeStamp: 10 });
   predictor.update({ x: 20, y: 30, timeStamp: 20 });
   assert.deepEqual(predictor.predict(25, 50), {
@@ -17,7 +17,7 @@ test('propagates the last measurement to evaluation time before applying the hor
 });
 
 test('requires distinct timestamps and rejects stale or not-yet-observed states', () => {
-  const predictor = new ConstantVelocityPredictor({ maxSampleAgeMs: 50 });
+  const predictor = new KalmanPredictor({ maxSampleAgeMs: 50 });
   assert.equal(predictor.predict(0, 10), null);
   predictor.update({ x: 0, y: 0, timeStamp: 10 });
   predictor.update({ x: 10, y: 0, timeStamp: 10 });
@@ -29,7 +29,7 @@ test('requires distinct timestamps and rejects stale or not-yet-observed states'
 });
 
 test('replaces equal-time coordinates and ignores older or invalid measurements', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 10 });
   predictor.update({ x: 10, y: 0, timeStamp: 20 });
   predictor.update({ x: 20, y: 10, timeStamp: 20 });
@@ -44,7 +44,7 @@ test('replaces equal-time coordinates and ignores older or invalid measurements'
 });
 
 test('a long sample gap and an explicit reset require fresh warmup', () => {
-  const predictor = new ConstantVelocityPredictor({ maxSampleAgeMs: 40 });
+  const predictor = new KalmanPredictor({ maxSampleAgeMs: 40 });
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: 10, y: 0, timeStamp: 10 });
   predictor.update({ x: 400, y: 0, timeStamp: 50 });
@@ -59,7 +59,7 @@ test('a long sample gap and an explicit reset require fresh warmup', () => {
 });
 
 test('stationary measurements produce a stationary forecast', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: -5.5, y: 3.25, timeStamp: 0 });
   predictor.update({ x: -5.5, y: 3.25, timeStamp: 10 });
   assert.deepEqual(predictor.predict(20, 120)?.points, [
@@ -69,7 +69,7 @@ test('stationary measurements produce a stationary forecast', () => {
 });
 
 test('snapshots observations and returns deeply immutable predictions', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   const sample = { x: 1, y: 2, timeStamp: 0 };
   predictor.update(sample);
   sample.x = 1000;
@@ -85,7 +85,7 @@ test('snapshots observations and returns deeply immutable predictions', () => {
 });
 
 test('refuses forecasts when coordinate differences or extrapolation overflow', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: -Number.MAX_VALUE, y: 0, timeStamp: 0 });
   predictor.update({ x: Number.MAX_VALUE, y: 0, timeStamp: 10 });
   assert.equal(predictor.predict(10, 10), null);
@@ -97,10 +97,10 @@ test('refuses forecasts when coordinate differences or extrapolation overflow', 
 
 test('validates configuration and prediction arguments', () => {
   for (const maxSampleAgeMs of [0, -1, NaN, Infinity]) {
-    assert.throws(() => new ConstantVelocityPredictor({ maxSampleAgeMs }), RangeError);
+    assert.throws(() => new KalmanPredictor({ maxSampleAgeMs }), RangeError);
   }
 
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
 
   for (const horizonMs of [0, -1, NaN, Infinity]) {
     assert.throws(() => predictor.predict(0, horizonMs), RangeError);
@@ -111,7 +111,7 @@ test('validates configuration and prediction arguments', () => {
 });
 
 test('recovers after unrepresentable velocity without poisoning later ordinary samples', () => {
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: 1, y: 1, timeStamp: Number.MIN_VALUE });
   assert.equal(predictor.predict(Number.MIN_VALUE, 10), null);
@@ -124,7 +124,7 @@ test('recovers after unrepresentable velocity without poisoning later ordinary s
 
 test('a velocity below the subnormal range still accumulates representable displacement', () => {
   const unit = Number.MIN_VALUE;
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: unit, y: 2 * unit, timeStamp: 2 });
   assert.deepEqual(predictor.predict(12, 120)?.points, [
@@ -144,7 +144,7 @@ test('a velocity below the subnormal range still accumulates representable displ
 
 test('partially rounded subnormal velocities preserve displacement and intersection points', () => {
   const unit = Number.MIN_VALUE;
-  const predictor = new ConstantVelocityPredictor();
+  const predictor = new KalmanPredictor();
   predictor.update({ x: 0, y: 0, timeStamp: 0 });
   predictor.update({ x: unit, y: 3 * unit, timeStamp: 1.5 });
   assert.deepEqual(predictor.predict(1.5, 3)?.points, [
@@ -173,7 +173,7 @@ test('reconstructs analytic constant-velocity tracks for 1000 seeded sampling sc
   };
 
   for (let run = 0; run < 1000; run++) {
-    const predictor = new ConstantVelocityPredictor();
+    const predictor = new KalmanPredictor();
     const x = integer(1000) - 500;
     const y = integer(1000) - 500;
     const vx = (integer(81) - 40) / 4;

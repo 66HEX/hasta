@@ -11,11 +11,11 @@ import { assertRect } from '../validation.js';
 import { KalmanState } from './kalman-state.js';
 import type { KalmanConfig } from './kalman-state.js';
 
-export interface ConstantVelocityPrediction extends Prediction {
+export interface KalmanPrediction extends Prediction {
   readonly points: readonly [TrajectoryPoint, TrajectoryPoint];
 }
 
-export interface ConstantVelocityOptions {
+export interface KalmanOptions {
   readonly maxSampleAgeMs?: number;
 }
 
@@ -51,7 +51,7 @@ export class KalmanPredictor implements Predictor {
   #previous: PointerSample | null = null;
   #latest: PointerSample | null = null;
 
-  constructor(options: ConstantVelocityOptions = {}, config: KalmanPredictorConfig = {}) {
+  constructor(options: KalmanOptions = {}, config: KalmanPredictorConfig = {}) {
     this.#filter = new KalmanState(config);
     this.#minimumAssimilationDtMs =
       config.minimumAssimilationDtMs ?? DEFAULT_ASSIMILATION_INTERVAL_MS;
@@ -141,7 +141,7 @@ export class KalmanPredictor implements Predictor {
     this.#failedTimeStamp = null;
   }
 
-  predict(now: number, horizonMs: number): ConstantVelocityPrediction | null {
+  predict(now: number, horizonMs: number): KalmanPrediction | null {
     const projection = this.#project(now, horizonMs);
 
     if (projection === null) {

@@ -9,7 +9,7 @@ test('high-rate curved input reaches the Kalman predictor regardless of event an
   page,
 }) => {
   const result = await page.evaluate(async () => {
-    const { ConstantVelocityPredictor } = await import('/dist/core/index.js');
+    const { KalmanPredictor } = await import('/dist/core/index.js');
     const h = window.harness;
     const horizonMs = 80;
 
@@ -21,10 +21,10 @@ test('high-rate curved input reaches the Kalman predictor regardless of event an
 
     const last = history.at(-1);
     const now = last.timeStamp + 3;
-    const reference = new ConstantVelocityPredictor();
+    const reference = new KalmanPredictor();
     history.forEach((sample) => reference.update(sample));
     const expected = reference.predict(now, horizonMs);
-    const truncated = new ConstantVelocityPredictor();
+    const truncated = new KalmanPredictor();
     history.slice(-2).forEach((sample) => truncated.update(sample));
     const runs = [];
 
@@ -82,7 +82,7 @@ test('same-time corrections roll back Kalman state across frames and reject inva
   page,
 }) => {
   const result = await page.evaluate(async () => {
-    const { ConstantVelocityPredictor } = await import('/dist/core/index.js');
+    const { KalmanPredictor } = await import('/dist/core/index.js');
     const h = window.harness;
     const horizonMs = 60;
 
@@ -94,7 +94,7 @@ test('same-time corrections roll back Kalman state across frames and reject inva
 
     const last = history.at(-1);
     const next = { x: 115, y: 112, timeStamp: last.timeStamp + 1 };
-    const reference = new ConstantVelocityPredictor();
+    const reference = new KalmanPredictor();
     history.forEach((sample) => reference.update(sample));
     const expected = reference.predict(last.timeStamp, horizonMs);
     reference.update(next);
@@ -168,7 +168,7 @@ test('pause clears learned Kalman motion and ignored input before a fresh sessio
   page,
 }) => {
   const result = await page.evaluate(async () => {
-    const { ConstantVelocityPredictor } = await import('/dist/core/index.js');
+    const { KalmanPredictor } = await import('/dist/core/index.js');
     const h = window.harness;
     const horizonMs = 90;
     const engine = h.createHasta({ debug: true, horizonMs });
@@ -212,7 +212,7 @@ test('pause clears learned Kalman motion and ignored input before a fresh sessio
     const now = last.timeStamp + 2;
     h.frame(now);
     const actual = engine.getDebugSnapshot().forecast;
-    const reference = new ConstantVelocityPredictor();
+    const reference = new KalmanPredictor();
     fresh.forEach((sample) => reference.update(sample));
     const expected = reference.predict(now, horizonMs);
     const active = signals.map((signal) => !signal.aborted);
@@ -247,7 +247,7 @@ test('input dispatched by a predicate affects the next Kalman frame without mixi
   page,
 }) => {
   const result = await page.evaluate(async () => {
-    const { ConstantVelocityPredictor } = await import('/dist/core/index.js');
+    const { KalmanPredictor } = await import('/dist/core/index.js');
     const h = window.harness;
     const horizonMs = 120;
     const engine = h.createHasta({ debug: true, horizonMs });
@@ -281,7 +281,7 @@ test('input dispatched by a predicate affects the next Kalman frame without mixi
         intersection: event.intersection,
       });
     });
-    const reference = new ConstantVelocityPredictor();
+    const reference = new KalmanPredictor();
 
     for (const sample of [
       { x: 0, y: 110, timeStamp: 1000 },

@@ -6,12 +6,9 @@ export {
 
 export { LinearSpatialIndex } from './linear-spatial-index.js';
 
-export { ConstantVelocityPredictor } from './prediction/constant-velocity.js';
+export { KalmanPredictor } from './prediction/kalman-predictor.js';
 
-export type {
-  ConstantVelocityOptions,
-  ConstantVelocityPrediction,
-} from './prediction/constant-velocity.js';
+export type { KalmanOptions, KalmanPrediction } from './prediction/kalman-predictor.js';
 
 export type {
   Point,

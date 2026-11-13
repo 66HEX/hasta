@@ -1,15 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ConstantVelocityPredictor } from '../dist/core/prediction/constant-velocity.js';
-import { KalmanPredictor } from '../dist/core/prediction/kalman-predictor.js';
+import { KalmanPredictor } from '../dist/core/index.js';
 
 function sample(timeStamp, x, y = 0) {
   return { timeStamp, x, y };
 }
 
 const variants = [
-  { name: 'public', create: () => new ConstantVelocityPredictor() },
+  { name: 'public', create: () => new KalmanPredictor() },
   {
     name: 'filtered with cadence',
     create: () =>
@@ -127,7 +126,7 @@ test('continuing after a corrected failure preserves covariance and timestamp bo
 });
 
 test('a later timestamp recovers using the last raw sample after an unrepresentable bootstrap', () => {
-  const tested = new ConstantVelocityPredictor();
+  const tested = new KalmanPredictor();
   tested.update(sample(0, 0, 0));
   tested.update(sample(Number.MIN_VALUE, 1, 1));
   assert.equal(tested.predict(Number.MIN_VALUE, 10), null);
@@ -137,7 +136,7 @@ test('a later timestamp recovers using the last raw sample after an unrepresenta
     { x: 3, y: 5, offsetMs: 1 },
   ]);
 
-  const reference = new ConstantVelocityPredictor();
+  const reference = new KalmanPredictor();
   reference.update(sample(Number.MIN_VALUE, 1, 1));
   reference.update(sample(1, 2, 3));
 
@@ -149,7 +148,7 @@ test('a later timestamp recovers using the last raw sample after an unrepresenta
 });
 
 test('repeated failed raw pairs recover once two consecutive raw samples are representable', () => {
-  const model = new ConstantVelocityPredictor();
+  const model = new KalmanPredictor();
   model.update(sample(0, 0));
   model.update(sample(0.125, 1));
   model.update(sample(0.25, Number.MAX_VALUE));
@@ -170,8 +169,8 @@ test('repeated failed raw pairs recover once two consecutive raw samples are rep
 
 test('expiry and explicit reset clear pending numerical failure metadata', () => {
   for (const explicitReset of [false, true]) {
-    const tested = new ConstantVelocityPredictor();
-    const reference = new ConstantVelocityPredictor();
+    const tested = new KalmanPredictor();
+    const reference = new KalmanPredictor();
     tested.update(sample(0, 0));
     tested.update(sample(0.125, 1));
     tested.update(sample(0.25, Number.MAX_VALUE));

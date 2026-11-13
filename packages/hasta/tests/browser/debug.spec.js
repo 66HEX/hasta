@@ -398,7 +398,7 @@ for (const scenario of [
   test(`async completion hides the old forecast for a ${scenario.name}`, async ({ page }) => {
     const result = await page.evaluate(
       async ({ timeStamp }) => {
-        const { ConstantVelocityPredictor } = await import('/dist/core/index.js');
+        const { KalmanPredictor } = await import('/dist/core/index.js');
         const h = window.harness;
         const hasta = h.createHasta({ debug: true });
         let settle;
@@ -428,7 +428,7 @@ for (const scenario of [
         h.frame(1035);
         const evaluated = hasta.getDebugSnapshot();
         hasta.destroy();
-        const predictor = new ConstantVelocityPredictor();
+        const predictor = new KalmanPredictor();
         predictor.update({ x: 0, y: 110, timeStamp: 1000 });
         predictor.update({ x: 20, y: 110, timeStamp: 1020 });
         predictor.update({ x: 400, y: 110, timeStamp });
