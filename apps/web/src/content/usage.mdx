@@ -1,0 +1,15 @@
+import Quickstart from './quickstart.mdx';
+
+## Usage
+
+```sh
+npm install hasta
+```
+
+Create one controller for a group of targets, then attach each target to an HTML element. Select your framework above to change the example. SVG nodes and component instances cannot be target refs.
+
+<Quickstart />
+
+Framework adapters connect after mount and clean up on unmount; imports are safe during server rendering. Vue also disconnects during `KeepAlive` deactivation and reconnects on activation.
+
+For work owned by a single prediction, pass the callback's `signal` to APIs such as `fetch(url, { signal })`. Shared caches can manage their own request lifetime, as in [the prefetch example](#prefetch-with-tanstack-query). Aborting does not undo side effects or stop arbitrary promises: check `signal.aborted` before committing results or reporting errors. Unexpected callback failures go to `onError` without stopping other targets. Keep synchronous work short to avoid blocking the next frame.

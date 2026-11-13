@@ -1,0 +1,94 @@
+## API reference
+
+Positions and margins use viewport CSS pixels; durations use milliseconds. Timestamps use the document's performance clock, not Unix time. Import shared types from your adapter's entrypoint.
+
+### Entrypoints
+
+Hasta is ESM. Adapters support React 19, Vue 3.5+, and Svelte 5.32+; install only the framework you use. Vanilla has no framework dependency.
+
+| Import          | Exports                                                          |
+| --------------- | ---------------------------------------------------------------- |
+| `hasta/vanilla` | `createHastaController`, `createHasta`                           |
+| `hasta/react`   | `useHasta`, `useHastaTarget`                                     |
+| `hasta/vue`     | Same helpers, accepting reactive refs/getters                    |
+| `hasta/svelte`  | `useHasta`; action `hastaTarget`; attachment `attachHastaTarget` |
+| `hasta/core`    | DOM-free geometry, predictor, and spatial index                  |
+
+Prefer the controller for a shared API across frameworks. The lower-level `createHasta()` requires a browser document: call `track(element)`, then `target.when(condition, callback, options)`, which returns an unsubscribe function. Its targets expose `getBounds()`, `invalidate()`, and `untrack()`.
+
+### Controller options
+
+| Option           | Default          | Meaning                                     |
+| ---------------- | ---------------- | ------------------------------------------- |
+| `horizonMs`      | `120`            | Forecast length for custom predicates       |
+| `maxSampleAgeMs` | `100`            | Maximum age of the latest mouse sample      |
+| `bounds`         | `'frame'`        | Measure during active frames; the only mode |
+| `debug`          | `false`          | Boolean or [overlay options](#debugging)    |
+| `onError`        | Console reporter | Receives callback failures                  |
+| `document`       | Current document | Browser document to track                   |
+
+### Controller methods
+
+| Method                       | Effect                                                  |
+| ---------------------------- | ------------------------------------------------------- |
+| `connect()` / `disconnect()` | Start / release the engine; preserve bindings           |
+| `updateOptions(options)`     | Replace configuration; omitted fields reset to defaults |
+| `target(options)`            | Create a reusable binding                               |
+| `pause()` / `resume()`       | Suspend / resume prediction                             |
+| `setDebug(options)`          | Enable, disable, or configure the overlay               |
+| `getDebugSnapshot()`         | Latest debug state, or `null` when off/disconnected     |
+| `destroy()`                  | Permanently release the controller and bindings         |
+
+### Target options
+
+Pass these to `controller.target()` or your framework's target helper.
+
+| Option                | Default  | Meaning                                                      |
+| --------------------- | -------- | ------------------------------------------------------------ |
+| `when`                | Required | Intersection rule or `(context) => boolean`                  |
+| `when.withinMs`       | Required | Arrival deadline for `intersects`                            |
+| `when.marginPx`       | `0`      | Expand every edge of the rectangle                           |
+| `when.includeCurrent` | `false`  | Include current contact and observed crossings with zero ETA |
+| `onPredict`           | Required | `(event) => void \| Promise<void>`                           |
+| `once`                | `false`  | Start at most once per subscription                          |
+| `stableForMs`         | `0`      | Continuous matching time before starting                     |
+| `cooldownMs`          | `0`      | Minimum interval between starts                              |
+
+`horizonMs`, `maxSampleAgeMs`, and `withinMs` must be finite and positive. `marginPx`, `stableForMs`, and `cooldownMs` must be finite and nonnegative.
+
+### Target binding
+
+| Method            | Effect                                                              |
+| ----------------- | ------------------------------------------------------------------- |
+| `ref(element)`    | Attach an HTML element; `null` detaches and allows reuse            |
+| `update(options)` | Replace the rule and callback options                               |
+| `getBounds()`     | Latest `{ rect, measuredAt }`; `null` until usable or when detached |
+| `invalidate()`    | Request measurement on the next scheduled pass                      |
+| `destroy()`       | Permanently dispose of the binding                                  |
+
+### Intersection event
+
+| Field                        | Value                                                           |
+| ---------------------------- | --------------------------------------------------------------- |
+| `element`                    | Registered HTML element                                         |
+| `rect`, `measuredAt`         | `{ minX, minY, maxX, maxY }` and measurement time               |
+| `forecast`                   | `generatedAt` and trajectory `points` with `{ x, y, offsetMs }` |
+| `intersection`               | First entry `{ point: { x, y }, etaMs }`                        |
+| `etaMs`                      | Time until entry, relative to evaluation                        |
+| `predictedAt`, `evaluatedAt` | Entry timestamp and evaluation timestamp                        |
+| `signal`                     | `AbortSignal` tied to this match                                |
+
+A custom predicate receives `PredictionContext`. Its callback receives `PredictionEvent`: `intersection` can be `null`, and top-level `etaMs` / `predictedAt` are absent.
+
+### Debugging
+
+Set `debug: true` at creation or call `setDebug(true)`; use `setDebug(false)` to hide the overlay. It ignores pointer events and is removed on disconnect. Bounds, trajectory, intersections, labels, and the compact panel are enabled by default. Add `samples: true` for a short mouse trail, or `panel: false` to hide the summary.
+
+| Flag                       | Shows                                              |
+| -------------------------- | -------------------------------------------------- |
+| `bounds`, `trajectory`     | Target rectangles, outer margin, and forecast path |
+| `samples`, `intersections` | Recent mouse samples and first entry points        |
+| `labels`                   | Target names and dimensions, where space permits   |
+| `panel`                    | Status, target count, and forecast horizon         |
+
+`getDebugSnapshot()` includes status, forecast, samples, velocity, target rectangles, and rule state. Turn debug off when finished.

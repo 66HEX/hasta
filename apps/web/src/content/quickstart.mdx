@@ -1,0 +1,89 @@
+<FrameworkCode>
+<FrameworkPanel value="vanilla">
+
+```ts inbox.ts
+import { createHastaController } from 'hasta/vanilla';
+
+const hasta = createHastaController({ horizonMs: 160 });
+const target = hasta.target({
+  when: { type: 'intersects', withinMs: 160 },
+  onPredict: ({ etaMs }) => {
+    console.log(`Inbox in ${Math.round(etaMs)} ms`);
+  },
+});
+
+target.ref(document.querySelector<HTMLButtonElement>('#inbox'));
+hasta.connect();
+
+export function dispose() {
+  hasta.destroy();
+}
+```
+
+Run after a button with `id="inbox"` exists. Call `dispose()` when removing the view.
+
+</FrameworkPanel>
+<FrameworkPanel value="react">
+
+```tsx Inbox.tsx
+import { useHasta, useHastaTarget } from 'hasta/react';
+
+export function Inbox() {
+  const hasta = useHasta({ horizonMs: 160 });
+  const target = useHastaTarget(hasta, {
+    when: { type: 'intersects', withinMs: 160 },
+    onPredict: ({ etaMs }) => {
+      console.log(`Inbox in ${Math.round(etaMs)} ms`);
+    },
+  });
+
+  return <button ref={target.ref}>Inbox</button>;
+}
+```
+
+</FrameworkPanel>
+<FrameworkPanel value="vue">
+
+```vue Inbox.vue
+<script setup lang="ts">
+import { useHasta, useHastaTarget } from 'hasta/vue';
+
+const hasta = useHasta({ horizonMs: 160 });
+const target = useHastaTarget(hasta, {
+  when: { type: 'intersects', withinMs: 160 },
+  onPredict: ({ etaMs }) => {
+    console.log(`Inbox in ${Math.round(etaMs)} ms`);
+  },
+});
+</script>
+
+<template>
+  <button :ref="target.ref">Inbox</button>
+</template>
+```
+
+</FrameworkPanel>
+<FrameworkPanel value="svelte">
+
+```svelte Inbox.svelte
+<script lang="ts">
+  import { useHasta, hastaTarget } from 'hasta/svelte';
+
+  const hasta = useHasta({ horizonMs: 160 });
+</script>
+
+<button
+  use:hastaTarget={{
+    hasta,
+    when: { type: 'intersects', withinMs: 160 },
+    onPredict: ({ etaMs }) => {
+      console.log(`Inbox in ${Math.round(etaMs)} ms`);
+    },
+  }}
+>
+  Inbox
+</button>
+```
+
+</FrameworkPanel>
+</FrameworkCode>

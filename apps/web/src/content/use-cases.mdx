@@ -1,0 +1,43 @@
+import QueryPrefetch from './query-prefetch.mdx';
+
+## Use cases
+
+Start work that the next interaction can reuse. Hasta supplies an earlier trigger; your cache, router, or resource loader handles the result. The useful head start depends on the pointer's path and the cost of loading.
+
+- **Product cards and profile previews.** Fetch data into a shared query cache. Reveal the UI on ordinary hover, focus, or click.
+- **Navigation.** Call [TanStack Router's `preloadRoute`](https://tanstack.com/router/latest/docs/guide/preloading#preloading-manually) or [SvelteKit's `preloadData`](https://svelte.dev/docs/kit/$app-navigation#preloadData). Keep the router's normal link behavior.
+- **Editors, charts, and dialogs.** Load their modules with [`import()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import). This also executes module code; initialization must be safe before activation.
+- **Galleries.** Load an image and await [`decode()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/decode), then reuse it when the preview opens.
+
+If a router already preloads visible links, prediction may add little. Start with small, cacheable reads; keep navigation, mutations, and expensive rendering tied to actual interaction.
+
+### Prefetch with TanStack Query
+
+Use the same `QueryClient` and [query options](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) for prediction and the consuming view. A shared `staleTime` lets that view reuse fresh data without immediately refetching. For example, save this as `queries.ts`:
+
+```ts
+export function projectQuery(id: string) {
+  return {
+    queryKey: ['project', id] as const,
+    staleTime: 30_000,
+    queryFn: async ({ signal }: { signal: AbortSignal }) => {
+      const url = `/api/projects/${encodeURIComponent(id)}`;
+      const response = await fetch(url, { signal });
+      if (!response.ok) {
+        throw new Error(`Request failed (${response.status})`);
+      }
+      return response.json();
+    },
+  };
+}
+```
+
+The example uses TanStack Query's current [`queryClient.query()` API](https://tanstack.com/query/latest/docs/framework/react/guides/prefetching#using-query-to-prefetch). Install your framework's Query package and configure its provider or Vue plugin first. Vanilla receives the application's existing client from `@tanstack/query-core`.
+
+<QueryPrefetch />
+
+Open the project view through the button's normal activation handler and read `projectQuery('42')` there. Hover and keyboard focus call the same prefetch function. Prefetch errors are ignored here; the consuming view still handles loading and failures.
+
+Let [TanStack Query own request cancellation](https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation): the `signal` above belongs to the query. Do not connect Hasta's match signal to `cancelQueries`; another component may already need that request. A missed prediction can still finish populating the cache.
+
+Treat `160 ms` prediction and `30 ms` stability as starting points. Compare against hover-only prefetching: measure the time gained, how often prefetched results are used, and unused bytes. Limit concurrent speculative requests in your loader; Hasta does not impose a global request budget.

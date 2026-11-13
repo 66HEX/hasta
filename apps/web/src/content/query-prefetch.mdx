@@ -1,0 +1,131 @@
+<FrameworkCode>
+<FrameworkPanel value="vanilla">
+
+```ts
+import type { QueryClient } from '@tanstack/query-core';
+import { createHastaController } from 'hasta/vanilla';
+import { projectQuery } from './queries';
+
+export function prepare(button: HTMLButtonElement, client: QueryClient) {
+  const hasta = createHastaController({ horizonMs: 160 });
+  const events = new AbortController();
+  const warm = async () => {
+    await client.query(projectQuery('42')).catch(() => undefined);
+  };
+
+  hasta
+    .target({
+      when: { type: 'intersects', withinMs: 160 },
+      stableForMs: 30,
+      onPredict: warm,
+    })
+    .ref(button);
+  button.addEventListener('mouseenter', warm, { signal: events.signal });
+  button.addEventListener('focus', warm, { signal: events.signal });
+  hasta.connect();
+
+  return () => {
+    events.abort();
+    hasta.destroy();
+  };
+}
+```
+
+Call `prepare(button, queryClient)` after mount. Keep the button's click handler and call the returned cleanup when removing the view.
+
+</FrameworkPanel>
+<FrameworkPanel value="react">
+
+```tsx
+import { useQueryClient } from '@tanstack/react-query';
+import { useHasta, useHastaTarget } from 'hasta/react';
+import { projectQuery } from './queries';
+
+export function ProjectButton({ onOpen }: { onOpen: () => void }) {
+  const queryClient = useQueryClient();
+  const hasta = useHasta({ horizonMs: 160 });
+  const warm = async () => {
+    await queryClient.query(projectQuery('42')).catch(() => undefined);
+  };
+  const target = useHastaTarget(hasta, {
+    when: { type: 'intersects', withinMs: 160 },
+    stableForMs: 30,
+    onPredict: warm,
+  });
+  const events = { onMouseEnter: warm, onFocus: warm, onClick: onOpen };
+
+  return (
+    <button type="button" ref={target.ref} {...events}>
+      Project details
+    </button>
+  );
+}
+```
+
+</FrameworkPanel>
+<FrameworkPanel value="vue">
+
+```vue
+<script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query';
+import { useHasta, useHastaTarget } from 'hasta/vue';
+import { projectQuery } from './queries';
+
+const emit = defineEmits<{ open: [] }>();
+const queryClient = useQueryClient();
+const hasta = useHasta({ horizonMs: 160 });
+const warm = async () => {
+  await queryClient.query(projectQuery('42')).catch(() => undefined);
+};
+const target = useHastaTarget(hasta, {
+  when: { type: 'intersects', withinMs: 160 },
+  stableForMs: 30,
+  onPredict: warm,
+});
+const events = {
+  mouseenter: warm,
+  focus: warm,
+  click: () => emit('open'),
+};
+</script>
+
+<template>
+  <button type="button" :ref="target.ref" v-on="events">Project</button>
+</template>
+```
+
+</FrameworkPanel>
+<FrameworkPanel value="svelte">
+
+```svelte
+<script lang="ts">
+  import { useQueryClient } from '@tanstack/svelte-query';
+  import { useHasta, hastaTarget } from 'hasta/svelte';
+  import { projectQuery } from './queries';
+
+  let { onOpen }: { onOpen: () => void } = $props();
+  const queryClient = useQueryClient();
+  const hasta = useHasta({ horizonMs: 160 });
+  const warm = async () => {
+    await queryClient.query(projectQuery('42')).catch(() => undefined);
+  };
+</script>
+
+<button
+  type="button"
+  use:hastaTarget={{
+    hasta,
+    when: { type: 'intersects', withinMs: 160 },
+    stableForMs: 30,
+    onPredict: warm,
+  }}
+  onmouseenter={warm}
+  onfocus={warm}
+  onclick={onOpen}
+>
+  Project details
+</button>
+```
+
+</FrameworkPanel>
+</FrameworkCode>
