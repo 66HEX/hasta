@@ -9,6 +9,8 @@ import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import { defineConfig } from 'vite';
 
+import { ogImagePlugin } from './og/plugin.ts';
+
 const highlighting: RehypeShikiOptions = {
   themes: { light: 'github-light', dark: 'github-dark' },
   defaultColor: 'light',
@@ -33,6 +35,7 @@ const highlighting: RehypeShikiOptions = {
 
 export default defineConfig({
   plugins: [
+    ogImagePlugin(),
     mdx({
       providerImportSource: '@mdx-js/react',
       remarkPlugins: [remarkGfm],
