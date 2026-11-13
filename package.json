@@ -1,0 +1,56 @@
+{
+  "name": "hasta-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev --workspace=@hasta/web",
+    "build": "npm run build --workspace=hasta && npm run build --workspace=@hasta/web",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run build && npm run test:run",
+    "test:run": "npm run test:run --workspace=hasta && npm run test --workspace=@hasta/web",
+    "test:unit": "npm run test:unit --workspace=hasta",
+    "test:browser": "npm run build && npm run test:browser:run",
+    "test:browser:run": "npm run test:browser:run --workspace=hasta && npm run test --workspace=@hasta/web",
+    "check": "npm run format:check && npm run lint && npm run test:quality && npm run typecheck && npm run build && npm run test:run && npm run pack:check",
+    "pack:check": "npm run pack:check --workspace=hasta",
+    "browsers:install": "playwright install chromium firefox webkit",
+    "bench": "npm run bench --workspace=hasta",
+    "test:frameworks": "npm run build --workspace=hasta && npm run test:frameworks --workspace=hasta",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --deny-warnings .",
+    "lint:fix": "npm run format && oxlint --fix . && npm run format",
+    "test:quality": "node --test scripts/quality.test.mjs",
+    "icons:verify": "node --env-file-if-exists=.env node_modules/nucleo-pixel/account-check.js"
+  },
+  "devDependencies": {
+    "@aranlucas/oxlint-plugin-anti-slop": "0.1.1",
+    "@playwright/test": "1.65.0",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "eslint-plugin-no-comment-slop": "0.6.0",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "oxlint-tsgolint": "7.0.2007",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "svelte": "5.57.3",
+    "svelte-check": "4.7.8",
+    "svelte-min": "npm:svelte@5.32.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vue": "3.5.45"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

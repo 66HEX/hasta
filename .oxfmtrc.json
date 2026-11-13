@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "sortImports": {
+    "sortSideEffects": false
+  },
+  "sortPackageJson": true,
+  "svelte": true,
+  "ignorePatterns": [
+    "packages/hasta/benchmarks/comparison/baseline-23e16ac/**",
+    "docs/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "**/playwright-report/**",
+    "package-lock.json"
+  ]
+}

@@ -1,0 +1,286 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "promise", "vue", "react", "jsx-a11y"],
+  "jsPlugins": [
+    {
+      "name": "anti-slop",
+      "specifier": "@aranlucas/oxlint-plugin-anti-slop",
+    },
+    "eslint-plugin-no-comment-slop",
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "perf": "error",
+  },
+  "options": {
+    "maxWarnings": 0,
+    "reportUnusedDisableDirectives": "error",
+    "typeAware": true,
+  },
+  "env": {
+    "browser": true,
+    "es2022": true,
+  },
+  "ignorePatterns": [
+    "packages/hasta/benchmarks/comparison/baseline-23e16ac/**",
+    "docs/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "**/playwright-report/**",
+  ],
+  "rules": {
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"],
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-eval": "error",
+    "no-new-func": "error",
+    "no-implicit-coercion": "error",
+    "no-warning-comments": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/consistent-type-imports": "error",
+    "typescript/consistent-type-exports": "error",
+    "typescript/ban-ts-comment": [
+      "error",
+      {
+        "ts-ignore": true,
+        "ts-nocheck": true,
+        "ts-expect-error": "allow-with-description",
+        "minimumDescriptionLength": 12,
+      },
+    ],
+    "anti-slop/no-array-filter-map": "error",
+    "anti-slop/no-reduce-accumulator-copy": "error",
+    "anti-slop/no-chained-type-assertions": "error",
+    "anti-slop/no-conditional-empty-object-spread": "error",
+    "anti-slop/no-known-value-widening": "error",
+    "anti-slop/no-module-mocking": "error",
+    "anti-slop/no-object-parameters": "error",
+    "anti-slop/no-reflect-apply": "error",
+    "anti-slop/no-reflect-get": "error",
+    "anti-slop/no-runtime-typeof": [
+      "error",
+      {
+        "allowInTypeGuards": true,
+      },
+    ],
+    "anti-slop/no-shape-in-symbol-names": "error",
+    "anti-slop/no-unknown-parameters": "error",
+    "anti-slop/no-unknown-returns": "error",
+    "anti-slop/no-unknown-type-aliases": "error",
+    "anti-slop/no-unsafe-dictionary-type": "error",
+    "anti-slop/no-widen-then-assert": "error",
+    "anti-slop/require-readable-spacing": "error",
+    "anti-slop/require-safety-comment-for-type-assertion": "error",
+    "no-comment-slop/max-comment-lines": "error",
+    "no-comment-slop/no-banner-comment": "error",
+    "no-comment-slop/no-trailing-comment": "error",
+    "no-comment-slop/prefer-jsdoc-for-exports": "error",
+    "no-comment-slop/prefer-jsdoc-for-members": "error",
+    "no-comment-slop/require-member-docs": "error",
+    "no-comment-slop/multiline-jsdoc-format": "error",
+    "no-comment-slop/no-trailing-period": "error",
+    "no-comment-slop/no-em-dash": "error",
+    "no-comment-slop/no-prose-semicolon": "error",
+    "no-comment-slop/no-jargon": "error",
+    "no-comment-slop/no-foreign-syntax": "error",
+    // JSX uses the automatic runtime. Line counts and declaration order do not measure correctness.
+    "react/react-in-jsx-scope": "off",
+    "max-lines": "off",
+    "max-lines-per-function": "off",
+    "sort-vars": "off",
+    // DOM nodes, controllers and framework refs are intentionally mutable handles.
+    "typescript/prefer-readonly-parameter-types": "off",
+    "typescript/no-confusing-void-expression": [
+      "error",
+      {
+        "ignoreArrowShorthand": true,
+        "ignoreVoidOperator": true,
+      },
+    ],
+    "import/max-dependencies": [
+      "error",
+      {
+        "max": 15,
+      },
+    ],
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css"],
+      },
+    ],
+    "max-depth": ["error", 5],
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      {
+        "depth": 3,
+      },
+    ],
+  },
+  "overrides": [
+    {
+      "files": ["**/*.config.*", "**/tests/**/*.js", "**/benchmarks/**", "scripts/**"],
+      "env": {
+        "node": true,
+      },
+    },
+    // Public JavaScript inputs, callable unions and browser capability checks require typeof.
+    {
+      "files": [
+        "packages/hasta/src/runtime/options.ts",
+        "packages/hasta/src/runtime/controller.ts",
+        "packages/hasta/src/runtime/triggers/subscription.ts",
+        "packages/hasta/src/runtime/engine.ts",
+        "packages/hasta/src/runtime/input/pointer-input.ts",
+      ],
+      "rules": {
+        "anti-slop/no-runtime-typeof": "off",
+      },
+    },
+    // User callbacks and error handlers may reject asynchronously.
+    {
+      "files": [
+        "packages/hasta/src/runtime/engine.ts",
+        "packages/hasta/src/runtime/triggers/subscription.ts",
+      ],
+      "rules": {
+        "promise/no-promise-in-callback": "off",
+      },
+    },
+    // Browser evaluate callbacks are serialized. Scenarios await steps and probe invalid inputs.
+    {
+      "files": ["packages/hasta/tests/**", "apps/web/tests/**"],
+      "rules": {
+        "unicorn/consistent-function-scoping": "off",
+        "no-shadow": "off",
+        "require-await": "off",
+        "no-await-in-loop": "off",
+        "anti-slop/no-runtime-typeof": "off",
+      },
+    },
+    // Snapshot collections before callbacks can mutate them or schedule another animation frame.
+    {
+      "files": ["packages/hasta/src/runtime/engine.ts", "packages/hasta/tests/frameworks/*.*"],
+      "rules": {
+        "unicorn/no-useless-spread": "off",
+      },
+    },
+    // The test harness exposes attempted renders, including renders React abandons.
+    {
+      "files": ["packages/hasta/tests/frameworks/react.tsx"],
+      "rules": {
+        "react/globals": "off",
+      },
+    },
+    // The fixture is a browser ESM document served from the root of its local test server.
+    {
+      "files": ["packages/hasta/tests/browser/fixture.js"],
+      "rules": {
+        "import/no-absolute-path": "off",
+      },
+    },
+    // Custom thenables exercise one-read getters, rejections and Promise assimilation.
+    {
+      "files": ["packages/hasta/tests/subscription.test.js"],
+      "rules": {
+        "unicorn/no-thenable": "off",
+      },
+    },
+    // Vue and Svelte composables are not React hooks.
+    {
+      "files": [
+        "packages/hasta/src/vue/**",
+        "packages/hasta/src/svelte/**",
+        "packages/hasta/tests/frameworks/vue.ts",
+        "packages/hasta/tests/types/**",
+      ],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off",
+      },
+    },
+    // Sequential measurements share counters and serialize their browser callbacks.
+    {
+      "files": ["packages/hasta/benchmarks/**"],
+      "rules": {
+        "no-await-in-loop": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/no-useless-spread": "off",
+        "no-loop-func": "off",
+      },
+    },
+    // Type analysis covers library and demo sources. Tests use untyped page harnesses and malformed inputs.
+    // Keep all syntax rules for these files. Fixture declarations remain checked by tsc and svelte-check.
+    // This list is the type-aware rule inventory of the pinned Oxlint version.
+    {
+      "files": ["**/*.js", "**/*.mjs", "**/*.cjs", "**/tests/**", "**/*.config.ts"],
+      "rules": {
+        "typescript/await-thenable": "off",
+        "typescript/consistent-return": "off",
+        "typescript/consistent-type-exports": "off",
+        "typescript/dot-notation": "off",
+        "typescript/no-array-delete": "off",
+        "typescript/no-base-to-string": "off",
+        "typescript/no-confusing-void-expression": "off",
+        "typescript/no-deprecated": "off",
+        "typescript/no-duplicate-type-constituents": "off",
+        "typescript/no-floating-promises": "off",
+        "typescript/no-for-in-array": "off",
+        "typescript/no-generated-empty-object-type": "off",
+        "typescript/no-implied-eval": "off",
+        "typescript/no-meaningless-void-operator": "off",
+        "typescript/no-misused-promises": "off",
+        "typescript/no-misused-spread": "off",
+        "typescript/no-mixed-enums": "off",
+        "typescript/no-redundant-type-constituents": "off",
+        "typescript/no-unnecessary-boolean-literal-compare": "off",
+        "typescript/no-unnecessary-condition": "off",
+        "typescript/no-unnecessary-qualifier": "off",
+        "typescript/no-unnecessary-template-expression": "off",
+        "typescript/no-unnecessary-type-arguments": "off",
+        "typescript/no-unnecessary-type-assertion": "off",
+        "typescript/no-unnecessary-type-conversion": "off",
+        "typescript/no-unnecessary-type-parameters": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-unsafe-enum-assignment": "off",
+        "typescript/no-unsafe-enum-comparison": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-return": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/no-unsafe-unary-minus": "off",
+        "typescript/no-useless-default-assignment": "off",
+        "typescript/non-nullable-type-assertion-style": "off",
+        "typescript/only-throw-error": "off",
+        "typescript/prefer-find": "off",
+        "typescript/prefer-includes": "off",
+        "typescript/prefer-nullish-coalescing": "off",
+        "typescript/prefer-optional-chain": "off",
+        "typescript/prefer-promise-reject-errors": "off",
+        "typescript/prefer-readonly": "off",
+        "typescript/prefer-readonly-parameter-types": "off",
+        "typescript/prefer-reduce-type-parameter": "off",
+        "typescript/prefer-regexp-exec": "off",
+        "typescript/prefer-return-this-type": "off",
+        "typescript/prefer-string-starts-ends-with": "off",
+        "typescript/promise-function-async": "off",
+        "typescript/related-getter-setter-pairs": "off",
+        "typescript/require-array-sort-compare": "off",
+        "typescript/require-await": "off",
+        "typescript/restrict-plus-operands": "off",
+        "typescript/restrict-template-expressions": "off",
+        "typescript/return-await": "off",
+        "typescript/strict-boolean-expressions": "off",
+        "typescript/strict-void-return": "off",
+        "typescript/switch-exhaustiveness-check": "off",
+        "typescript/unbound-method": "off",
+        "typescript/use-unknown-in-catch-callback-variable": "off",
+      },
+    },
+  ],
+}
