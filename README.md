@@ -35,3 +35,7 @@ npm run dev
 ```
 
 The documentation site lives in [`apps/web`](apps/web), and the library in [`packages/hasta`](packages/hasta). Run `npm run build` to build both. To run all checks, install the test browsers with `npm run browsers:install`, then run `npm run check`.
+
+## Deployment
+
+The site runs on Cloudflare Workers at [hasta.madebyhex.com](https://hasta.madebyhex.com). Run `npx wrangler login` once, then `npm run deploy` to build and publish the site, including its Open Graph image. Use `npm run deploy:check` to validate the build without publishing.

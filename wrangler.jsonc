@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hasta",
+  "account_id": "77c1178f8a0ea36c2d6d7b3dd19fea97",
+  "compatibility_date": "2026-11-13",
+  "build": {
+    "command": "npm run build",
+  },
+  "assets": {
+    "directory": "./apps/web/dist",
+    "not_found_handling": "none",
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "hasta.madebyhex.com", "custom_domain": true }],
+}

@@ -10,6 +10,8 @@
   "type": "module",
   "scripts": {
     "dev": "npm run dev --workspace=@hasta/web",
+    "deploy": "wrangler deploy",
+    "deploy:check": "wrangler deploy --dry-run",
     "build": "npm run build --workspace=hasta && npm run build --workspace=@hasta/web",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run build && npm run test:run",
@@ -48,7 +50,8 @@
     "svelte-min": "npm:svelte@5.32.0",
     "typescript": "6.0.3",
     "vite": "8.3.8",
-    "vue": "3.5.45"
+    "vue": "3.5.45",
+    "wrangler": "4.162.0"
   },
   "engines": {
     "node": ">=24"
