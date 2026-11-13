@@ -21,5 +21,10 @@
     "**/test-results/**",
     "**/playwright-report/**",
     "package-lock.json"
-  ]
+  ],
+  "sortTailwindcss": {
+    "stylesheet": "apps/web/src/styles.css",
+    "functions": ["cn", "cva", "clsx"],
+    "attributes": ["tw"]
+  }
 }
