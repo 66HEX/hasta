@@ -1,0 +1,612 @@
+{
+  "date": "2026-11-13",
+  "scope": "Hasta geometry, current constant-velocity predictor and runtime reliability; excludes the separate CV/Kalman/particle comparison",
+  "environment": {
+    "browser": "158.0.8127.18",
+    "node": "v24.20.0",
+    "platform": "darwin/arm64"
+  },
+  "validation": {
+    "unit": 67,
+    "browser": 705,
+    "framework": 102,
+    "typecheck": "passed",
+    "lint": "passed",
+    "format": "passed",
+    "packFiles": 47
+  },
+  "precisionOracle": {
+    "seed": 37671721,
+    "cases": 5000000,
+    "hits": 1426130,
+    "mismatches": 0,
+    "examples": [],
+    "durationMs": 7589
+  },
+  "browserMatrix": {
+    "casesPerBrowser": 100000,
+    "browsers": ["chromium", "firefox", "webkit"],
+    "framesPerCase": 16,
+    "failures": 0,
+    "description": "Corner contacts and nearby misses with fractional timestamps; manual frame scheduling"
+  },
+  "runtimePerformance": {
+    "rounds": 5,
+    "order": "Alternating baseline/current",
+    "aggregation": "Median of the five per-round medians and, separately, median of the five per-round p95s; final runs after the last core fix",
+    "framesPerScenarioPerRound": 300,
+    "baseline": "Working tree at the start of the quality pass",
+    "results": [
+      {
+        "targets": 100,
+        "rules": 1,
+        "debug": false,
+        "offscreen": false,
+        "inputBurst": null,
+        "medianMs": {
+          "baseline": 0.09,
+          "current": 0.1
+        },
+        "p95Ms": {
+          "baseline": 0.11,
+          "current": 0.11
+        }
+      },
+      {
+        "targets": 1000,
+        "rules": 1,
+        "debug": false,
+        "offscreen": true,
+        "inputBurst": null,
+        "medianMs": {
+          "baseline": 0.43,
+          "current": 0.43
+        },
+        "p95Ms": {
+          "baseline": 0.48,
+          "current": 0.48
+        }
+      },
+      {
+        "targets": 100,
+        "rules": 10,
+        "debug": false,
+        "offscreen": false,
+        "inputBurst": null,
+        "medianMs": {
+          "baseline": 0.17,
+          "current": 0.17
+        },
+        "p95Ms": {
+          "baseline": 0.38,
+          "current": 0.39
+        }
+      },
+      {
+        "targets": 100,
+        "rules": 1,
+        "debug": {
+          "labels": false,
+          "panel": true
+        },
+        "offscreen": true,
+        "inputBurst": null,
+        "medianMs": {
+          "baseline": 0.1,
+          "current": 0.1
+        },
+        "p95Ms": {
+          "baseline": 0.12,
+          "current": 0.12
+        }
+      },
+      {
+        "targets": 100,
+        "rules": 1,
+        "debug": false,
+        "offscreen": false,
+        "inputBurst": 128,
+        "medianMs": {
+          "baseline": 0.29,
+          "current": 0.3
+        },
+        "p95Ms": {
+          "baseline": 0.32,
+          "current": 0.32
+        }
+      },
+      {
+        "targets": 1000,
+        "rules": 1,
+        "debug": false,
+        "offscreen": true,
+        "inputBurst": 128,
+        "medianMs": {
+          "baseline": 0.63,
+          "current": 0.63
+        },
+        "p95Ms": {
+          "baseline": 0.67,
+          "current": 0.68
+        }
+      }
+    ]
+  },
+  "syntheticPrediction": {
+    "horizonMs": 60,
+    "durationMs": 2000,
+    "evaluationMs": 16.666666666666668,
+    "seed": "0x51ab731",
+    "cases": 360,
+    "selectedResults": [
+      {
+        "scenario": "straight",
+        "sampleMs": 0.125,
+        "noisePx": 0,
+        "quantizePx": 0,
+        "jitter": false,
+        "timeQuantumMs": 1,
+        "metrics": {
+          "two-sample": {
+            "meanErrorPx": 28.611,
+            "p95ErrorPx": 52.5,
+            "transitionPeakPx": 37.458
+          },
+          "window-8": {
+            "meanErrorPx": 3.409,
+            "p95ErrorPx": 6.563,
+            "transitionPeakPx": 4.464
+          },
+          "window-16": {
+            "meanErrorPx": 1.609,
+            "p95ErrorPx": 3.281,
+            "transitionPeakPx": 2.107
+          },
+          "regression-8": {
+            "meanErrorPx": 1.729,
+            "p95ErrorPx": 3.5,
+            "transitionPeakPx": 2.264
+          },
+          "regression-16": {
+            "meanErrorPx": 0.594,
+            "p95ErrorPx": 1.029,
+            "transitionPeakPx": 0.489
+          }
+        }
+      },
+      {
+        "scenario": "straight",
+        "sampleMs": 1,
+        "noisePx": 0.25,
+        "quantizePx": 0,
+        "jitter": false,
+        "timeQuantumMs": 0,
+        "metrics": {
+          "two-sample": {
+            "meanErrorPx": 16.463,
+            "p95ErrorPx": 29.175,
+            "transitionPeakPx": 23.757
+          },
+          "window-8": {
+            "meanErrorPx": 2.234,
+            "p95ErrorPx": 3.913,
+            "transitionPeakPx": 2.862
+          },
+          "window-16": {
+            "meanErrorPx": 1.185,
+            "p95ErrorPx": 2.142,
+            "transitionPeakPx": 1.419
+          },
+          "regression-8": {
+            "meanErrorPx": 1.503,
+            "p95ErrorPx": 2.775,
+            "transitionPeakPx": 2.477
+          },
+          "regression-16": {
+            "meanErrorPx": 0.695,
+            "p95ErrorPx": 1.286,
+            "transitionPeakPx": 0.838
+          }
+        }
+      },
+      {
+        "scenario": "reverse",
+        "sampleMs": 1,
+        "noisePx": 0,
+        "quantizePx": 0,
+        "jitter": false,
+        "timeQuantumMs": 0,
+        "metrics": {
+          "two-sample": {
+            "meanErrorPx": 1.882,
+            "p95ErrorPx": 0,
+            "transitionPeakPx": 0
+          },
+          "window-8": {
+            "meanErrorPx": 1.882,
+            "p95ErrorPx": 0,
+            "transitionPeakPx": 0
+          },
+          "window-16": {
+            "meanErrorPx": 2.328,
+            "p95ErrorPx": 0,
+            "transitionPeakPx": 53.083
+          },
+          "regression-8": {
+            "meanErrorPx": 1.882,
+            "p95ErrorPx": 0,
+            "transitionPeakPx": 0
+          },
+          "regression-16": {
+            "meanErrorPx": 2.302,
+            "p95ErrorPx": 0,
+            "transitionPeakPx": 49.961
+          }
+        }
+      },
+      {
+        "scenario": "curve",
+        "sampleMs": 1,
+        "noisePx": 0,
+        "quantizePx": 0,
+        "jitter": false,
+        "timeQuantumMs": 0,
+        "metrics": {
+          "two-sample": {
+            "meanErrorPx": 18.385,
+            "p95ErrorPx": 18.712,
+            "transitionPeakPx": 18.512
+          },
+          "window-8": {
+            "meanErrorPx": 20.452,
+            "p95ErrorPx": 20.796,
+            "transitionPeakPx": 20.585
+          },
+          "window-16": {
+            "meanErrorPx": 22.799,
+            "p95ErrorPx": 23.164,
+            "transitionPeakPx": 22.94
+          },
+          "regression-8": {
+            "meanErrorPx": 20.452,
+            "p95ErrorPx": 20.797,
+            "transitionPeakPx": 20.586
+          },
+          "regression-16": {
+            "meanErrorPx": 22.803,
+            "p95ErrorPx": 23.169,
+            "transitionPeakPx": 22.945
+          }
+        }
+      }
+    ]
+  },
+  "nativeSoak": {
+    "protocol": {
+      "durationPerBrowserMs": 1800000,
+      "input": "Native Playwright mouse movement; actual browser timestamps and requestAnimationFrame",
+      "path": {
+        "x": [20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220],
+        "y": 110,
+        "requestedStepDelayMs": 20
+      },
+      "target": {
+        "x": 140,
+        "y": 100,
+        "width": 40,
+        "height": 20
+      },
+      "condition": {
+        "withinMs": 120,
+        "includeCurrent": true
+      },
+      "stabilityDurationsMs": [0, 32],
+      "lifecycle": "Pause/resume every cycle, disconnect/reconnect every 13 cycles and options restart every 17 non-overlapping cycles",
+      "measurements": "Actual cadence varies by browser and host load; compare policies within each browser. Heap observations are Chromium-only after requested GC."
+    },
+    "results": [
+      {
+        "name": "chromium",
+        "cycles": 4909,
+        "stats": [
+          {
+            "stableForMs": 0,
+            "misses": 0,
+            "duplicateCycles": 992,
+            "leakedSignals": 0,
+            "maxCallbacks": 2
+          },
+          {
+            "stableForMs": 32,
+            "misses": 0,
+            "duplicateCycles": 0,
+            "leakedSignals": 0,
+            "maxCallbacks": 1
+          }
+        ],
+        "errors": [],
+        "models": [
+          {
+            "stableForMs": 0,
+            "callbacks": 5901,
+            "errors": []
+          },
+          {
+            "stableForMs": 32,
+            "callbacks": 4909,
+            "errors": []
+          }
+        ],
+        "memory": [
+          {
+            "cycles": 100,
+            "used": 1718428
+          },
+          {
+            "cycles": 200,
+            "used": 1722340
+          },
+          {
+            "cycles": 300,
+            "used": 1730172
+          },
+          {
+            "cycles": 400,
+            "used": 1729992
+          },
+          {
+            "cycles": 500,
+            "used": 1734772
+          },
+          {
+            "cycles": 600,
+            "used": 1743240
+          },
+          {
+            "cycles": 700,
+            "used": 1744284
+          },
+          {
+            "cycles": 800,
+            "used": 1743976
+          },
+          {
+            "cycles": 900,
+            "used": 1744092
+          },
+          {
+            "cycles": 1000,
+            "used": 1744284
+          },
+          {
+            "cycles": 1100,
+            "used": 1745340
+          },
+          {
+            "cycles": 1200,
+            "used": 1743076
+          },
+          {
+            "cycles": 1300,
+            "used": 1763028
+          },
+          {
+            "cycles": 1400,
+            "used": 1771952
+          },
+          {
+            "cycles": 1500,
+            "used": 1771952
+          },
+          {
+            "cycles": 1600,
+            "used": 1776016
+          },
+          {
+            "cycles": 1700,
+            "used": 1783596
+          },
+          {
+            "cycles": 1800,
+            "used": 1783596
+          },
+          {
+            "cycles": 1900,
+            "used": 1794680
+          },
+          {
+            "cycles": 2000,
+            "used": 1794680
+          },
+          {
+            "cycles": 2100,
+            "used": 1843272
+          },
+          {
+            "cycles": 2200,
+            "used": 1843320
+          },
+          {
+            "cycles": 2300,
+            "used": 1843368
+          },
+          {
+            "cycles": 2400,
+            "used": 1847700
+          },
+          {
+            "cycles": 2500,
+            "used": 1847852
+          },
+          {
+            "cycles": 2600,
+            "used": 1847928
+          },
+          {
+            "cycles": 2700,
+            "used": 1847640
+          },
+          {
+            "cycles": 2800,
+            "used": 1847808
+          },
+          {
+            "cycles": 2900,
+            "used": 1847808
+          },
+          {
+            "cycles": 3000,
+            "used": 1847808
+          },
+          {
+            "cycles": 3100,
+            "used": 1847808
+          },
+          {
+            "cycles": 3200,
+            "used": 1847808
+          },
+          {
+            "cycles": 3300,
+            "used": 1847808
+          },
+          {
+            "cycles": 3400,
+            "used": 1847808
+          },
+          {
+            "cycles": 3500,
+            "used": 1851324
+          },
+          {
+            "cycles": 3600,
+            "used": 1851244
+          },
+          {
+            "cycles": 3700,
+            "used": 1851244
+          },
+          {
+            "cycles": 3800,
+            "used": 1851244
+          },
+          {
+            "cycles": 3900,
+            "used": 1851244
+          },
+          {
+            "cycles": 4000,
+            "used": 1851324
+          },
+          {
+            "cycles": 4100,
+            "used": 1851324
+          },
+          {
+            "cycles": 4200,
+            "used": 1858928
+          },
+          {
+            "cycles": 4300,
+            "used": 1858928
+          },
+          {
+            "cycles": 4400,
+            "used": 1858928
+          },
+          {
+            "cycles": 4500,
+            "used": 1858972
+          },
+          {
+            "cycles": 4600,
+            "used": 1864052
+          },
+          {
+            "cycles": 4700,
+            "used": 1864052
+          },
+          {
+            "cycles": 4800,
+            "used": 1864052
+          },
+          {
+            "cycles": 4900,
+            "used": 1864052
+          }
+        ],
+        "seconds": 1800.203
+      },
+      {
+        "name": "firefox",
+        "cycles": 6313,
+        "stats": [
+          {
+            "stableForMs": 0,
+            "misses": 0,
+            "duplicateCycles": 62,
+            "leakedSignals": 0,
+            "maxCallbacks": 3
+          },
+          {
+            "stableForMs": 32,
+            "misses": 0,
+            "duplicateCycles": 4,
+            "leakedSignals": 0,
+            "maxCallbacks": 2
+          }
+        ],
+        "errors": [],
+        "models": [
+          {
+            "stableForMs": 0,
+            "callbacks": 6376,
+            "errors": []
+          },
+          {
+            "stableForMs": 32,
+            "callbacks": 6317,
+            "errors": []
+          }
+        ],
+        "memory": [],
+        "seconds": 1800.093
+      },
+      {
+        "name": "webkit",
+        "cycles": 4911,
+        "stats": [
+          {
+            "stableForMs": 0,
+            "misses": 0,
+            "duplicateCycles": 1405,
+            "leakedSignals": 0,
+            "maxCallbacks": 2
+          },
+          {
+            "stableForMs": 32,
+            "misses": 0,
+            "duplicateCycles": 0,
+            "leakedSignals": 0,
+            "maxCallbacks": 1
+          }
+        ],
+        "errors": [],
+        "models": [
+          {
+            "stableForMs": 0,
+            "callbacks": 6316,
+            "errors": []
+          },
+          {
+            "stableForMs": 32,
+            "callbacks": 4911,
+            "errors": []
+          }
+        ],
+        "memory": [],
+        "seconds": 1800.103
+      }
+    ]
+  }
+}

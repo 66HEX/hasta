@@ -1,0 +1,9 @@
+{
+  "baseCommit": "23e16acbb6863fe1f93f55d4eac27db91a597a7f",
+  "description": "Frozen pre-filter production CV build from the clean source checkout.",
+  "sha256": {
+    "core/prediction/constant-velocity.js": "b53e04c96661feabe88485afd6e38cf134bb59e9a311cd93c9be0ca3c5f40099",
+    "core/line-rect.js": "8cf181e52991a290828aded9bc9e0ca93512ea1f46557d87ce272c4bd2e510a2",
+    "core/validation.js": "7370d1b4a9207696ff776bd91c7fb21f57c6e0cb2f8980fb393b0c9fb22fafcb"
+  }
+}

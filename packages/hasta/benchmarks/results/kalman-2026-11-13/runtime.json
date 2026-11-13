@@ -1,0 +1,1008 @@
+{
+  "baseCommit": "23e16ac",
+  "rounds": [
+    {
+      "cv": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.1,
+            "p95Ms": 0.12,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.51,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.18,
+            "p95Ms": 0.39,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.1,
+            "p95Ms": 0.12,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.3,
+            "p95Ms": 0.33,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.66,
+            "p95Ms": 0.7,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      },
+      "kalman": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.06,
+            "p95Ms": 0.07,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.49,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.09,
+            "p95Ms": 0.11,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.33,
+            "p95Ms": 0.37,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.65,
+            "p95Ms": 0.75,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      }
+    },
+    {
+      "kalman": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.06,
+            "p95Ms": 0.07,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.46,
+            "p95Ms": 0.51,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.09,
+            "p95Ms": 0.11,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.32,
+            "p95Ms": 0.36,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.68,
+            "p95Ms": 0.74,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      },
+      "cv": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.1,
+            "p95Ms": 0.12,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.51,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.18,
+            "p95Ms": 0.4,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.14,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.32,
+            "p95Ms": 0.35,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.66,
+            "p95Ms": 0.71,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      }
+    },
+    {
+      "cv": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.1,
+            "p95Ms": 0.12,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.49,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.18,
+            "p95Ms": 0.38,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.31,
+            "p95Ms": 0.35,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.66,
+            "p95Ms": 0.69,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      },
+      "kalman": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.06,
+            "p95Ms": 0.07,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.5,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.09,
+            "p95Ms": 0.1,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.33,
+            "p95Ms": 0.38,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.69,
+            "p95Ms": 0.76,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      }
+    },
+    {
+      "kalman": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.06,
+            "p95Ms": 0.07,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.46,
+            "p95Ms": 0.52,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.09,
+            "p95Ms": 0.11,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.14,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.32,
+            "p95Ms": 0.36,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.68,
+            "p95Ms": 0.75,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      },
+      "cv": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.1,
+            "p95Ms": 0.12,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.51,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.18,
+            "p95Ms": 0.37,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.14,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.32,
+            "p95Ms": 0.36,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.66,
+            "p95Ms": 0.69,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      }
+    },
+    {
+      "cv": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.1,
+            "p95Ms": 0.11,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.51,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.18,
+            "p95Ms": 0.39,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.11,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.32,
+            "p95Ms": 0.36,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.67,
+            "p95Ms": 0.7,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      },
+      "kalman": {
+        "browser": "158.0.8127.18",
+        "node": "v24.20.0",
+        "platform": "darwin/arm64",
+        "batchSize": 10,
+        "warmupFrames": 30,
+        "results": [
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.06,
+            "p95Ms": 0.07,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.45,
+            "p95Ms": 0.5,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 10,
+            "debug": false,
+            "offscreen": false,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 1000,
+            "medianMs": 0.09,
+            "p95Ms": 0.1,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": {
+              "labels": false,
+              "panel": true
+            },
+            "offscreen": true,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 0,
+            "medianMs": 0.1,
+            "p95Ms": 0.13,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 100,
+            "rules": 1,
+            "debug": false,
+            "offscreen": false,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 30000,
+            "callbacks": 100,
+            "medianMs": 0.33,
+            "p95Ms": 0.35,
+            "pendingAfterDestroy": 0
+          },
+          {
+            "targets": 1000,
+            "rules": 1,
+            "debug": false,
+            "offscreen": true,
+            "inputBurst": 128,
+            "frames": 300,
+            "measuredReads": 300000,
+            "callbacks": 0,
+            "medianMs": 0.67,
+            "p95Ms": 0.74,
+            "pendingAfterDestroy": 0
+          }
+        ]
+      }
+    }
+  ],
+  "summary": [
+    {
+      "scenario": {
+        "targets": 100,
+        "rules": 1,
+        "debug": false,
+        "offscreen": false,
+        "frames": 300,
+        "measuredReads": 30000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.1,
+        "medianP95Ms": 0.12,
+        "callbacks": [100, 100, 100, 100, 100]
+      },
+      "kalman": {
+        "medianMs": 0.06,
+        "medianP95Ms": 0.07,
+        "callbacks": [100, 100, 100, 100, 100]
+      }
+    },
+    {
+      "scenario": {
+        "targets": 1000,
+        "rules": 1,
+        "debug": false,
+        "offscreen": true,
+        "frames": 300,
+        "measuredReads": 300000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.45,
+        "medianP95Ms": 0.51,
+        "callbacks": [0, 0, 0, 0, 0]
+      },
+      "kalman": {
+        "medianMs": 0.45,
+        "medianP95Ms": 0.5,
+        "callbacks": [0, 0, 0, 0, 0]
+      }
+    },
+    {
+      "scenario": {
+        "targets": 100,
+        "rules": 10,
+        "debug": false,
+        "offscreen": false,
+        "frames": 300,
+        "measuredReads": 30000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.18,
+        "medianP95Ms": 0.39,
+        "callbacks": [1000, 1000, 1000, 1000, 1000]
+      },
+      "kalman": {
+        "medianMs": 0.09,
+        "medianP95Ms": 0.11,
+        "callbacks": [1000, 1000, 1000, 1000, 1000]
+      }
+    },
+    {
+      "scenario": {
+        "targets": 100,
+        "rules": 1,
+        "debug": {
+          "labels": false,
+          "panel": true
+        },
+        "offscreen": true,
+        "frames": 300,
+        "measuredReads": 30000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.11,
+        "medianP95Ms": 0.13,
+        "callbacks": [0, 0, 0, 0, 0]
+      },
+      "kalman": {
+        "medianMs": 0.11,
+        "medianP95Ms": 0.13,
+        "callbacks": [0, 0, 0, 0, 0]
+      }
+    },
+    {
+      "scenario": {
+        "targets": 100,
+        "rules": 1,
+        "debug": false,
+        "offscreen": false,
+        "inputBurst": 128,
+        "frames": 300,
+        "measuredReads": 30000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.32,
+        "medianP95Ms": 0.35,
+        "callbacks": [100, 100, 100, 100, 100]
+      },
+      "kalman": {
+        "medianMs": 0.33,
+        "medianP95Ms": 0.36,
+        "callbacks": [100, 100, 100, 100, 100]
+      }
+    },
+    {
+      "scenario": {
+        "targets": 1000,
+        "rules": 1,
+        "debug": false,
+        "offscreen": true,
+        "inputBurst": 128,
+        "frames": 300,
+        "measuredReads": 300000,
+        "pendingAfterDestroy": 0
+      },
+      "cv": {
+        "medianMs": 0.66,
+        "medianP95Ms": 0.7,
+        "callbacks": [0, 0, 0, 0, 0]
+      },
+      "kalman": {
+        "medianMs": 0.68,
+        "medianP95Ms": 0.75,
+        "callbacks": [0, 0, 0, 0, 0]
+      }
+    }
+  ]
+}

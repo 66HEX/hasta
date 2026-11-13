@@ -1,0 +1,2007 @@
+{
+  "generatedAt": "2026-11-13T18:57:04.854Z",
+  "timingGeneratedAt": "2026-11-13T18:57:04.854Z",
+  "memoryWarmupsRetained": true,
+  "machine": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro"
+  },
+  "models": [
+    {
+      "name": "cv",
+      "config": {
+        "kind": "cv"
+      }
+    },
+    {
+      "name": "regression",
+      "config": {
+        "kind": "regression",
+        "windowMs": 16
+      }
+    },
+    {
+      "name": "previous-kalman",
+      "config": {
+        "kind": "kalman",
+        "q": 0.0001,
+        "r": 0.25
+      }
+    },
+    {
+      "name": "untuned-kalman",
+      "config": {
+        "kind": "kalman-candidate",
+        "q": 0.0001,
+        "r": 0.25,
+        "minimumAssimilationDtMs": 0,
+        "positionAnchor": "filtered"
+      }
+    },
+    {
+      "name": "production",
+      "config": {
+        "kind": "production"
+      }
+    }
+  ],
+  "environments": [
+    {
+      "name": "node",
+      "version": "v24.20.0",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 126264363244.13431,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.007236185546874996,
+            "p95BatchMeanUs": 0.008257120605468904,
+            "minUs": 0.0063371376953127445
+          },
+          "predict": {
+            "medianUs": 0.09456949999999952,
+            "p95BatchMeanUs": 0.09934130859375045,
+            "minUs": 0.08994466015625235
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 12.9784580000005,
+          "minPredictBatchMs": 23.025833000000603
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.08529475781250007,
+            "p95BatchMeanUs": 0.08885676953125099,
+            "minUs": 0.08228938671874886
+          },
+          "predict": {
+            "medianUs": 0.08033170703125059,
+            "p95BatchMeanUs": 0.08265657421874906,
+            "minUs": 0.07797216796875084
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 21.066082999999708,
+          "minPredictBatchMs": 20.27779200000009
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.15609537890624736,
+            "p95BatchMeanUs": 0.16784489062500005,
+            "minUs": 0.14027978515624895
+          },
+          "predict": {
+            "medianUs": 0.09171109765625031,
+            "p95BatchMeanUs": 0.1009747695312484,
+            "minUs": 0.08171679687499989
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 35.91162499999973,
+          "minPredictBatchMs": 20.91949999999997
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.04699820898437501,
+            "p95BatchMeanUs": 0.05184480664062497,
+            "minUs": 0.04266210937500059
+          },
+          "predict": {
+            "medianUs": 0.09860465625000003,
+            "p95BatchMeanUs": 0.10028043359374905,
+            "minUs": 0.09483333593750132
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.843000000000302,
+          "minPredictBatchMs": 24.277334000000337
+        },
+        {
+          "model": "production",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.04770979882812476,
+            "p95BatchMeanUs": 0.052802246093749616,
+            "minUs": 0.041288654296876004
+          },
+          "predict": {
+            "medianUs": 0.0994846992187508,
+            "p95BatchMeanUs": 0.10100585937500028,
+            "minUs": 0.09557128906250156
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.139791000000514,
+          "minPredictBatchMs": 24.4662500000004
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.007315307617187461,
+            "p95BatchMeanUs": 0.007663818359374908,
+            "minUs": 0.006420288085937642
+          },
+          "predict": {
+            "medianUs": 0.09397037890624915,
+            "p95BatchMeanUs": 0.0975198554687502,
+            "minUs": 0.09051008984375031
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 13.148750000000291,
+          "minPredictBatchMs": 23.17058300000008
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1204392890624959,
+            "p95BatchMeanUs": 0.12326220703125301,
+            "minUs": 0.11739990234375242
+          },
+          "predict": {
+            "medianUs": 0.08039387890624994,
+            "p95BatchMeanUs": 0.08388574218749767,
+            "minUs": 0.07825569921875086
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 30.05437500000062,
+          "minPredictBatchMs": 20.03345900000022
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1433751601562534,
+            "p95BatchMeanUs": 0.15830289843749767,
+            "minUs": 0.13085205078125028
+          },
+          "predict": {
+            "medianUs": 0.08907698828124921,
+            "p95BatchMeanUs": 0.10461198046874998,
+            "minUs": 0.08289876171874866
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 33.49812500000007,
+          "minPredictBatchMs": 21.222082999999657
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.04451139257812464,
+            "p95BatchMeanUs": 0.05118652343750085,
+            "minUs": 0.04182153320312487
+          },
+          "predict": {
+            "medianUs": 0.09731705468750107,
+            "p95BatchMeanUs": 0.10141748046875065,
+            "minUs": 0.09475114062500012
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.412624999999935,
+          "minPredictBatchMs": 24.25629200000003
+        },
+        {
+          "model": "production",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.04495157812500139,
+            "p95BatchMeanUs": 0.049519613281249875,
+            "minUs": 0.04177083203125065
+          },
+          "predict": {
+            "medianUs": 0.09752539062500176,
+            "p95BatchMeanUs": 0.1009764023437505,
+            "minUs": 0.09503108593749943
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.386666000000332,
+          "minPredictBatchMs": 24.327957999999853
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0071361284179687345,
+            "p95BatchMeanUs": 0.007793253906250186,
+            "minUs": 0.006653788085936974
+          },
+          "predict": {
+            "medianUs": 0.09344612499999982,
+            "p95BatchMeanUs": 0.09548714062500352,
+            "minUs": 0.0903872070312488
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 13.626957999998922,
+          "minPredictBatchMs": 23.139124999999694
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.4164218749999975,
+            "p95BatchMeanUs": 0.441878250000002,
+            "minUs": 0.4121224062500062
+          },
+          "predict": {
+            "medianUs": 0.07967871093750034,
+            "p95BatchMeanUs": 0.08253206640625166,
+            "minUs": 0.07812581250000505
+          },
+          "finalUpdateCallsPerBatch": 64000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 26.375834000000395,
+          "minPredictBatchMs": 20.000208000001294
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1587312812499988,
+            "p95BatchMeanUs": 0.17286800000000113,
+            "minUs": 0.1431785468749993
+          },
+          "predict": {
+            "medianUs": 0.09072265625000142,
+            "p95BatchMeanUs": 0.09746630859375216,
+            "minUs": 0.0835338515624997
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 36.653707999999824,
+          "minPredictBatchMs": 21.384665999999925
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.04980078125000276,
+            "p95BatchMeanUs": 0.05510506054687525,
+            "minUs": 0.04360913085937668
+          },
+          "predict": {
+            "medianUs": 0.09874348828125079,
+            "p95BatchMeanUs": 0.10144205859374722,
+            "minUs": 0.09488916015624937
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 22.32787500000086,
+          "minPredictBatchMs": 24.29162499999984
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.049378906250002075,
+            "p95BatchMeanUs": 0.05847290039062614,
+            "minUs": 0.04351765820312181
+          },
+          "predict": {
+            "medianUs": 0.09750602343749648,
+            "p95BatchMeanUs": 0.10134895703124869,
+            "minUs": 0.09518326953125467
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 22.281040999998368,
+          "minPredictBatchMs": 24.366917000001195
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.006036987304687713,
+            "p95BatchMeanUs": 0.006587137695312606,
+            "minUs": 0.005473205566406847
+          },
+          "predict": {
+            "medianUs": 0.09559489062499438,
+            "p95BatchMeanUs": 0.09964453125000006,
+            "minUs": 0.08986555859374334
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 11.209125000001222,
+          "minPredictBatchMs": 23.005582999998296
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1138554687500033,
+            "p95BatchMeanUs": 0.11785791015626046,
+            "minUs": 0.10478450390624516
+          },
+          "predict": {
+            "medianUs": 0.08239436718749005,
+            "p95BatchMeanUs": 0.08665006249999863,
+            "minUs": 0.07842187500000364
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 26.824832999998762,
+          "minPredictBatchMs": 20.07600000000093
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.11618391796875471,
+            "p95BatchMeanUs": 0.1358719062500029,
+            "minUs": 0.1066625976562463
+          },
+          "predict": {
+            "medianUs": 0.08463444140625143,
+            "p95BatchMeanUs": 0.08867903906249808,
+            "minUs": 0.08170035937499165
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 27.305624999999054,
+          "minPredictBatchMs": 20.915291999997862
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.04937727929686986,
+            "p95BatchMeanUs": 0.05467659570312122,
+            "minUs": 0.04271435546874969
+          },
+          "predict": {
+            "medianUs": 0.10166568750000238,
+            "p95BatchMeanUs": 0.1084158554687491,
+            "minUs": 0.09524983593750136
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.86974999999984,
+          "minPredictBatchMs": 24.383958000000348
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.048577636718754036,
+            "p95BatchMeanUs": 0.052696289062495794,
+            "minUs": 0.042841878906248354
+          },
+          "predict": {
+            "medianUs": 0.09874658203125364,
+            "p95BatchMeanUs": 0.10574625781249836,
+            "minUs": 0.09506738281250193
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.935041999999157,
+          "minPredictBatchMs": 24.337250000000495
+        }
+      ]
+    },
+    {
+      "name": "chromium",
+      "version": "158.0.8127.18",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 166954959605.63455,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.00830078125,
+            "p95BatchMeanUs": 0.00864257813373115,
+            "minUs": 0.007031250002910383
+          },
+          "predict": {
+            "medianUs": 0.08867187495343387,
+            "p95BatchMeanUs": 0.08984375,
+            "minUs": 0.08554687502328306
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 14.400000005960464,
+          "minPredictBatchMs": 21.900000005960464
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.08125000004656613,
+            "p95BatchMeanUs": 0.0832031249301508,
+            "minUs": 0.07890624995343387
+          },
+          "predict": {
+            "medianUs": 0.07597656251164153,
+            "p95BatchMeanUs": 0.0767578124650754,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 20.19999998807907,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.11210937495343387,
+            "p95BatchMeanUs": 0.1140625000698492,
+            "minUs": 0.1085937499301508
+          },
+          "predict": {
+            "medianUs": 0.07656249997671694,
+            "p95BatchMeanUs": 0.07695312501164153,
+            "minUs": 0.07480468752328306
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 27.799999982118607,
+          "minPredictBatchMs": 38.30000001192093
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.0552734374650754,
+            "p95BatchMeanUs": 0.060156250023283064,
+            "minUs": 0.0474609374650754
+          },
+          "predict": {
+            "medianUs": 0.09453124995343387,
+            "p95BatchMeanUs": 0.09531250002328306,
+            "minUs": 0.09023437497671694
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 24.299999982118607,
+          "minPredictBatchMs": 23.099999994039536
+        },
+        {
+          "model": "production",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.05644531251164153,
+            "p95BatchMeanUs": 0.0619140625349246,
+            "minUs": 0.0458984375
+          },
+          "predict": {
+            "medianUs": 0.2179687499301508,
+            "p95BatchMeanUs": 0.220703125,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 23.5,
+          "minPredictBatchMs": 54
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.007568359375,
+            "p95BatchMeanUs": 0.007958984380820766,
+            "minUs": 0.007128906247089617
+          },
+          "predict": {
+            "medianUs": 0.08828125009313226,
+            "p95BatchMeanUs": 0.08984375,
+            "minUs": 0.08437499997671694
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 14.599999994039536,
+          "minPredictBatchMs": 21.599999994039536
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1046874999301508,
+            "p95BatchMeanUs": 0.10703125002328306,
+            "minUs": 0.1007812499301508
+          },
+          "predict": {
+            "medianUs": 0.07578125002328306,
+            "p95BatchMeanUs": 0.0767578124650754,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 25.799999982118607,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1027343749301508,
+            "p95BatchMeanUs": 0.10585937509313226,
+            "minUs": 0.09921874990686774
+          },
+          "predict": {
+            "medianUs": 0.07656249997671694,
+            "p95BatchMeanUs": 0.07695312501164153,
+            "minUs": 0.0746093750349246
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 25.399999976158142,
+          "minPredictBatchMs": 38.20000001788139
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0478515625,
+            "p95BatchMeanUs": 0.051367187523283064,
+            "minUs": 0.041601562523283064
+          },
+          "predict": {
+            "medianUs": 0.09296875004656613,
+            "p95BatchMeanUs": 0.09492187504656613,
+            "minUs": 0.09023437497671694
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.30000001192093,
+          "minPredictBatchMs": 23.099999994039536
+        },
+        {
+          "model": "production",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0482421875349246,
+            "p95BatchMeanUs": 0.053320312523283064,
+            "minUs": 0.0455078124650754
+          },
+          "predict": {
+            "medianUs": 0.21796874981373549,
+            "p95BatchMeanUs": 0.21953124995343387,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23.299999982118607,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.007568359375,
+            "p95BatchMeanUs": 0.008007812502910383,
+            "minUs": 0.007031249988358468
+          },
+          "predict": {
+            "medianUs": 0.08867187495343387,
+            "p95BatchMeanUs": 0.09023437497671694,
+            "minUs": 0.08476562495343387
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 14.399999976158142,
+          "minPredictBatchMs": 21.69999998807907
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.2874999998603016,
+            "p95BatchMeanUs": 0.2960937498137355,
+            "minUs": 0.2789062501396984
+          },
+          "predict": {
+            "medianUs": 0.07675781252328306,
+            "p95BatchMeanUs": 0.07773437502328306,
+            "minUs": 0.07441406248835847
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 35.70000001788139,
+          "minPredictBatchMs": 38.099999994039536
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.11640625004656613,
+            "p95BatchMeanUs": 0.1183593749301508,
+            "minUs": 0.11171874997671694
+          },
+          "predict": {
+            "medianUs": 0.07636718754656613,
+            "p95BatchMeanUs": 0.07734374998835847,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 28.599999994039536,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0537109375,
+            "p95BatchMeanUs": 0.058007812476716936,
+            "minUs": 0.04960937501164153
+          },
+          "predict": {
+            "medianUs": 0.09375,
+            "p95BatchMeanUs": 0.095703125,
+            "minUs": 0.09023437497671694
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 25.400000005960464,
+          "minPredictBatchMs": 23.099999994039536
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.05390624998835847,
+            "p95BatchMeanUs": 0.05859375,
+            "minUs": 0.0498046875
+          },
+          "predict": {
+            "medianUs": 0.21718750009313226,
+            "p95BatchMeanUs": 0.2203125001396984,
+            "minUs": 0.2093749998603016
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 25.5,
+          "minPredictBatchMs": 26.799999982118607
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.006152343761641532,
+            "p95BatchMeanUs": 0.006396484372089617,
+            "minUs": 0.005810546877910383
+          },
+          "predict": {
+            "medianUs": 0.087890625,
+            "p95BatchMeanUs": 0.09023437497671694,
+            "minUs": 0.0851562499301508
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 11.900000005960464,
+          "minPredictBatchMs": 21.799999982118607
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.09609374997671694,
+            "p95BatchMeanUs": 0.09882812504656613,
+            "minUs": 0.09453124995343387
+          },
+          "predict": {
+            "medianUs": 0.07558593747671694,
+            "p95BatchMeanUs": 0.07734374998835847,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 24.19999998807907,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.10195312497671694,
+            "p95BatchMeanUs": 0.10429687495343387,
+            "minUs": 0.09804687509313226
+          },
+          "predict": {
+            "medianUs": 0.07636718748835847,
+            "p95BatchMeanUs": 0.07734374998835847,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 25.100000023841858,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0474609374650754,
+            "p95BatchMeanUs": 0.0523437499650754,
+            "minUs": 0.0416015624650754
+          },
+          "predict": {
+            "medianUs": 0.0929687499301508,
+            "p95BatchMeanUs": 0.09531250002328306,
+            "minUs": 0.09062499995343387
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 21.299999982118607,
+          "minPredictBatchMs": 23.19999998807907
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.04902343748835847,
+            "p95BatchMeanUs": 0.052734375,
+            "minUs": 0.04179687501164153
+          },
+          "predict": {
+            "medianUs": 0.21562499995343387,
+            "p95BatchMeanUs": 0.22031249990686774,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21.400000005960464,
+          "minPredictBatchMs": 27
+        }
+      ]
+    },
+    {
+      "name": "firefox",
+      "version": "159.0",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 52426291691.09527,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.01123046875,
+            "p95BatchMeanUs": 0.01171875,
+            "minUs": 0.01025390625
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.10546875,
+            "p95BatchMeanUs": 0.11328125,
+            "minUs": 0.09765625
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 25,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.1796875,
+            "p95BatchMeanUs": 0.1875,
+            "minUs": 0.1640625
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.13671875,
+            "p95BatchMeanUs": 0.14453125,
+            "minUs": 0.1328125
+          },
+          "predict": {
+            "medianUs": 0.3203125,
+            "p95BatchMeanUs": 0.3359375,
+            "minUs": 0.3046875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 39
+        },
+        {
+          "model": "production",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.140625,
+            "p95BatchMeanUs": 0.1484375,
+            "minUs": 0.1328125
+          },
+          "predict": {
+            "medianUs": 0.328125,
+            "p95BatchMeanUs": 0.34375,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 64000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.01123046875,
+            "p95BatchMeanUs": 0.01220703125,
+            "minUs": 0.01025390625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.171875,
+            "p95BatchMeanUs": 0.1875,
+            "minUs": 0.1640625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.171875,
+            "p95BatchMeanUs": 0.1875,
+            "minUs": 0.1640625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.13671875,
+            "p95BatchMeanUs": 0.14453125,
+            "minUs": 0.12890625
+          },
+          "predict": {
+            "medianUs": 0.328125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 33,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "production",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.140625,
+            "p95BatchMeanUs": 0.14453125,
+            "minUs": 0.1328125
+          },
+          "predict": {
+            "medianUs": 0.328125,
+            "p95BatchMeanUs": 0.34375,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.0107421875,
+            "minUs": 0.01025390625
+          },
+          "predict": {
+            "medianUs": 0.2890625,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.28125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 36
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.6875,
+            "p95BatchMeanUs": 0.71875,
+            "minUs": 0.65625
+          },
+          "predict": {
+            "medianUs": 0.2890625,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.28125
+          },
+          "finalUpdateCallsPerBatch": 32000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 36
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.140625,
+            "p95BatchMeanUs": 0.14453125,
+            "minUs": 0.13671875
+          },
+          "predict": {
+            "medianUs": 0.2890625,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.28125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 35,
+          "minPredictBatchMs": 36
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1328125,
+            "p95BatchMeanUs": 0.13671875,
+            "minUs": 0.12890625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.2890625
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 33,
+          "minPredictBatchMs": 37
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1328125,
+            "p95BatchMeanUs": 0.140625,
+            "minUs": 0.1328125
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.01220703125,
+            "minUs": 0.0107421875
+          },
+          "predict": {
+            "medianUs": 0.296875,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.28125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 22,
+          "minPredictBatchMs": 36
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.171875,
+            "p95BatchMeanUs": 0.1796875,
+            "minUs": 0.1640625
+          },
+          "predict": {
+            "medianUs": 0.2890625,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.28125
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 36
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1484375,
+            "p95BatchMeanUs": 0.15234375,
+            "minUs": 0.1484375
+          },
+          "predict": {
+            "medianUs": 0.2890625,
+            "p95BatchMeanUs": 0.296875,
+            "minUs": 0.2890625
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 37
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.13671875,
+            "p95BatchMeanUs": 0.140625,
+            "minUs": 0.1328125
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.140625,
+            "p95BatchMeanUs": 0.140625,
+            "minUs": 0.13671875
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 35,
+          "minPredictBatchMs": 38
+        }
+      ]
+    },
+    {
+      "name": "webkit",
+      "version": "27.2",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 61323605006.10988,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.0068359375,
+            "p95BatchMeanUs": 0.0068359375,
+            "minUs": 0.00634765625
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.234375,
+            "minUs": 0.21875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 13,
+          "minPredictBatchMs": 28
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.056640625,
+            "p95BatchMeanUs": 0.060546875,
+            "minUs": 0.0546875
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 28,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.072265625,
+            "p95BatchMeanUs": 0.07421875,
+            "minUs": 0.0703125
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 36,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.0302734375,
+            "p95BatchMeanUs": 0.03125,
+            "minUs": 0.029296875
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 30,
+          "minPredictBatchMs": 29
+        },
+        {
+          "model": "production",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.0322265625,
+            "p95BatchMeanUs": 0.033203125,
+            "minUs": 0.03125
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 32,
+          "minPredictBatchMs": 29
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.00732421875,
+            "p95BatchMeanUs": 0.00732421875,
+            "minUs": 0.00732421875
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.234375,
+            "minUs": 0.21875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 15,
+          "minPredictBatchMs": 28
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.08984375,
+            "p95BatchMeanUs": 0.08984375,
+            "minUs": 0.0859375
+          },
+          "predict": {
+            "medianUs": 0.2265625,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.21875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 22,
+          "minPredictBatchMs": 28
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.07421875,
+            "p95BatchMeanUs": 0.076171875,
+            "minUs": 0.072265625
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.234375,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.03125,
+            "p95BatchMeanUs": 0.0322265625,
+            "minUs": 0.029296875
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 30,
+          "minPredictBatchMs": 29
+        },
+        {
+          "model": "production",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0322265625,
+            "p95BatchMeanUs": 0.033203125,
+            "minUs": 0.0322265625
+          },
+          "predict": {
+            "medianUs": 0.2421875,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.234375
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 33,
+          "minPredictBatchMs": 30
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.00732421875,
+            "p95BatchMeanUs": 0.00732421875,
+            "minUs": 0.0068359375
+          },
+          "predict": {
+            "medianUs": 0.2265625,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.21875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 14,
+          "minPredictBatchMs": 28
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.375,
+            "p95BatchMeanUs": 0.390625,
+            "minUs": 0.359375
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 64000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.08203125,
+            "p95BatchMeanUs": 0.08203125,
+            "minUs": 0.078125
+          },
+          "predict": {
+            "medianUs": 0.2265625,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0322265625,
+            "p95BatchMeanUs": 0.033203125,
+            "minUs": 0.0302734375
+          },
+          "predict": {
+            "medianUs": 0.2421875,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 31,
+          "minPredictBatchMs": 29
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0341796875,
+            "p95BatchMeanUs": 0.03515625,
+            "minUs": 0.0322265625
+          },
+          "predict": {
+            "medianUs": 0.2421875,
+            "p95BatchMeanUs": 0.2421875,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 33,
+          "minPredictBatchMs": 29
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.005859375,
+            "p95BatchMeanUs": 0.00634765625,
+            "minUs": 0.00537109375
+          },
+          "predict": {
+            "medianUs": 0.234375,
+            "p95BatchMeanUs": 0.234375,
+            "minUs": 0.21875
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 11,
+          "minPredictBatchMs": 28
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.10546875,
+            "p95BatchMeanUs": 0.11328125,
+            "minUs": 0.1015625
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "previous-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.078125,
+            "p95BatchMeanUs": 0.087890625,
+            "minUs": 0.07421875
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "untuned-kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0390625,
+            "p95BatchMeanUs": 0.0400390625,
+            "minUs": 0.037109375
+          },
+          "predict": {
+            "medianUs": 0.2421875,
+            "p95BatchMeanUs": 0.25,
+            "minUs": 0.234375
+          },
+          "finalUpdateCallsPerBatch": 1024000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 30
+        },
+        {
+          "model": "production",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0390625,
+            "p95BatchMeanUs": 0.041015625,
+            "minUs": 0.0390625
+          },
+          "predict": {
+            "medianUs": 0.2421875,
+            "p95BatchMeanUs": 0.25,
+            "minUs": 0.2265625
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 29
+        }
+      ]
+    }
+  ],
+  "memory": [
+    {
+      "model": "cv",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": -2730.5,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": -2730.5
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 231.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 231.9375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 234.4375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 234.4375
+        }
+      ]
+    },
+    {
+      "model": "cv",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 220.0625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 220.0625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 220.0625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 220.0625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": -3872.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": -3872.9375
+        }
+      ]
+    },
+    {
+      "model": "regression",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1691,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1691
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1691,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1691
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1691,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1691
+        }
+      ]
+    },
+    {
+      "model": "regression",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11940.5,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11940.5
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11950.25,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11950.25
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11953.75,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11953.75
+        }
+      ]
+    },
+    {
+      "model": "previous-kalman",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 665.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 665.9375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 665.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 665.9375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 665.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 665.9375
+        }
+      ]
+    },
+    {
+      "model": "previous-kalman",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 607.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 607.9375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 602.625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 602.625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 607.9375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 607.9375
+        }
+      ]
+    },
+    {
+      "model": "untuned-kalman",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1048.875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1048.875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1048.875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1048.875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1051.5,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1051.5
+        }
+      ]
+    },
+    {
+      "model": "untuned-kalman",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.000000000001,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1026.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1026.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.000000000001,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1026.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1026.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.000000000001,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1026.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1026.1875
+        }
+      ]
+    },
+    {
+      "model": "production",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.999999999983,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1085.75,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1085.75
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.999999999983,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1085.75,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1085.75
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.999999999983,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1122.6875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1122.6875
+        }
+      ]
+    },
+    {
+      "model": "production",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.999999999996,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1066.25,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1066.25
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.999999999996,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1066.625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1066.625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.999999999996,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1066.25,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1066.25
+        }
+      ]
+    }
+  ]
+}

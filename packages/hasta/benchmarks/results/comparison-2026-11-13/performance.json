@@ -1,0 +1,3579 @@
+{
+  "generatedAt": "2026-11-13T18:07:10.913Z",
+  "timingGeneratedAt": "2026-11-13T18:01:04.651Z",
+  "memoryWarmupsRetained": true,
+  "machine": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4 Pro"
+  },
+  "models": [
+    {
+      "name": "cv",
+      "config": {
+        "kind": "cv"
+      }
+    },
+    {
+      "name": "regression",
+      "config": {
+        "kind": "regression",
+        "windowMs": 16
+      }
+    },
+    {
+      "name": "kalman",
+      "config": {
+        "kind": "kalman",
+        "q": 0.0001,
+        "r": 0.25
+      }
+    },
+    {
+      "name": "particle-gaussian-64",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "gaussian",
+        "particles": 64
+      }
+    },
+    {
+      "name": "particle-gaussian-256",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "gaussian",
+        "particles": 256
+      }
+    },
+    {
+      "name": "particle-gaussian-1024",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "gaussian",
+        "particles": 1024
+      }
+    },
+    {
+      "name": "particle-student-t-64",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "student-t",
+        "particles": 64
+      }
+    },
+    {
+      "name": "particle-student-t-256",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "student-t",
+        "particles": 256
+      }
+    },
+    {
+      "name": "particle-student-t-1024",
+      "config": {
+        "kind": "particle",
+        "q": 0.01,
+        "r": 4,
+        "observation": "student-t",
+        "particles": 1024
+      }
+    }
+  ],
+  "environments": [
+    {
+      "name": "node",
+      "version": "v24.20.0",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 296162608612.9684,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.010473612792968545,
+            "p95BatchMeanUs": 0.010779011718749842,
+            "minUs": 0.007216043945311945
+          },
+          "predict": {
+            "medianUs": 0.09356380468749848,
+            "p95BatchMeanUs": 0.09505126953124687,
+            "minUs": 0.09098339843750125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 14.778457999998864,
+          "minPredictBatchMs": 23.29175000000032
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.08784049609375089,
+            "p95BatchMeanUs": 0.09241910937500109,
+            "minUs": 0.08423714062499954
+          },
+          "predict": {
+            "medianUs": 0.07987744140624997,
+            "p95BatchMeanUs": 0.08191349414062543,
+            "minUs": 0.07811409570312478
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 21.564707999999882,
+          "minPredictBatchMs": 20.171374999999898
+        },
+        {
+          "model": "kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.12393554687500341,
+            "p95BatchMeanUs": 0.12955826953124472,
+            "minUs": 0.1190582656250001
+          },
+          "predict": {
+            "medianUs": 0.07856168359374749,
+            "p95BatchMeanUs": 0.08129679296875025,
+            "minUs": 0.07791601562500006
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 30.478916000000027,
+          "minPredictBatchMs": 20.05616700000064
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 8.52333324999995,
+            "p95BatchMeanUs": 8.718000000000075,
+            "minUs": 8.180739750000157
+          },
+          "predict": {
+            "medianUs": 0.07952750781250018,
+            "p95BatchMeanUs": 0.08117952343749835,
+            "minUs": 0.07833235546875272
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 32.72295900000063,
+          "minPredictBatchMs": 20.053083000000697
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 33.48329199999898,
+            "p95BatchMeanUs": 34.27745900000082,
+            "minUs": 33.00616700000046
+          },
+          "predict": {
+            "medianUs": 0.08006396484374889,
+            "p95BatchMeanUs": 0.08308666992187597,
+            "minUs": 0.0776826992187516
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 33.00616700000046,
+          "minPredictBatchMs": 20.065624999999727
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 135.7614589999994,
+            "p95BatchMeanUs": 137.99741699999868,
+            "minUs": 132.61074999999983
+          },
+          "predict": {
+            "medianUs": 0.07994140625000057,
+            "p95BatchMeanUs": 0.08049788281249803,
+            "minUs": 0.0783841132812455
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 132.61074999999983,
+          "minPredictBatchMs": 20.06633299999885
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 8.962176999999883,
+            "p95BatchMeanUs": 9.606187500000033,
+            "minUs": 8.70532275000005
+          },
+          "predict": {
+            "medianUs": 0.07913378906250301,
+            "p95BatchMeanUs": 0.08280338671875143,
+            "minUs": 0.07815755468750041
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 34.8212910000002,
+          "minPredictBatchMs": 20.008334000000104
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 35.4462080000003,
+            "p95BatchMeanUs": 36.647500000000036,
+            "minUs": 34.17900000000009
+          },
+          "predict": {
+            "medianUs": 0.0805314140625022,
+            "p95BatchMeanUs": 0.09372851562500095,
+            "minUs": 0.0779914550781271
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 34.17900000000009,
+          "minPredictBatchMs": 20.178125000000364
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 142.32970800000112,
+            "p95BatchMeanUs": 145.32945900000004,
+            "minUs": 138.43008299999929
+          },
+          "predict": {
+            "medianUs": 0.07956518554687532,
+            "p95BatchMeanUs": 0.08157006835937608,
+            "minUs": 0.07826114843750176
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 138.43008299999929,
+          "minPredictBatchMs": 40.0697080000009
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0073624472656241835,
+            "p95BatchMeanUs": 0.008400390625000753,
+            "minUs": 0.00642112255859395
+          },
+          "predict": {
+            "medianUs": 0.09210595703123658,
+            "p95BatchMeanUs": 0.09638183593749261,
+            "minUs": 0.09038102343750154
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 13.15045900000041,
+          "minPredictBatchMs": 23.137542000000394
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.12072689062499364,
+            "p95BatchMeanUs": 0.12883658984375757,
+            "minUs": 0.11783170312500602
+          },
+          "predict": {
+            "medianUs": 0.08017610546873755,
+            "p95BatchMeanUs": 0.08310953906250518,
+            "minUs": 0.07862858203125711
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 30.16491600000154,
+          "minPredictBatchMs": 20.12891700000182
+        },
+        {
+          "model": "kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.11008105468749818,
+            "p95BatchMeanUs": 0.11555549999999926,
+            "minUs": 0.10645605468749864
+          },
+          "predict": {
+            "medianUs": 0.07973828125000182,
+            "p95BatchMeanUs": 0.08257796093749903,
+            "minUs": 0.07813427734375011
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 27.25274999999965,
+          "minPredictBatchMs": 20.00237500000003
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 6.475426999999399,
+            "p95BatchMeanUs": 6.694010499999422,
+            "minUs": 6.325968749999447
+          },
+          "predict": {
+            "medianUs": 0.07923071289062023,
+            "p95BatchMeanUs": 0.08190657812500035,
+            "minUs": 0.07780981445312563
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 25.303874999997788,
+          "minPredictBatchMs": 20.894374999999854
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 25.280041000001802,
+            "p95BatchMeanUs": 26.581915999999183,
+            "minUs": 25.040250000001834
+          },
+          "predict": {
+            "medianUs": 0.0788697109374965,
+            "p95BatchMeanUs": 0.08289241406249914,
+            "minUs": 0.07757259179687281
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 25.040250000001834,
+          "minPredictBatchMs": 20.389500000001135
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 101.0714590000025,
+            "p95BatchMeanUs": 103.47795899999983,
+            "minUs": 99.68525000000227
+          },
+          "predict": {
+            "medianUs": 0.07869734765625225,
+            "p95BatchMeanUs": 0.08174479101562326,
+            "minUs": 0.07756168749999404
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 99.68525000000227,
+          "minPredictBatchMs": 20.21570900000006
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 7.3046875,
+            "p95BatchMeanUs": 7.659937499999614,
+            "minUs": 7.143843750000087
+          },
+          "predict": {
+            "medianUs": 0.0788889980468781,
+            "p95BatchMeanUs": 0.08121101953125276,
+            "minUs": 0.07814567187499932
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 28.57537500000035,
+          "minPredictBatchMs": 20.074666000000434
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 28.6840830000001,
+            "p95BatchMeanUs": 29.424708000002283,
+            "minUs": 28.186165999999503
+          },
+          "predict": {
+            "medianUs": 0.07874812890625549,
+            "p95BatchMeanUs": 0.08158601757812534,
+            "minUs": 0.07762337304686895
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 28.186165999999503,
+          "minPredictBatchMs": 20.507416000000376
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 114.52200000000084,
+            "p95BatchMeanUs": 118.24266600000192,
+            "minUs": 112.21449999999822
+          },
+          "predict": {
+            "medianUs": 0.07851057812499818,
+            "p95BatchMeanUs": 0.08176871679687281,
+            "minUs": 0.07787792968750296
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 112.21449999999822,
+          "minPredictBatchMs": 20.007417000000714
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.007570353027343657,
+            "p95BatchMeanUs": 0.008191304687500178,
+            "minUs": 0.00636712646484483
+          },
+          "predict": {
+            "medianUs": 0.09461718750000614,
+            "p95BatchMeanUs": 0.0987433281249821,
+            "minUs": 0.09166389843747424
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 13.039875000002212,
+          "minPredictBatchMs": 23.465957999993407
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.4212155000000166,
+            "p95BatchMeanUs": 0.4390156249999677,
+            "minUs": 0.3946171874999891
+          },
+          "predict": {
+            "medianUs": 0.08112955859375859,
+            "p95BatchMeanUs": 0.08689323046876041,
+            "minUs": 0.07884993359374448
+          },
+          "finalUpdateCallsPerBatch": 64000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 25.2554999999993,
+          "minPredictBatchMs": 20.185582999998587
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.12503303906251517,
+            "p95BatchMeanUs": 0.13200358203124551,
+            "minUs": 0.11943798828124841
+          },
+          "predict": {
+            "medianUs": 0.07978906250001216,
+            "p95BatchMeanUs": 0.08300504687500165,
+            "minUs": 0.07839664843749006
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 30.576124999999593,
+          "minPredictBatchMs": 20.069541999997455
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 5.940604250000433,
+            "p95BatchMeanUs": 6.147749999999178,
+            "minUs": 5.72668750000048
+          },
+          "predict": {
+            "medianUs": 0.0796015625000166,
+            "p95BatchMeanUs": 0.08425097656250102,
+            "minUs": 0.07874934765624175
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 22.90675000000192,
+          "minPredictBatchMs": 20.15983299999789
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 23.168417000000773,
+            "p95BatchMeanUs": 24.14862500000163,
+            "minUs": 22.78991700000188
+          },
+          "predict": {
+            "medianUs": 0.08029915234376972,
+            "p95BatchMeanUs": 0.08412385937499778,
+            "minUs": 0.0783919257812613
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 22.78991700000188,
+          "minPredictBatchMs": 20.068333000002895
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 92.25500000000102,
+            "p95BatchMeanUs": 95.0881249999984,
+            "minUs": 91.0589159999945
+          },
+          "predict": {
+            "medianUs": 0.07974576953122892,
+            "p95BatchMeanUs": 0.08102034374999789,
+            "minUs": 0.0783084335937474
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 91.0589159999945,
+          "minPredictBatchMs": 20.046958999999333
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 6.176448000000164,
+            "p95BatchMeanUs": 6.553666750000048,
+            "minUs": 6.004926999999952
+          },
+          "predict": {
+            "medianUs": 0.08048844140624567,
+            "p95BatchMeanUs": 0.08231461718749244,
+            "minUs": 0.07842757031249903
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 24.01970799999981,
+          "minPredictBatchMs": 20.07745799999975
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 24.156875000000582,
+            "p95BatchMeanUs": 25.00541599999997,
+            "minUs": 23.70404199999757
+          },
+          "predict": {
+            "medianUs": 0.07941520312500927,
+            "p95BatchMeanUs": 0.08181005859376,
+            "minUs": 0.0776581230468878
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 23.70404199999757,
+          "minPredictBatchMs": 20.084083000001556
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 95.80512499999895,
+            "p95BatchMeanUs": 97.83954200000153,
+            "minUs": 94.30524999999761
+          },
+          "predict": {
+            "medianUs": 0.08015917968751296,
+            "p95BatchMeanUs": 0.08299218749999682,
+            "minUs": 0.07821451953125802
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 94.30524999999761,
+          "minPredictBatchMs": 20.022917000002053
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.007151977539059828,
+            "p95BatchMeanUs": 0.0075490317382822525,
+            "minUs": 0.006090576171875028
+          },
+          "predict": {
+            "medianUs": 0.09343115234375432,
+            "p95BatchMeanUs": 0.0974848632812666,
+            "minUs": 0.09094075390623857
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 12.473500000000058,
+          "minPredictBatchMs": 23.280832999997074
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.11422102734374562,
+            "p95BatchMeanUs": 0.12644254687501189,
+            "minUs": 0.10855485156250211
+          },
+          "predict": {
+            "medianUs": 0.08080973437498074,
+            "p95BatchMeanUs": 0.08442659375000972,
+            "minUs": 0.07848649218749415
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 27.79004200000054,
+          "minPredictBatchMs": 20.092541999998502
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.10977132421874103,
+            "p95BatchMeanUs": 0.11781054687500614,
+            "minUs": 0.10689664453124692
+          },
+          "predict": {
+            "medianUs": 0.08014436718750062,
+            "p95BatchMeanUs": 0.08452221679687,
+            "minUs": 0.07759708593749792
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 27.36554099999921,
+          "minPredictBatchMs": 20.50633299999754
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 4.9218332499995086,
+            "p95BatchMeanUs": 5.124635375000253,
+            "minUs": 4.7033281249996435
+          },
+          "predict": {
+            "medianUs": 0.07984130859374261,
+            "p95BatchMeanUs": 0.08156713867187193,
+            "minUs": 0.07826749609374417
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 37.62662499999715,
+          "minPredictBatchMs": 20.36500000000524
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 19.701375000000553,
+            "p95BatchMeanUs": 20.09010400000261,
+            "minUs": 19.128770999999688
+          },
+          "predict": {
+            "medianUs": 0.08010156250000477,
+            "p95BatchMeanUs": 0.08358870312500244,
+            "minUs": 0.07856518554687852
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 38.257541999999376,
+          "minPredictBatchMs": 20.11541700000089
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 83.6772920000003,
+            "p95BatchMeanUs": 84.90620900000067,
+            "minUs": 81.87124999999651
+          },
+          "predict": {
+            "medianUs": 0.08043864062500461,
+            "p95BatchMeanUs": 0.08207836914063193,
+            "minUs": 0.07810587500000565
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 81.87124999999651,
+          "minPredictBatchMs": 20.054292000000714
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 5.783135499999844,
+            "p95BatchMeanUs": 6.0012812499990105,
+            "minUs": 5.663010500000382
+          },
+          "predict": {
+            "medianUs": 0.08027579687500008,
+            "p95BatchMeanUs": 0.08211263281248193,
+            "minUs": 0.0774384765625058
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 22.65204200000153,
+          "minPredictBatchMs": 20.40450000000419
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 23.037791999995534,
+            "p95BatchMeanUs": 23.536041999999725,
+            "minUs": 22.58749999999418
+          },
+          "predict": {
+            "medianUs": 0.07911100390624881,
+            "p95BatchMeanUs": 0.08230452343750017,
+            "minUs": 0.07787288476562537
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 22.58749999999418,
+          "minPredictBatchMs": 20.113125000003492
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 97.34320799999841,
+            "p95BatchMeanUs": 99.96949999999924,
+            "minUs": 94.20812499999738
+          },
+          "predict": {
+            "medianUs": 0.07906201171874727,
+            "p95BatchMeanUs": 0.0832117500000038,
+            "minUs": 0.07824381250000556
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 94.20812499999738,
+          "minPredictBatchMs": 20.030416000001424
+        }
+      ]
+    },
+    {
+      "name": "chromium",
+      "version": "158.0.8127.18",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 409944997519.586,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.011181640627910383,
+            "p95BatchMeanUs": 0.011669921863358468,
+            "minUs": 0.010205078127910383
+          },
+          "predict": {
+            "medianUs": 0.08710937504656613,
+            "p95BatchMeanUs": 0.08828125009313226,
+            "minUs": 0.08476562495343387
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 20.900000005960464,
+          "minPredictBatchMs": 21.69999998807907
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.083984375,
+            "p95BatchMeanUs": 0.0859375,
+            "minUs": 0.08203125
+          },
+          "predict": {
+            "medianUs": 0.07421875,
+            "p95BatchMeanUs": 0.07597656251164153,
+            "minUs": 0.0732421875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 37.5
+        },
+        {
+          "model": "kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.11484375002328306,
+            "p95BatchMeanUs": 0.1179687500698492,
+            "minUs": 0.11289062490686774
+          },
+          "predict": {
+            "medianUs": 0.07500000001164153,
+            "p95BatchMeanUs": 0.07636718748835847,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 28.899999976158142,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 5.5,
+            "p95BatchMeanUs": 5.674999997019768,
+            "minUs": 5.425000004470348
+          },
+          "predict": {
+            "medianUs": 0.07480468752328306,
+            "p95BatchMeanUs": 0.0757812499650754,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 21.700000017881393,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 22.299999982118607,
+            "p95BatchMeanUs": 22.599999994039536,
+            "minUs": 21.69999998807907
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.07636718754656613,
+            "minUs": 0.07363281247671694
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 21.69999998807907,
+          "minPredictBatchMs": 37.69999998807907
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 89.69999998807907,
+            "p95BatchMeanUs": 91.7999999821186,
+            "minUs": 88.2999999821186
+          },
+          "predict": {
+            "medianUs": 0.07402343751164153,
+            "p95BatchMeanUs": 0.076171875,
+            "minUs": 0.07343750004656613
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 88.2999999821186,
+          "minPredictBatchMs": 37.60000002384186
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 6.800000004470348,
+            "p95BatchMeanUs": 6.949999995529652,
+            "minUs": 6.7249999940395355
+          },
+          "predict": {
+            "medianUs": 0.07421875,
+            "p95BatchMeanUs": 0.076171875,
+            "minUs": 0.07343750004656613
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.899999976158142,
+          "minPredictBatchMs": 37.60000002384186
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 26.900000005960464,
+            "p95BatchMeanUs": 27.400000005960464,
+            "minUs": 26.399999976158142
+          },
+          "predict": {
+            "medianUs": 0.07460937497671694,
+            "p95BatchMeanUs": 0.07675781252328306,
+            "minUs": 0.0732421875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.399999976158142,
+          "minPredictBatchMs": 37.5
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 108.5,
+            "p95BatchMeanUs": 110.19999998807907,
+            "minUs": 106.80000001192093
+          },
+          "predict": {
+            "medianUs": 0.07539062498835847,
+            "p95BatchMeanUs": 0.07636718748835847,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 106.80000001192093,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.00991210936626885,
+            "p95BatchMeanUs": 0.010449218752910383,
+            "minUs": 0.008740234377910383
+          },
+          "predict": {
+            "medianUs": 0.08671874995343387,
+            "p95BatchMeanUs": 0.08945312502328306,
+            "minUs": 0.08476562495343387
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 17.900000005960464,
+          "minPredictBatchMs": 21.69999998807907
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.10546875,
+            "p95BatchMeanUs": 0.1082031250698492,
+            "minUs": 0.103515625
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.07636718748835847,
+            "minUs": 0.07304687501164153
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.5,
+          "minPredictBatchMs": 37.400000005960464
+        },
+        {
+          "model": "kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.10507812502328306,
+            "p95BatchMeanUs": 0.10781249997671694,
+            "minUs": 0.10273437504656613
+          },
+          "predict": {
+            "medianUs": 0.07539062498835847,
+            "p95BatchMeanUs": 0.07675781252328306,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.30000001192093,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 3.474999997764826,
+            "p95BatchMeanUs": 3.5625,
+            "minUs": 3.412500001490116
+          },
+          "predict": {
+            "medianUs": 0.07480468752328306,
+            "p95BatchMeanUs": 0.07675781252328306,
+            "minUs": 0.07363281247671694
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 27.30000001192093,
+          "minPredictBatchMs": 37.69999998807907
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 13.300000011920929,
+            "p95BatchMeanUs": 13.700000002980232,
+            "minUs": 13.099999994039536
+          },
+          "predict": {
+            "medianUs": 0.07480468752328306,
+            "p95BatchMeanUs": 0.07656249997671694,
+            "minUs": 0.07382812502328306
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.19999998807907,
+          "minPredictBatchMs": 37.80000001192093
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 53.900000005960464,
+            "p95BatchMeanUs": 55.099999994039536,
+            "minUs": 52.69999998807907
+          },
+          "predict": {
+            "medianUs": 0.07441406248835847,
+            "p95BatchMeanUs": 0.07636718748835847,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 52.69999998807907,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 4.350000001490116,
+            "p95BatchMeanUs": 4.449999999254942,
+            "minUs": 4.300000000745058
+          },
+          "predict": {
+            "medianUs": 0.07441406248835847,
+            "p95BatchMeanUs": 0.07656249997671694,
+            "minUs": 0.0736328125349246
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 34.400000005960464,
+          "minPredictBatchMs": 37.70000001788139
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 17.049999997019768,
+            "p95BatchMeanUs": 17.349999994039536,
+            "minUs": 16.799999997019768
+          },
+          "predict": {
+            "medianUs": 0.07500000001164153,
+            "p95BatchMeanUs": 0.0765625000349246,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 33.599999994039536,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 68.30000001192093,
+            "p95BatchMeanUs": 69.7000000178814,
+            "minUs": 66.59999999403954
+          },
+          "predict": {
+            "medianUs": 0.07539062498835847,
+            "p95BatchMeanUs": 0.07597656251164153,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 66.59999999403954,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.009326171872089617,
+            "p95BatchMeanUs": 0.010058593747089617,
+            "minUs": 0.0087890625
+          },
+          "predict": {
+            "medianUs": 0.08671874995343387,
+            "p95BatchMeanUs": 0.08984375,
+            "minUs": 0.08476562495343387
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 18,
+          "minPredictBatchMs": 21.69999998807907
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.28437500004656613,
+            "p95BatchMeanUs": 0.28984374995343387,
+            "minUs": 0.27968750009313226
+          },
+          "predict": {
+            "medianUs": 0.07539062498835847,
+            "p95BatchMeanUs": 0.0767578124650754,
+            "minUs": 0.07343749998835847
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 35.80000001192093,
+          "minPredictBatchMs": 37.599999994039536
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.11953124997671694,
+            "p95BatchMeanUs": 0.12187499995343387,
+            "minUs": 0.1164062499301508
+          },
+          "predict": {
+            "medianUs": 0.07578125002328306,
+            "p95BatchMeanUs": 0.0765625000349246,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 29.799999982118607,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 3.025000002235174,
+            "p95BatchMeanUs": 3.0750000029802322,
+            "minUs": 2.962499998509884
+          },
+          "predict": {
+            "medianUs": 0.0751953125,
+            "p95BatchMeanUs": 0.07636718748835847,
+            "minUs": 0.07441406254656613
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 23.69999998807907,
+          "minPredictBatchMs": 38.10000002384186
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 11.450000002980232,
+            "p95BatchMeanUs": 11.599999994039536,
+            "minUs": 11.199999988079071
+          },
+          "predict": {
+            "medianUs": 0.0751953125,
+            "p95BatchMeanUs": 0.07675781252328306,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 22.399999976158142,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 45.900000005960464,
+            "p95BatchMeanUs": 46.69999998807907,
+            "minUs": 45.30000001192093
+          },
+          "predict": {
+            "medianUs": 0.0751953125,
+            "p95BatchMeanUs": 0.0765625000349246,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 45.30000001192093,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 3.737500000745058,
+            "p95BatchMeanUs": 3.800000000745058,
+            "minUs": 3.6875
+          },
+          "predict": {
+            "medianUs": 0.07597656251164153,
+            "p95BatchMeanUs": 0.07656249997671694,
+            "minUs": 0.0736328125349246
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 29.5,
+          "minPredictBatchMs": 37.70000001788139
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 14.399999991059303,
+            "p95BatchMeanUs": 14.599999994039536,
+            "minUs": 14.049999997019768
+          },
+          "predict": {
+            "medianUs": 0.0755859375349246,
+            "p95BatchMeanUs": 0.0765625000349246,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 28.099999994039536,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 57.79999998211861,
+            "p95BatchMeanUs": 58.599999994039536,
+            "minUs": 56
+          },
+          "predict": {
+            "medianUs": 0.07500000001164153,
+            "p95BatchMeanUs": 0.07636718754656613,
+            "minUs": 0.07441406248835847
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 56,
+          "minPredictBatchMs": 38.099999994039536
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.00839843750873115,
+            "p95BatchMeanUs": 0.00888671875873115,
+            "minUs": 0.007861328122089617
+          },
+          "predict": {
+            "medianUs": 0.08671874995343387,
+            "p95BatchMeanUs": 0.08750000002328306,
+            "minUs": 0.0851562499301508
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 256000,
+          "minUpdateBatchMs": 16.099999994039536,
+          "minPredictBatchMs": 21.799999982118607
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.09765625,
+            "p95BatchMeanUs": 0.09921875002328306,
+            "minUs": 0.09609374997671694
+          },
+          "predict": {
+            "medianUs": 0.07460937497671694,
+            "p95BatchMeanUs": 0.07578125002328306,
+            "minUs": 0.07402343751164153
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 24.599999994039536,
+          "minPredictBatchMs": 37.900000005960464
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.103515625,
+            "p95BatchMeanUs": 0.10507812502328306,
+            "minUs": 0.1015625
+          },
+          "predict": {
+            "medianUs": 0.07500000001164153,
+            "p95BatchMeanUs": 0.07597656245343387,
+            "minUs": 0.07460937497671694
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 38.19999998807907
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 3.487500000745058,
+            "p95BatchMeanUs": 3.5625,
+            "minUs": 3.425000000745058
+          },
+          "predict": {
+            "medianUs": 0.07460937497671694,
+            "p95BatchMeanUs": 0.0751953125,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 27.400000005960464,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 13.349999994039536,
+            "p95BatchMeanUs": 13.450000002980232,
+            "minUs": 13.100000008940697
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.07597656251164153,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 26.200000017881393,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 54.099999994039536,
+            "p95BatchMeanUs": 54.69999998807907,
+            "minUs": 53.29999998211861
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.07500000001164153,
+            "minUs": 0.0738281249650754
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 53.29999998211861,
+          "minPredictBatchMs": 37.79999998211861
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 4.375,
+            "p95BatchMeanUs": 4.4375,
+            "minUs": 4.300000000745058
+          },
+          "predict": {
+            "medianUs": 0.07460937497671694,
+            "p95BatchMeanUs": 0.07500000001164153,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 34.400000005960464,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 16.950000002980232,
+            "p95BatchMeanUs": 17.200000002980232,
+            "minUs": 16.75
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.0751953125,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 33.5,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 67.90000000596046,
+            "p95BatchMeanUs": 68.7999999821186,
+            "minUs": 66.80000001192093
+          },
+          "predict": {
+            "medianUs": 0.0746093750349246,
+            "p95BatchMeanUs": 0.07539062498835847,
+            "minUs": 0.07421875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 512000,
+          "minUpdateBatchMs": 66.80000001192093,
+          "minPredictBatchMs": 38
+        }
+      ]
+    },
+    {
+      "name": "firefox",
+      "version": "159.0",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 95106554092.28047,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.01123046875,
+            "minUs": 0.01025390625
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 64000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.1171875,
+            "p95BatchMeanUs": 0.1171875,
+            "minUs": 0.11328125
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 29,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.1484375,
+            "p95BatchMeanUs": 0.15234375,
+            "minUs": 0.14453125
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 9.25,
+            "p95BatchMeanUs": 9.5,
+            "minUs": 9.25
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.3046875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 39
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 37,
+            "p95BatchMeanUs": 38,
+            "minUs": 37
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 148,
+            "p95BatchMeanUs": 150,
+            "minUs": 147
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.3046875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 147,
+          "minPredictBatchMs": 39
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 9.75,
+            "p95BatchMeanUs": 10,
+            "minUs": 9.5
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.3046875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 39
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 39,
+            "p95BatchMeanUs": 40,
+            "minUs": 38
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.3046875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 154,
+            "p95BatchMeanUs": 155,
+            "minUs": 151
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 151,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.01123046875,
+            "minUs": 0.0107421875
+          },
+          "predict": {
+            "medianUs": 0.328125,
+            "p95BatchMeanUs": 0.34375,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 64000,
+          "minUpdateBatchMs": 22,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1875,
+            "p95BatchMeanUs": 0.1875,
+            "minUs": 0.1796875
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.1484375,
+            "p95BatchMeanUs": 0.16796875,
+            "minUs": 0.14453125
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 7.25,
+            "p95BatchMeanUs": 7.5,
+            "minUs": 7
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 28,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 29,
+            "p95BatchMeanUs": 30,
+            "minUs": 28
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3203125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 28,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 114,
+            "p95BatchMeanUs": 116,
+            "minUs": 112
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 112,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 8,
+            "p95BatchMeanUs": 8.25,
+            "minUs": 8
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 32,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 32,
+            "p95BatchMeanUs": 33,
+            "minUs": 31
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 31,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 126,
+            "p95BatchMeanUs": 131,
+            "minUs": 124
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 124,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.0107421875,
+            "minUs": 0.009765625
+          },
+          "predict": {
+            "medianUs": 0.328125,
+            "p95BatchMeanUs": 0.34375,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 64000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.6875,
+            "p95BatchMeanUs": 0.71875,
+            "minUs": 0.65625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 32000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.14453125,
+            "p95BatchMeanUs": 0.15234375,
+            "minUs": 0.140625
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 36,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 6.75,
+            "p95BatchMeanUs": 7,
+            "minUs": 6.5
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 26,
+            "p95BatchMeanUs": 27,
+            "minUs": 25
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 25,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 103,
+            "p95BatchMeanUs": 104,
+            "minUs": 102
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 102,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 7,
+            "p95BatchMeanUs": 7.25,
+            "minUs": 6.75
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 27,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 27,
+            "p95BatchMeanUs": 28,
+            "minUs": 26
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 108,
+            "p95BatchMeanUs": 108,
+            "minUs": 106
+          },
+          "predict": {
+            "medianUs": 0.296875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 106,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0107421875,
+            "p95BatchMeanUs": 0.01123046875,
+            "minUs": 0.01025390625
+          },
+          "predict": {
+            "medianUs": 0.3125,
+            "p95BatchMeanUs": 0.328125,
+            "minUs": 0.3125
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 64000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 20
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.1796875,
+            "p95BatchMeanUs": 0.1875,
+            "minUs": 0.1796875
+          },
+          "predict": {
+            "medianUs": 0.296875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 128000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.15625,
+            "p95BatchMeanUs": 0.16015625,
+            "minUs": 0.1484375
+          },
+          "predict": {
+            "medianUs": 0.296875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 38,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 6,
+            "p95BatchMeanUs": 6.25,
+            "minUs": 5.75
+          },
+          "predict": {
+            "medianUs": 0.296875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 24,
+            "p95BatchMeanUs": 25,
+            "minUs": 23
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 103,
+            "p95BatchMeanUs": 103,
+            "minUs": 101
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 101,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 7,
+            "p95BatchMeanUs": 7,
+            "minUs": 6.5
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 38
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 27,
+            "p95BatchMeanUs": 29,
+            "minUs": 27
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3046875,
+            "minUs": 0.2890625
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 27,
+          "minPredictBatchMs": 37
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 114,
+            "p95BatchMeanUs": 116,
+            "minUs": 113
+          },
+          "predict": {
+            "medianUs": 0.3046875,
+            "p95BatchMeanUs": 0.3125,
+            "minUs": 0.296875
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 113,
+          "minPredictBatchMs": 38
+        }
+      ]
+    },
+    {
+      "name": "webkit",
+      "version": "27.2",
+      "rounds": 15,
+      "warmupRounds": 3,
+      "samplesPerTrace": 1000,
+      "targetBatchMs": 20,
+      "sink": 109218694689.27773,
+      "results": [
+        {
+          "model": "cv",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.00732421875,
+            "p95BatchMeanUs": 0.0078125,
+            "minUs": 0.00732421875
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 15,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "regression",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.052734375,
+            "p95BatchMeanUs": 0.052734375,
+            "minUs": 0.05078125
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 26,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "kalman",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 0.06640625,
+            "p95BatchMeanUs": 0.068359375,
+            "minUs": 0.064453125
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 33,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 5.75,
+            "p95BatchMeanUs": 6,
+            "minUs": 5.5
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.2109375,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 22,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 23,
+            "p95BatchMeanUs": 24,
+            "minUs": 23
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 92,
+            "p95BatchMeanUs": 93,
+            "minUs": 91
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 91,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 6.25,
+            "p95BatchMeanUs": 6.25,
+            "minUs": 6
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 24,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 24,
+            "p95BatchMeanUs": 25,
+            "minUs": 24
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 24,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "125Hz",
+          "eventsPerSecond": 125,
+          "update": {
+            "medianUs": 98,
+            "p95BatchMeanUs": 99,
+            "minUs": 97
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 97,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "cv",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.0078125,
+            "p95BatchMeanUs": 0.0078125,
+            "minUs": 0.00732421875
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 15,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "regression",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.08203125,
+            "p95BatchMeanUs": 0.0859375,
+            "minUs": 0.078125
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "kalman",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 0.068359375,
+            "p95BatchMeanUs": 0.068359375,
+            "minUs": 0.06640625
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 4.625,
+            "p95BatchMeanUs": 4.75,
+            "minUs": 4.625
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 18.5,
+            "p95BatchMeanUs": 18.5,
+            "minUs": 18
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 36,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 74,
+            "p95BatchMeanUs": 74,
+            "minUs": 73
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 73,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 5.25,
+            "p95BatchMeanUs": 5.5,
+            "minUs": 5
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.2109375,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 4000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 21,
+            "p95BatchMeanUs": 21,
+            "minUs": 20
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.2109375,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 20,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "1000Hz",
+          "eventsPerSecond": 1000,
+          "update": {
+            "medianUs": 84,
+            "p95BatchMeanUs": 84,
+            "minUs": 82
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 82,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0078125,
+            "p95BatchMeanUs": 0.00830078125,
+            "minUs": 0.00732421875
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 15,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.359375,
+            "p95BatchMeanUs": 0.40625,
+            "minUs": 0.359375
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.1953125
+          },
+          "finalUpdateCallsPerBatch": 64000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 23,
+          "minPredictBatchMs": 25
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.07421875,
+            "p95BatchMeanUs": 0.083984375,
+            "minUs": 0.072265625
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 512000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 37,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 4.375,
+            "p95BatchMeanUs": 4.5,
+            "minUs": 4.25
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 17.5,
+            "p95BatchMeanUs": 17.5,
+            "minUs": 17
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 34,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 69,
+            "p95BatchMeanUs": 70,
+            "minUs": 69
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 69,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 4.625,
+            "p95BatchMeanUs": 4.75,
+            "minUs": 4.5
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 36,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 18,
+            "p95BatchMeanUs": 18.5,
+            "minUs": 18
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 36,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 73,
+            "p95BatchMeanUs": 73,
+            "minUs": 72
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 72,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "cv",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.01025390625,
+            "p95BatchMeanUs": 0.01025390625,
+            "minUs": 0.0087890625
+          },
+          "predict": {
+            "medianUs": 0.21875,
+            "p95BatchMeanUs": 0.2265625,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 2048000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 18,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "regression",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.109375,
+            "p95BatchMeanUs": 0.11328125,
+            "minUs": 0.10546875
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 27,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "kalman",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 0.0859375,
+            "p95BatchMeanUs": 0.0859375,
+            "minUs": 0.08203125
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 256000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 21,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "particle-gaussian-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 3.25,
+            "p95BatchMeanUs": 3.375,
+            "minUs": 3.125
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 25,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 13,
+            "p95BatchMeanUs": 13.5,
+            "minUs": 12.5
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 25,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-gaussian-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 56,
+            "p95BatchMeanUs": 58,
+            "minUs": 54
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 54,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "particle-student-t-64",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 4,
+            "p95BatchMeanUs": 4,
+            "minUs": 3.875
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.203125
+          },
+          "finalUpdateCallsPerBatch": 8000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 31,
+          "minPredictBatchMs": 26
+        },
+        {
+          "model": "particle-student-t-256",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 16,
+            "p95BatchMeanUs": 16,
+            "minUs": 15.5
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 2000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 31,
+          "minPredictBatchMs": 27
+        },
+        {
+          "model": "particle-student-t-1024",
+          "workload": "8000Hz-quantized",
+          "eventsPerSecond": 8000,
+          "update": {
+            "medianUs": 68,
+            "p95BatchMeanUs": 68,
+            "minUs": 65
+          },
+          "predict": {
+            "medianUs": 0.2109375,
+            "p95BatchMeanUs": 0.21875,
+            "minUs": 0.2109375
+          },
+          "finalUpdateCallsPerBatch": 1000,
+          "finalPredictCallsPerBatch": 128000,
+          "minUpdateBatchMs": 65,
+          "minPredictBatchMs": 27
+        }
+      ]
+    }
+  ],
+  "memory": [
+    {
+      "model": "cv",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 249.4375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 249.4375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 249.4375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 249.4375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 249.4375,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 249.4375
+        }
+      ]
+    },
+    {
+      "model": "cv",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 255.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 255.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 269.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 269.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5879.9999999999045,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 241.625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 241.625
+        }
+      ]
+    },
+    {
+      "model": "regression",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1690.125,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1690.125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1690.125,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1690.125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.99999999999,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 1690.125,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 1690.125
+        }
+      ]
+    },
+    {
+      "model": "regression",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11925.6875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11925.6875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11928.6875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11928.6875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 11935.25,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 11935.25
+        }
+      ]
+    },
+    {
+      "model": "kalman",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 661.625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 661.625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 665.0625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 665.0625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5824.083060500269,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 665.0625,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 665.0625
+        }
+      ]
+    },
+    {
+      "model": "kalman",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 604.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 604.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 604.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 604.1875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5880.001267948534,
+          "ownedArrayBufferBytesPerInstance": 0,
+          "heapBytesPerInstance": 604.1875,
+          "arrayBufferBytesPerInstance": 0,
+          "retainedBytesPerInstance": 604.1875
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-64",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5841.210002639605,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4077.3125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12269.3125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5841.210002639605,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4076.9375,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12268.9375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5841.210002639605,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4080.6875,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12272.6875
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-64",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5882.259682904351,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5882.259682904351,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5882.259682904351,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-256",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5795.575149088357,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4078.375,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36846.375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5795.575149088357,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4078.375,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36846.375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5795.575149088357,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4078.375,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36846.375
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-256",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5853.833515665148,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4136.8125,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36904.8125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5853.833515665148,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4136.8125,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36904.8125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5853.833515665148,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4136.8125,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36904.8125
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-1024",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5837.286626822704,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4077,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135149
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5837.286626822704,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4077,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135149
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5837.286626822704,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4077,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135149
+        }
+      ]
+    },
+    {
+      "model": "particle-gaussian-1024",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5875.848887595346,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4135.8125,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135207.8125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5875.848887595346,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4136.0625,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135208.0625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5875.848887595346,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4136.0625,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135208.0625
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-64",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5883.464292030034,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4077.8125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12269.8125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5883.464292030034,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4077.8125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12269.8125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5883.464292030034,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4077.8125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12269.8125
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-64",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5987.52471944398,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137.125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329.125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5987.52471944398,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137.125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329.125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5987.52471944398,
+          "ownedArrayBufferBytesPerInstance": 8192,
+          "heapBytesPerInstance": 4137.125,
+          "arrayBufferBytesPerInstance": 8192,
+          "retainedBytesPerInstance": 12329.125
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-256",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5827.505761200347,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4077.25,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36845.25
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5827.505761200347,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4077.25,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36845.25
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5827.505761200347,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4077.25,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36845.25
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-256",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5933.04351563163,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4137.6875,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36905.6875
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5933.04351563163,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4137.4375,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36905.4375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5933.04351563163,
+          "ownedArrayBufferBytesPerInstance": 32768,
+          "heapBytesPerInstance": 4137.6875,
+          "arrayBufferBytesPerInstance": 32768,
+          "retainedBytesPerInstance": 36905.6875
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-1024",
+      "sampleMs": 1,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.409744746937,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4078.4375,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135150.4375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.409744746937,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4077.125,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135149.125
+        },
+        {
+          "instances": 128,
+          "sampleMs": 1,
+          "samplesPerInstance": 32,
+          "warmupInstancesRetained": 32,
+          "checksum": 5823.409744746937,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4078.4375,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135150.4375
+        }
+      ]
+    },
+    {
+      "model": "particle-student-t-1024",
+      "sampleMs": 0.125,
+      "runs": [
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5868.539030169726,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4136.625,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135208.625
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5868.539030169726,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4136.375,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135208.375
+        },
+        {
+          "instances": 128,
+          "sampleMs": 0.125,
+          "samplesPerInstance": 256,
+          "warmupInstancesRetained": 32,
+          "checksum": 5868.539030169726,
+          "ownedArrayBufferBytesPerInstance": 131072,
+          "heapBytesPerInstance": 4136.625,
+          "arrayBufferBytesPerInstance": 131072,
+          "retainedBytesPerInstance": 135208.625
+        }
+      ]
+    }
+  ]
+}
