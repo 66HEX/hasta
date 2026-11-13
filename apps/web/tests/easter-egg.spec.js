@@ -93,6 +93,48 @@ test('header prediction follows both demo sliders', async ({ page }) => {
   await expect(card).toBeVisible();
 });
 
+test('one debug overlay includes the header and keeps prediction active when disabled', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const debug = page.getByRole('switch', { name: 'Show the library debug overlay' });
+  await debug.focus();
+  await debug.press('Space');
+  const overlay = page.locator('[data-hasta-debug]');
+  await expect(overlay).toHaveCount(1);
+  await expect(overlay.locator('[data-hasta-bounds]')).toHaveCount(4);
+  await expect(overlay.locator('[data-hasta-layer="panel"]')).toContainText(
+    '4 targets · 160 ms ahead',
+  );
+  await expect(overlay.locator('[data-hasta-target-label] tspan:first-child')).toHaveText([
+    'Hasta',
+    'Profile',
+    'Inbox',
+    'Settings',
+  ]);
+
+  await page.getByRole('slider', { name: 'Look ahead' }).press('End');
+  await page.getByRole('slider', { name: 'Target margin' }).press('End');
+  await expect(overlay).toHaveCount(1);
+  await expect(overlay.locator('[data-hasta-layer="panel"]')).toContainText(
+    '4 targets · 400 ms ahead',
+  );
+  await expect(overlay.locator('[data-hasta-margin="40"]')).toHaveCount(4);
+  await approachBrand(page);
+  const card = page.getByRole('dialog', { name: 'Surprise from Doakes' });
+  await expect(card).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await page.reload();
+  await debug.focus();
+  await debug.press('Space');
+  await expect(overlay).toHaveCount(1);
+  await debug.press('Space');
+  await expect(overlay).toHaveCount(0);
+  await approachBrand(page);
+  await expect(card).toBeVisible();
+});
+
 test('blocked sound never exposes a silent or waiting card and only a new approach retries', async ({
   page,
 }) => {

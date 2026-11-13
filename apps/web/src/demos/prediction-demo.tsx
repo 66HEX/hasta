@@ -1,4 +1,4 @@
-import { useHasta, useHastaTarget } from 'hasta/react';
+import { useHastaTarget } from 'hasta/react';
 import type { HastaController, IntersectionEvent } from 'hasta/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
@@ -8,7 +8,7 @@ import { Surface } from '@/components/layout';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { useDemoSettings } from '@/lib/demo-settings';
+import { usePrediction } from '@/lib/prediction';
 
 const targets: readonly { name: string; icon: IconName }[] = [
   { name: 'Profile', icon: 'user' },
@@ -82,13 +82,9 @@ export function PredictionDemo({
   overlay?: boolean;
 }) {
   const id = useId();
-  const [hovered, setHovered] = useState(false);
   const [moving, setMoving] = useState(false);
-  const [globalOverlay, setGlobalOverlay] = useState(false);
-  const { horizon, setHorizon, margin, setMargin } = useDemoSettings();
+  const { controller, horizon, setHorizon, margin, setMargin, debug, setDebug } = usePrediction();
   const [result, setResult] = useState<{ name: string; eta: number; count: number } | null>(null);
-  const controller = useHasta({ horizonMs: horizon, debug: globalOverlay });
-  const active = hovered || globalOverlay;
 
   useEffect(() => {
     let idleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -169,25 +165,12 @@ export function PredictionDemo({
     }));
   }, []);
 
-  useEffect(() => {
-    if (active) {
-      controller.resume();
-    } else {
-      controller.pause();
-    }
-  }, [active, controller]);
-
   return (
     <figure data-demo="prediction">
       <Surface>
         <Card>
           <CardContent>
-            <div
-              data-demo-stage=""
-              className="relative h-76 overflow-hidden"
-              onPointerEnter={() => setHovered(true)}
-              onPointerLeave={() => setHovered(false)}
-            >
+            <div data-demo-stage="" className="relative h-76 overflow-hidden">
               <div
                 data-demo-pointer-status=""
                 data-live={moving}
@@ -268,11 +251,7 @@ export function PredictionDemo({
               {overlay && (
                 <div className="flex items-center justify-between gap-3 text-xs">
                   <label htmlFor={`${id}-overlay`}>Show the library debug overlay</label>
-                  <Switch
-                    id={`${id}-overlay`}
-                    checked={globalOverlay}
-                    onCheckedChange={setGlobalOverlay}
-                  />
+                  <Switch id={`${id}-overlay`} checked={debug} onCheckedChange={setDebug} />
                 </div>
               )}
             </div>

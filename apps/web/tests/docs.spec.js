@@ -364,7 +364,7 @@ test('the library debug overlay is the only inspection layer and can be disabled
   const demo = page.locator('[data-demo="prediction"]');
   await demo.getByRole('switch', { name: 'Show the library debug overlay' }).check();
   await approachInbox(page, demo);
-  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(3);
+  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(4);
   await expect(demo.locator('[data-demo-bounds]')).toHaveCount(0);
   await expect(demo.getByRole('switch', { name: 'Inspect', exact: true })).toHaveCount(0);
 

@@ -109,7 +109,7 @@ test('the demo stays idle without real mouse input and exposes only the library 
   const debug = demo.getByRole('switch', { name: 'Show the library debug overlay' });
   await debug.focus();
   await page.keyboard.press('Space');
-  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(3);
+  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(4);
   await expect(demo.locator('[data-demo-bounds]')).toHaveCount(0);
   await page.waitForTimeout(1100);
   await expect(demo.locator('[data-prediction-count="0"]')).toHaveCount(3);
@@ -129,7 +129,7 @@ for (const theme of ['light', 'dark']) {
     expect(await panel.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
       await card.evaluate((element) => getComputedStyle(element).backgroundColor),
     );
-    await expect(panel).toHaveText('hastaIdle3 targets · 160 ms ahead');
+    await expect(panel).toHaveText('hastaIdle4 targets · 160 ms ahead');
     expect((await panel.boundingBox()).height).toBeLessThanOrEqual(70);
     await expect(panel.locator('.legend, .row, .note')).toHaveCount(0);
   });

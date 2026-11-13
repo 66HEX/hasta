@@ -1,15 +1,14 @@
 import { Popover } from '@base-ui/react/popover';
-import { useHasta, useHastaTarget } from 'hasta/react';
+import { useHastaTarget } from 'hasta/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { DoakesVideo } from '@/components/doakes-video';
-import { useDemoSettings } from '@/lib/demo-settings';
+import { usePrediction } from '@/lib/prediction';
 
 const replayCooldownMs = 10_000;
 
 export function HeaderBrand() {
-  const { horizon, margin } = useDemoSettings();
-  const controller = useHasta({ horizonMs: horizon });
+  const { controller, horizon, margin } = usePrediction();
   const anchor = useRef<HTMLAnchorElement>(null);
   const popup = useRef<HTMLDivElement>(null);
   const nextPredictionAt = useRef(0);

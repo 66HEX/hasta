@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Documentation from '@/content/index.mdx';
-import { DemoSettingsProvider } from '@/lib/demo-settings';
+import { PredictionProvider } from '@/lib/prediction';
 import { PreferencesProvider, usePreferences } from '@/lib/preferences';
 
 function ThemeToggle() {
@@ -125,9 +125,9 @@ export default function App() {
     <PreferencesProvider>
       <TooltipProvider>
         <MDXProvider components={mdxComponents}>
-          <DemoSettingsProvider>
+          <PredictionProvider>
             <Document />
-          </DemoSettingsProvider>
+          </PredictionProvider>
         </MDXProvider>
       </TooltipProvider>
     </PreferencesProvider>
