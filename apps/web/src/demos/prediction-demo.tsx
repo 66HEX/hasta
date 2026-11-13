@@ -8,6 +8,7 @@ import { Surface } from '@/components/layout';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { useDemoSettings } from '@/lib/demo-settings';
 
 const targets: readonly { name: string; icon: IconName }[] = [
   { name: 'Profile', icon: 'user' },
@@ -84,8 +85,7 @@ export function PredictionDemo({
   const [hovered, setHovered] = useState(false);
   const [moving, setMoving] = useState(false);
   const [globalOverlay, setGlobalOverlay] = useState(false);
-  const [horizon, setHorizon] = useState(160);
-  const [margin, setMargin] = useState(8);
+  const { horizon, setHorizon, margin, setMargin } = useDemoSettings();
   const [result, setResult] = useState<{ name: string; eta: number; count: number } | null>(null);
   const controller = useHasta({ horizonMs: horizon, debug: globalOverlay });
   const active = hovered || globalOverlay;

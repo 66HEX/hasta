@@ -2,12 +2,14 @@ import { MDXProvider } from '@mdx-js/react';
 import { useEffect } from 'react';
 
 import { FrameworkSelect } from '@/components/framework-code';
+import { HeaderBrand } from '@/components/header-brand';
 import { Icon } from '@/components/icon';
 import { mdxComponents } from '@/components/mdx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Documentation from '@/content/index.mdx';
+import { DemoSettingsProvider } from '@/lib/demo-settings';
 import { PreferencesProvider, usePreferences } from '@/lib/preferences';
 
 function ThemeToggle() {
@@ -63,17 +65,7 @@ function Document() {
       <div className="page-frame">
         <div className="page-column">
           <header className="layout-band flex flex-wrap items-center justify-between gap-4 p-4">
-            <a
-              href="#main-content"
-              className="flex items-center gap-2 type-display text-lg"
-              aria-label="Hasta home"
-            >
-              <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
-              <h1>hasta</h1>
-              <span className="ml-1 rounded border px-1.5 py-0.5 text-xs text-muted-foreground">
-                0.1.0
-              </span>
-            </a>
+            <HeaderBrand />
             <div className="flex items-center gap-2">
               <FrameworkSelect />
               <ThemeToggle />
@@ -133,7 +125,9 @@ export default function App() {
     <PreferencesProvider>
       <TooltipProvider>
         <MDXProvider components={mdxComponents}>
-          <Document />
+          <DemoSettingsProvider>
+            <Document />
+          </DemoSettingsProvider>
         </MDXProvider>
       </TooltipProvider>
     </PreferencesProvider>
