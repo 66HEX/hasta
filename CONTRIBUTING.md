@@ -15,7 +15,7 @@ npm run release:consumers
 
 `ci:quality` checks formatting, lint rules, release tooling, workspace types, builds, unit tests, and package contents. `ci:e2e` tests the library, framework adapters, documentation site, and collector in Chromium, Firefox, and WebKit. It requires a completed build. `check` runs both gates in order.
 
-The `ci` workflow runs on pull requests, pushes to `main`, and manual dispatch. Its `quality` job also installs a packed copy of Hasta outside the monorepo and tests SSR, declarations, and browser bundling with current and minimum peer versions. Its `browser` job runs after quality passes and retains failure traces for 14 days.
+The `ci` workflow runs on pull requests, pushes to `main`, and manual dispatch. Its `quality` job also installs a packed copy of Hasta outside the monorepo and tests SSR, declarations, and browser bundling with current and minimum peer versions. After quality passes, the library, adapters, documentation site, and collector run in separate browser jobs. All four jobs finish even if one fails, and retain failure traces for 14 days.
 
 GitHub Actions reads the `NUCLEO_LICENSE_KEY` repository secret only during dependency installation. Fork pull requests do not receive repository secrets, so a maintainer must review them and run the full checks from a trusted branch. Do not expose the key through `pull_request_target` or commit it to the repository.
 
