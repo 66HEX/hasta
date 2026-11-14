@@ -33,6 +33,8 @@ const MANEUVER_MIN_DURATION_MS = 2;
 const DENSE_SAMPLE_INTERVAL_MS = 8;
 const MAX_PROVISIONAL_GAP_MS = 40;
 const MAX_PLAUSIBLE_SPEED_RATIO = 1.5;
+const SAFE_SQUARED_SPEED_RATIO = MAX_PLAUSIBLE_SPEED_RATIO ** 2 * (8 / 9);
+const MIN_NORMAL = 2 ** -1022;
 
 function displacement(delta: number, dt: number, durationMs: number): number {
   const velocity = delta / dt;
@@ -86,28 +88,46 @@ export class KalmanPredictor implements Predictor {
       } else {
         const dx = current.x - previous.x;
         const dy = current.y - previous.y;
-        let speed = Math.hypot(prior.vx, prior.vy);
-        const older = this.#previousAssimilated;
+        bypass = dx * prior.vx + dy * prior.vy <= 0;
 
-        // The filtered speed can temporarily lag behind an accepted turn
-        if (older !== null) {
-          const previousDt = previous.timeStamp - older.timeStamp;
+        if (!bypass) {
+          const distanceSquared = dx * dx + dy * dy;
+          const speedSquared = prior.vx * prior.vx + prior.vy * prior.vy;
+          const scaledSpeedSquared = SAFE_SQUARED_SPEED_RATIO * speedSquared;
+          const bound = scaledSpeedSquared * dt * dt;
 
-          if (previousDt > 0 && previousDt <= MAX_PROVISIONAL_GAP_MS) {
-            const measuredSpeed = Math.hypot(
-              (previous.x - older.x) / previousDt,
-              (previous.y - older.y) / previousDt,
-            );
+          // A squared factor of 2 is safely inside the actual 2.25 threshold
+          // Boundary and extreme values continue through the original hypot comparison
+          bypass =
+            distanceSquared >= MIN_NORMAL &&
+            speedSquared >= MIN_NORMAL &&
+            Number.isFinite(scaledSpeedSquared) &&
+            Number.isFinite(bound) &&
+            distanceSquared < bound;
+        }
 
-            if (Number.isFinite(measuredSpeed)) {
-              speed = Math.max(speed, measuredSpeed);
+        if (!bypass) {
+          const distance = Math.hypot(dx, dy);
+          const speed = Math.hypot(prior.vx, prior.vy);
+          bypass = distance <= MAX_PLAUSIBLE_SPEED_RATIO * speed * dt;
+          const older = this.#previousAssimilated;
+
+          // Recent measured speed only matters when filtered speed did not suffice
+          if (!bypass && older !== null) {
+            const previousDt = previous.timeStamp - older.timeStamp;
+
+            if (previousDt > 0 && previousDt <= MAX_PROVISIONAL_GAP_MS) {
+              const measuredSpeed = Math.hypot(
+                (previous.x - older.x) / previousDt,
+                (previous.y - older.y) / previousDt,
+              );
+
+              bypass =
+                Number.isFinite(measuredSpeed) &&
+                distance <= MAX_PLAUSIBLE_SPEED_RATIO * measuredSpeed * dt;
             }
           }
         }
-
-        bypass =
-          dx * prior.vx + dy * prior.vy <= 0 ||
-          Math.hypot(dx, dy) <= MAX_PLAUSIBLE_SPEED_RATIO * speed * dt;
       }
     }
 
