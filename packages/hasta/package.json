@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Geometry tracking and cursor trajectory prediction for browser interfaces.",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "files": [
     "dist"
   ],

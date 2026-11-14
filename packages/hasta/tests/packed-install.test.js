@@ -53,7 +53,11 @@ test('the packed vanilla/core package installs and imports without any framework
     }
 
     assert.ok(
-      packed.files.every((file) => file.path === 'package.json' || file.path.startsWith('dist/')),
+      packed.files.every(
+        (file) =>
+          ['package.json', 'README.md', 'LICENSE'].includes(file.path) ||
+          file.path.startsWith('dist/'),
+      ),
     );
     execFileSync(
       process.execPath,
