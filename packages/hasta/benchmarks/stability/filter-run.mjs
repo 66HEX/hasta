@@ -5,9 +5,9 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { KalmanPredictor as CurrentPredictor } from '../../dist/core/prediction/kalman-predictor.js';
-import { KalmanPredictor as ControlPredictor } from './baseline-fa9ac8d/core/prediction/kalman-predictor.js';
 import { createCorpus } from './corpus.mjs';
 import { replayTrace, aggregateActions, evaluateActions, selectPolicy } from './evaluate.mjs';
+import { loadFilterControl } from './filter-controls.mjs';
 import {
   FILTER_GATES,
   actionReport,
@@ -22,6 +22,7 @@ const { values } = parseArgs({
   options: {
     output: { type: 'string', default: '/tmp/hasta-filter/results.json' },
     candidate: { type: 'string' },
+    control: { type: 'string', default: 'fa9ac8d' },
     label: { type: 'string', default: 'current-production' },
     stage: { type: 'string', default: 'development' },
     selection: { type: 'string' },
@@ -43,13 +44,14 @@ const packageRoot = fileURLToPath(new URL('../../', import.meta.url));
 const candidatePath = values.candidate === undefined ? null : resolve(values.candidate);
 const candidateModule = candidatePath === null ? null : await import(pathToFileURL(candidatePath));
 const CandidatePredictor = candidateModule?.KalmanPredictor ?? CurrentPredictor;
+const control = await loadFilterControl(values.control);
 
 if (candidateModule !== null && candidateModule.KalmanPredictor === undefined) {
   throw new Error('Candidate module must export KalmanPredictor.');
 }
 
 const factories = {
-  control: () => new ControlPredictor(),
+  control: control.create,
   candidate: () => new CandidatePredictor(),
 };
 
@@ -81,8 +83,9 @@ const sourceFiles = [
   'benchmarks/stability/evaluate.mjs',
   'benchmarks/stability/filter-evaluation.mjs',
   'benchmarks/stability/filter-run.mjs',
+  'benchmarks/stability/filter-controls.mjs',
   'benchmarks/stability/filter-scenarios.mjs',
-  'benchmarks/stability/baseline-fa9ac8d/manifest.json',
+  ...control.sourceFiles,
 ];
 
 for (const path of sourceFiles) {
@@ -119,8 +122,9 @@ const result = {
     candidateMetadata: candidateModule?.metadata ?? null,
     purpose:
       'Numerical filter comparison with the same current fresh-evidence Subscription on both sides. Synthetic engineering gates, not human efficacy.',
-    control:
-      'Frozen fa9ac8d Kalman predictor, byte-identical source to the previous-turn production filter; current callback policy, not the frozen legacy Subscription.',
+    control: control.name,
+    controlCommit: control.commit,
+    controlDescription: control.description,
     split,
     seedOffset: Number(values['seed-offset']),
     repeats: Number(values.repeats),

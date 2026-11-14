@@ -23,7 +23,14 @@ export function validateSelectionProtocol(current, selected) {
     throw new Error('Final evaluation requires a development selection artifact.');
   }
 
-  for (const field of ['version', 'candidate', 'candidateModule', 'repeats']) {
+  for (const field of [
+    'version',
+    'candidate',
+    'candidateModule',
+    'repeats',
+    'control',
+    'controlCommit',
+  ]) {
     if (current[field] !== selected[field]) {
       throw new Error(`Selection protocol changed: ${field}.`);
     }
@@ -44,14 +51,20 @@ export function validateSelectionProtocol(current, selected) {
     throw new Error('Selection and final evaluation must include traces.');
   }
 
-  const seeds = new Set(selected.traceIds.map((id) => id.split('/').at(-1)));
+  const seeds = new Set(
+    (selected.motionSeeds ?? selected.traceIds.map((id) => id.split('/').at(-1))).map(String),
+  );
 
-  if (current.traceIds.some((id) => seeds.has(id.split('/').at(-1)))) {
+  if (
+    (current.motionSeeds ?? current.traceIds.map((id) => id.split('/').at(-1))).some((seed) =>
+      seeds.has(String(seed)),
+    )
+  ) {
     throw new Error('Selection and final evaluation must use disjoint motion seeds.');
   }
 }
 
-export function actionReport(replays, policy) {
+export function actionReport(replays, policy, profiles = PROFILES) {
   const rows = replays.map((replay) =>
     policy === null
       ? {
@@ -71,6 +84,10 @@ export function actionReport(replays, policy) {
       : evaluateActions(replay, policy),
   );
 
+  return actionRowsReport(rows, policy, profiles);
+}
+
+export function actionRowsReport(rows, policy, profiles = PROFILES) {
   return {
     policy,
     metrics: aggregateActions(rows),
@@ -81,7 +98,7 @@ export function actionReport(replays, policy) {
       ]),
     ),
     byProfile: Object.fromEntries(
-      PROFILES.map((profile) => [
+      profiles.map((profile) => [
         profile,
         aggregateActions(rows.filter((row) => row.profile === profile)),
       ]),
@@ -90,7 +107,9 @@ export function actionReport(replays, policy) {
   };
 }
 
-export function filterReport(replays) {
+export function filterReport(replays, profiles = PROFILES, actions = null) {
+  const policy = { horizonMs: 120, stableForMs: 30, evidence: 'fresh' };
+
   return {
     forecast: forecastMetrics(replays),
     forecastByFamily: Object.fromEntries(
@@ -100,12 +119,15 @@ export function filterReport(replays) {
       ]),
     ),
     forecastByProfile: Object.fromEntries(
-      PROFILES.map((profile) => [
+      profiles.map((profile) => [
         profile,
         forecastMetrics(replays.filter(({ trace }) => trace.profile === profile)),
       ]),
     ),
-    fixed: actionReport(replays, { horizonMs: 120, stableForMs: 30, evidence: 'fresh' }),
+    fixed:
+      actions === null
+        ? actionReport(replays, policy, profiles)
+        : actionRowsReport(actions, policy, profiles),
   };
 }
 
@@ -209,7 +231,7 @@ export function pairedFilterComparison(control, candidate, controlReport, candid
   };
 }
 
-export function assessFilter(control, candidate, paired) {
+export function assessFilter(control, candidate, paired, nonInferiority = false) {
   const checks = [];
   const metric = (report, horizon) => report.forecast.find((row) => row.horizonMs === horizon);
 
@@ -219,14 +241,22 @@ export function assessFilter(control, candidate, paired) {
 
   const primary = metric(control, FILTER_GATES.primaryHorizonMs).meanTraceErrorPx;
 
-  check(
-    '120ms mean trace error improves by at least 5%',
-    metric(candidate, 120).meanTraceErrorPx,
-    primary * (1 - FILTER_GATES.minimumMeanImprovement),
-  );
+  if (nonInferiority) {
+    check(
+      '120ms mean trace error regression at most 1%',
+      metric(candidate, 120).meanTraceErrorPx,
+      primary * 1.01,
+    );
+  } else {
+    check(
+      '120ms mean trace error improves by at least 5%',
+      metric(candidate, 120).meanTraceErrorPx,
+      primary * (1 - FILTER_GATES.minimumMeanImprovement),
+    );
 
-  const interval = paired.endpoint.find((row) => row.horizonMs === 120);
-  check('120ms paired error interval excludes zero', interval.upper95, 0, interval.upper95 < 0);
+    const interval = paired.endpoint.find((row) => row.horizonMs === 120);
+    check('120ms paired error interval excludes zero', interval.upper95, 0, interval.upper95 < 0);
+  }
 
   for (const horizon of HORIZONS) {
     const before = metric(control, horizon);

@@ -4,17 +4,24 @@ import { performance } from 'node:perf_hooks';
 import { parseArgs } from 'node:util';
 
 import { createModel, isExperimental, summarize } from './evaluate.mjs';
+import { loadFilterControl } from './filter-controls.mjs';
 
 const { values } = parseArgs({
   options: {
     output: { type: 'string', default: '/tmp/hasta-stability/performance.json' },
     experiments: { type: 'boolean', default: false },
+    control: { type: 'string' },
   },
 });
 
+const control = values.control === undefined ? null : await loadFilterControl(values.control);
+const baseline = control === null ? 'frozen' : 'control';
+
 const names = values.experiments
-  ? ['frozen', 'current', 'experimental-robust', 'experimental-adaptive']
-  : ['frozen', 'current'];
+  ? [baseline, 'current', 'experimental-robust', 'experimental-adaptive']
+  : [baseline, 'current'];
+
+const create = (name) => (name === 'control' ? control.create() : createModel(name));
 
 const samples = Array.from({ length: 1000 }, (_, index) => ({
   x: index * 0.6 + Math.sin(index / 8),
@@ -29,7 +36,7 @@ const results = Object.fromEntries(
 let sink = 0;
 
 function update(name) {
-  const models = Array.from({ length: 1024 }, () => createModel(name));
+  const models = Array.from({ length: 1024 }, () => create(name));
   const start = performance.now();
 
   for (const model of models) {
@@ -48,7 +55,7 @@ function update(name) {
 }
 
 function query(name, uncertainty) {
-  const model = createModel(name);
+  const model = create(name);
 
   for (const sample of samples) {
     model.update(sample);
@@ -91,6 +98,8 @@ const result = {
   node: process.version,
   platform: process.platform,
   architecture: process.arch,
+  control: control?.name ?? 'fa9ac8d',
+  controlCommit: control?.commit ?? 'fa9ac8da5ca593b2cc541eb0007f6d0d190aab06',
   description:
     'Microseconds per call from batch means; 3 warmup rounds, 9 measured rounds, rotating model order. Includes immutable result creation. Not individual-call p95 or full browser interaction latency. Run on an otherwise idle machine.',
   models: Object.fromEntries(

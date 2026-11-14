@@ -16,6 +16,7 @@
   "ignorePatterns": [
     "packages/hasta/benchmarks/comparison/baseline-23e16ac/**",
     "packages/hasta/benchmarks/stability/baseline-fa9ac8d/**",
+    "packages/hasta/benchmarks/stability/baseline-0a503bb/**",
     "packages/hasta/benchmarks/stability/experimental/**",
     "docs/**",
     "**/dist/**",

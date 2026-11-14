@@ -8,12 +8,13 @@ import { KalmanPredictor as CurrentPredictor } from '../../dist/core/prediction/
 import { createCorpus } from '../comparison/corpus.mjs';
 import { prepareTrace, evaluateTrace } from '../comparison/evaluate.mjs';
 import { aggregate, pairedInterval } from '../comparison/statistics.mjs';
-import { KalmanPredictor as ControlPredictor } from './baseline-fa9ac8d/core/prediction/kalman-predictor.js';
+import { loadFilterControl } from './filter-controls.mjs';
 
 const { values } = parseArgs({
   options: {
     output: { type: 'string', default: '/tmp/hasta-filter/external.json' },
     candidate: { type: 'string' },
+    control: { type: 'string', default: 'fa9ac8d' },
     label: { type: 'string', default: 'current-production' },
   },
 });
@@ -21,6 +22,7 @@ const { values } = parseArgs({
 const candidatePath = values.candidate === undefined ? null : resolve(values.candidate);
 const candidateModule = candidatePath === null ? null : await import(pathToFileURL(candidatePath));
 const CandidatePredictor = candidateModule?.KalmanPredictor ?? CurrentPredictor;
+const control = await loadFilterControl(values.control);
 const packageRoot = fileURLToPath(new URL('../../', import.meta.url));
 const sourceSha256 = {};
 
@@ -29,7 +31,8 @@ const sourceFiles = [
   'benchmarks/comparison/evaluate.mjs',
   'benchmarks/comparison/statistics.mjs',
   'benchmarks/stability/filter-external.mjs',
-  'benchmarks/stability/baseline-fa9ac8d/manifest.json',
+  'benchmarks/stability/filter-controls.mjs',
+  ...control.sourceFiles,
   'dist/core/prediction/kalman-state.js',
   'dist/core/prediction/kalman-predictor.js',
 ];
@@ -53,7 +56,7 @@ const corpus = ['known', 'motion', 'sensor', 'combined'].flatMap((split) =>
 );
 
 const factories = {
-  control: () => new ControlPredictor(),
+  control: control.create,
   candidate: () => new CandidatePredictor(),
 };
 
@@ -142,6 +145,8 @@ const result = {
     purpose:
       'External regression on the prior comparison corpus, known/motion/sensor/combined, three seeds each. This corpus has historical model-development use; it is not the new untouched holdout. Geometric frame accuracy only; no action claims.',
     candidate: values.label,
+    control: control.name,
+    controlCommit: control.commit,
     candidateMetadata: candidateModule?.metadata ?? null,
     sourceSha256,
     traceIds: corpus.map((trace) => trace.id),
