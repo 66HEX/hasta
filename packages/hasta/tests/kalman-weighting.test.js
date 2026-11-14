@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { KalmanPredictor as PreviousPredictor } from '../benchmarks/stability/baseline-0a503bb/core/prediction/kalman-predictor.js';
 import { KalmanPredictor as FrozenPredictor } from '../benchmarks/stability/baseline-fa9ac8d/core/prediction/kalman-predictor.js';
 import { KalmanPredictor } from '../dist/core/index.js';
 import { KalmanState } from '../dist/core/prediction/kalman-state.js';
@@ -83,14 +84,14 @@ test('an isolated pointer spike has limited influence and a genuine turn remains
   assert.ok(Math.abs(turning.predict(132, 120).points[1].y - 456) < 1);
 });
 
-test('sparse measurements retain the original linear forecasts even with large innovations', () => {
+test('measurements more than 40 ms apart retain linear forecasts even with large innovations', () => {
   const tested = new KalmanPredictor();
   const reference = new FrozenPredictor();
   const rect = { minX: 100, minY: -20, maxX: 120, maxY: 20 };
   let timeStamp = 0;
 
   for (let index = 0; index < 100; index++) {
-    timeStamp += [8.125, 12, 16, 24][index % 4];
+    timeStamp += [40.125, 48, 64, 80][index % 4];
 
     const point = {
       x: 50 * Math.sin(index / 3) + (index % 7 === 0 ? 80 : 0),
@@ -110,6 +111,132 @@ test('sparse measurements retain the original linear forecasts even with large i
         tested.intersectRect(timeStamp + 1, horizon, rect),
         reference.intersectRect(timeStamp + 1, horizon, rect),
       );
+    }
+  }
+});
+
+test('dense samples retain the previous robust forecasts and intersections', () => {
+  const tested = new KalmanPredictor();
+  const reference = new PreviousPredictor();
+  const rect = { minX: 100, minY: -20, maxX: 120, maxY: 20 };
+  let timeStamp = 0;
+
+  for (let index = 0; index < 150; index++) {
+    timeStamp += [0.125, 1, 4, 8][index % 4];
+
+    const point = {
+      x: timeStamp,
+      y: 30 * Math.sin(timeStamp / 30) + (index % 17 === 0 ? 40 : 0),
+      timeStamp,
+    };
+
+    tested.update(point);
+    reference.update(point);
+    assert.deepEqual(tested.predict(timeStamp, 120), reference.predict(timeStamp, 120));
+    assert.deepEqual(
+      tested.intersectRect(timeStamp, 120, rect),
+      reference.intersectRect(timeStamp, 120, rect),
+    );
+  }
+});
+
+test('isolated sparse spikes have less influence while speed-preserving turns keep ordinary weight', () => {
+  for (const dt of [1000 / 120, 12, 1000 / 60]) {
+    const tested = new KalmanPredictor();
+    const reference = new PreviousPredictor();
+
+    for (let index = 0; index <= 11; index++) {
+      const point = { x: index * dt, y: index === 11 ? 24 : 0, timeStamp: index * dt };
+      tested.update(point);
+      reference.update(point);
+    }
+
+    assert.ok(
+      Math.abs(tested.predict(11 * dt, 120).points[1].y) <
+        Math.abs(reference.predict(11 * dt, 120).points[1].y) / 2,
+    );
+  }
+
+  const tested = new KalmanPredictor();
+  const reference = new FrozenPredictor();
+
+  const positions = [
+    [0, 0],
+    [10, 0],
+    [20, 0],
+    [20, 10],
+    [20, 20],
+    [10, 20],
+    [0, 20],
+    [0, 10],
+  ];
+
+  for (const [index, [x, y]] of positions.entries()) {
+    const timeStamp = index * 10;
+    tested.update({ x, y, timeStamp });
+    reference.update({ x, y, timeStamp });
+    assert.deepEqual(tested.predict(timeStamp, 120), reference.predict(timeStamp, 120));
+  }
+});
+
+test('recent measured speed preserves continuing movement while the filtered speed catches up', () => {
+  const tested = new KalmanPredictor();
+  const reference = new PreviousPredictor();
+
+  const samples = [
+    { x: 140, y: 100, timeStamp: 1000 },
+    { x: 146.17251527311362, y: 100, timeStamp: 1006.1725152731136 },
+    { x: 154.36676080222242, y: 100, timeStamp: 1014.3667608022224 },
+    { x: 160, y: 102.28203350183321, timeStamp: 1022.2820335018332 },
+    { x: 160, y: 109.61495264278096, timeStamp: 1029.614952642781 },
+    { x: 160, y: 117.39063830629061, timeStamp: 1037.3906383062906 },
+    { x: 160, y: 126.11229118464189, timeStamp: 1046.112291184642 },
+    { x: 160, y: 114.76331463869451, timeStamp: 1055.0788951204352 },
+    { x: 155.46227922663093, y: 100, timeStamp: 1064.537720773369 },
+  ];
+
+  for (const sample of samples) {
+    tested.update(sample);
+    reference.update(sample);
+    assert.deepEqual(
+      tested.predict(sample.timeStamp, 120),
+      reference.predict(sample.timeStamp, 120),
+    );
+  }
+});
+
+test('ordinary innovations retain linear weighting when the innovation to noise ratio overflows', () => {
+  for (const r of [Number.MIN_VALUE, 1e-320, 1e-308, 1e-300]) {
+    const tested = new KalmanPredictor({}, { r });
+    const reference = new FrozenPredictor({}, { r });
+
+    for (const point of [
+      { x: 0, y: 0, timeStamp: 0 },
+      { x: 16, y: 0, timeStamp: 16 },
+      { x: 41, y: 0, timeStamp: 32 },
+    ]) {
+      tested.update(point);
+      reference.update(point);
+    }
+
+    assert.deepEqual(tested.predict(32, 120), reference.predict(32, 120));
+  }
+});
+
+test('same-time sparse corrections restore the recent movement used for plausibility', () => {
+  for (const minimumAssimilationDtMs of [0, 12]) {
+    const tested = new KalmanPredictor({}, { minimumAssimilationDtMs });
+    const reference = new KalmanPredictor({}, { minimumAssimilationDtMs });
+    let timeStamp = 0;
+
+    for (let index = 0; index < 60; index++) {
+      timeStamp += [9, 16, 33][index % 3];
+      const point = { x: timeStamp, y: index % 7 === 0 ? 24 : 0, timeStamp };
+      tested.update({ ...point, x: point.x + 100, y: -100 });
+      tested.update({ ...point, x: Number.MAX_VALUE, y: Number.MAX_VALUE });
+      tested.update(point);
+      reference.update(point);
+      assert.deepEqual(tested.predict(timeStamp, 120), reference.predict(timeStamp, 120));
     }
   }
 });

@@ -8,7 +8,7 @@ import type {
   TrajectoryPoint,
 } from '../types.js';
 import { assertRect } from '../validation.js';
-import { KalmanState } from './kalman-state.js';
+import { DEFAULT_KALMAN_CONFIG, KalmanState } from './kalman-state.js';
 import type { KalmanConfig } from './kalman-state.js';
 
 export interface KalmanPrediction extends Prediction {
@@ -30,7 +30,9 @@ export const DEFAULT_POSITION_ANCHOR: 'filtered' | 'measured' = 'filtered';
 const INNOVATION_LIMIT = 6;
 const MAX_MEASUREMENT_INFLATION = 1e6;
 const MANEUVER_MIN_DURATION_MS = 2;
-const MAX_PROVISIONAL_GAP_MS = 8;
+const DENSE_SAMPLE_INTERVAL_MS = 8;
+const MAX_PROVISIONAL_GAP_MS = 40;
+const MAX_PLAUSIBLE_SPEED_RATIO = 1.5;
 
 function displacement(delta: number, dt: number, durationMs: number): number {
   const velocity = delta / dt;
@@ -46,6 +48,7 @@ export class KalmanPredictor implements Predictor {
   readonly #filter: KalmanState;
   readonly #minimumAssimilationDtMs: number;
   readonly #positionAnchor: 'filtered' | 'measured';
+  readonly #measurementVariance: number;
   #filterSamples = 0;
   #previousAssimilated: PointerSample | null = null;
   #latestAssimilated: PointerSample | null = null;
@@ -70,8 +73,45 @@ export class KalmanPredictor implements Predictor {
     innovationVariance: number,
     dt: number,
   ): number => {
-    // Sparse measurements cannot corroborate a provisional outlier promptly
-    if (dt > MAX_PROVISIONAL_GAP_MS) {
+    const sparse = dt > DENSE_SAMPLE_INTERVAL_MS;
+    let bypass = dt > MAX_PROVISIONAL_GAP_MS;
+
+    if (sparse && !bypass) {
+      const prior = this.#filter.state();
+      const previous = this.#latestAssimilated;
+      const current = this.#latest;
+
+      if (prior === null || previous === null || current === null) {
+        bypass = true;
+      } else {
+        const dx = current.x - previous.x;
+        const dy = current.y - previous.y;
+        let speed = Math.hypot(prior.vx, prior.vy);
+        const older = this.#previousAssimilated;
+
+        // The filtered speed can temporarily lag behind an accepted turn
+        if (older !== null) {
+          const previousDt = previous.timeStamp - older.timeStamp;
+
+          if (previousDt > 0 && previousDt <= MAX_PROVISIONAL_GAP_MS) {
+            const measuredSpeed = Math.hypot(
+              (previous.x - older.x) / previousDt,
+              (previous.y - older.y) / previousDt,
+            );
+
+            if (Number.isFinite(measuredSpeed)) {
+              speed = Math.max(speed, measuredSpeed);
+            }
+          }
+        }
+
+        bypass =
+          dx * prior.vx + dy * prior.vy <= 0 ||
+          Math.hypot(dx, dy) <= MAX_PLAUSIBLE_SPEED_RATIO * speed * dt;
+      }
+    }
+
+    if (bypass) {
       this.#directionX = 0;
       this.#directionY = 0;
       this.#maneuverSamples = 0;
@@ -95,17 +135,23 @@ export class KalmanPredictor implements Predictor {
     const maneuver =
       this.#maneuverSamples >= 2 && this.#maneuverDurationMs >= MANEUVER_MIN_DURATION_MS;
 
-    // Preserve arithmetic-failure recovery when the innovation is not representable
-    return maneuver || !Number.isFinite(normalizedLength ** 2)
+    // Ordinary innovations avoid S/R, which can overflow for a tiny configured R
+    // Sparse outliers inflate total innovation variance, dense samples retain their weighting
+    return maneuver ||
+      normalizedLength <= INNOVATION_LIMIT ||
+      !Number.isFinite(normalizedLength ** 2)
       ? 1
       : Math.min(
           MAX_MEASUREMENT_INFLATION,
-          Math.max(1, (normalizedLength / INNOVATION_LIMIT) ** 2),
+          1 +
+            Math.max(0, (normalizedLength / INNOVATION_LIMIT) ** 2 - 1) *
+              (sparse ? innovationVariance / this.#measurementVariance : 1),
         );
   };
 
   constructor(options: KalmanOptions = {}, config: KalmanPredictorConfig = {}) {
     this.#filter = new KalmanState(config);
+    this.#measurementVariance = config.r ?? DEFAULT_KALMAN_CONFIG.r;
     this.#minimumAssimilationDtMs =
       config.minimumAssimilationDtMs ?? DEFAULT_ASSIMILATION_INTERVAL_MS;
     this.#positionAnchor = config.positionAnchor ?? DEFAULT_POSITION_ANCHOR;
