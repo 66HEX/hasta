@@ -104,7 +104,7 @@ try {
       version,
       'Registry version must match the checked-out package',
     );
-    spec = `${PACKAGE_NAME}@${argument}`;
+    spec = argument;
   }
 
   const vanilla = join(temporary, 'vanilla');
