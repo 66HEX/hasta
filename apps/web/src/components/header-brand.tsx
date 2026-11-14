@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { DoakesVideo } from '@/components/doakes-video';
 import { usePrediction } from '@/lib/prediction';
 
+import { version as hastaVersion } from '../../../../packages/hasta/package.json';
 import { Badge } from './ui/badge';
 
 const replayCooldownMs = 10_000;
@@ -145,7 +146,7 @@ export function HeaderBrand() {
           <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
           <h1>hasta</h1>
         </a>
-        <Badge variant="secondary">0.2.0</Badge>
+        <Badge variant="secondary">{hastaVersion}</Badge>
       </div>
       <Popover.Portal>
         <Popover.Positioner
