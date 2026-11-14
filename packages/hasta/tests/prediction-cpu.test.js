@@ -98,3 +98,58 @@ test('shared residuals preserve subnormal, overflowing and threshold-adjacent es
     }
   }
 });
+
+test('projection reuse preserves signed zero, query order and sample invalidation', () => {
+  for (const config of [{}, { positionAnchor: 'measured', minimumAssimilationDtMs: 9 }]) {
+    const actual = new KalmanPredictor({}, config);
+    const expected = new Reference({}, config);
+
+    for (const sample of [
+      { x: -0, y: -0, timeStamp: -10 },
+      { x: -0, y: -0, timeStamp: 0 },
+      { x: 4, y: 2, timeStamp: 8 },
+      { x: 10, y: 3, timeStamp: 16 },
+      { x: 12, y: 4, timeStamp: 16 },
+      { x: Number.MAX_VALUE, y: 4, timeStamp: 24 },
+      { x: 14, y: 4, timeStamp: 24 },
+    ]) {
+      actual.update(sample);
+      expected.update(sample);
+
+      for (const now of [sample.timeStamp, -0, +0, sample.timeStamp + 4, sample.timeStamp]) {
+        equivalent(actual, expected, now);
+        equivalent(actual, expected, now);
+      }
+    }
+
+    actual.reset();
+    expected.reset();
+    equivalent(actual, expected, 24);
+  }
+});
+
+test('projection reuse preserves invalid query errors before and after warming the cache', () => {
+  const model = new KalmanPredictor();
+
+  for (const warmed of [false, true]) {
+    if (warmed) {
+      model.update({ x: 0, y: 0, timeStamp: -8 });
+      model.update({ x: 1, y: 1, timeStamp: 0 });
+      model.predict(0, 120);
+    }
+
+    for (const [now, horizon] of [
+      [NaN, undefined],
+      [undefined, undefined],
+      [NaN, 120],
+      [Infinity, 120],
+      [0, 0],
+      [0, NaN],
+      [0, undefined],
+      [0, Infinity],
+    ]) {
+      assert.throws(() => model.predict(now, horizon), RangeError);
+      assert.throws(() => model.intersectRect(now, horizon, rects[0]), RangeError);
+    }
+  }
+});

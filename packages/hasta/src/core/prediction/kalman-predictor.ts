@@ -15,6 +15,19 @@ export interface KalmanPrediction extends Prediction {
   readonly points: readonly [TrajectoryPoint, TrajectoryPoint];
 }
 
+interface Projection {
+  horizonMs: number;
+  latest: PointerSample;
+  dx: number;
+  dy: number;
+  dt: number;
+  ageMs: number;
+  x: number;
+  y: number;
+  endX: number;
+  endY: number;
+}
+
 export interface KalmanOptions {
   readonly maxSampleAgeMs?: number;
 }
@@ -63,6 +76,8 @@ export class KalmanPredictor implements Predictor {
   readonly #positionAnchor: 'filtered' | 'measured';
   readonly #measurementVariance: number;
   #residualLength = 0;
+  #projection: Projection | null = null;
+  #projectionTime = NaN;
   #filterSamples = 0;
   #previousAssimilated: PointerSample | null = null;
   #latestAssimilated: PointerSample | null = null;
@@ -286,6 +301,8 @@ export class KalmanPredictor implements Predictor {
       }
     }
 
+    this.#projection = null;
+    this.#projectionTime = NaN;
     this.#latest = { x: sample.x, y: sample.y, timeStamp: sample.timeStamp };
     const assimilated = this.#latestAssimilated;
 
@@ -386,11 +403,19 @@ export class KalmanPredictor implements Predictor {
     };
   }
 
-  #project(now: number, horizonMs: number) {
+  #project(now: number, horizonMs: number): Projection | null {
     if (!Number.isFinite(now) || !Number.isFinite(horizonMs) || horizonMs <= 0) {
       throw new RangeError(
         'Prediction time must be finite and horizonMs must be finite and positive.',
       );
+    }
+
+    if (Object.is(this.#projectionTime, now)) {
+      const cached = this.#projection;
+
+      if (cached !== null && cached.horizonMs === horizonMs) {
+        return cached;
+      }
     }
 
     const previous = this.#previous;
@@ -443,11 +468,22 @@ export class KalmanPredictor implements Predictor {
     const endX = x + displacement(dx, dt, horizonMs);
     const endY = y + displacement(dy, dt, horizonMs);
 
-    if (![vx, vy, x, y, endX, endY].every((value) => Number.isFinite(value))) {
+    if (
+      !Number.isFinite(vx) ||
+      !Number.isFinite(vy) ||
+      !Number.isFinite(x) ||
+      !Number.isFinite(y) ||
+      !Number.isFinite(endX) ||
+      !Number.isFinite(endY)
+    ) {
       return null;
     }
 
-    return { latest: anchor, dx, dy, dt, ageMs, x, y, endX, endY };
+    const projection = { horizonMs, latest: anchor, dx, dy, dt, ageMs, x, y, endX, endY };
+    this.#projection = projection;
+    this.#projectionTime = now;
+
+    return projection;
   }
 
   reset(): void {
@@ -476,6 +512,8 @@ export class KalmanPredictor implements Predictor {
   }
 
   #resetFilter(): void {
+    this.#projection = null;
+    this.#projectionTime = NaN;
     this.#filter.reset();
     this.#filterSamples = 0;
     this.#previousAssimilated = null;
