@@ -6,12 +6,15 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "types": ["vite/client", "svelte", "node"],
-    "paths": { "@66hex/hasta/*": ["./src/*/index.ts"] }
+    "paths": {
+      "@66hex/hasta/*": ["./src/*/index.ts"]
+    }
   },
   "include": [
     "tests/frameworks/**/*.ts",
     "tests/frameworks/**/*.tsx",
     "tests/frameworks/**/*.svelte",
     "vite.frameworks.config.ts"
-  ]
+  ],
+  "exclude": ["tests/frameworks/solid*.tsx"]
 }

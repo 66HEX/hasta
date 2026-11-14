@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.frameworks.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js"
+  },
+  "include": ["tests/frameworks/solid*.tsx"],
+  "exclude": []
+}

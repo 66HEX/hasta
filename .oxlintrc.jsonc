@@ -183,6 +183,14 @@
         "react/globals": "off",
       },
     },
+    // Solid setup runs once and its JSX refs belong to reactive owners.
+    {
+      "files": ["packages/hasta/tests/frameworks/solid*.tsx"],
+      "rules": {
+        "react/refs": "off",
+        "react/globals": "off",
+      },
+    },
     // The fixture is a browser ESM document served from the root of its local test server.
     {
       "files": ["packages/hasta/tests/browser/fixture.js"],
@@ -202,6 +210,7 @@
       "files": [
         "packages/hasta/src/vue/**",
         "packages/hasta/src/solid/**",
+        "packages/hasta/tests/frameworks/solid*.tsx",
         "packages/hasta/src/svelte/**",
         "packages/hasta/tests/frameworks/vue.ts",
         "packages/hasta/tests/types/**",
