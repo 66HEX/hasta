@@ -164,7 +164,7 @@ export const mdxComponents = {
     <a
       {...props}
       className={cn(
-        'underline decoration-muted-foreground/50 underline-offset-4 transition-colors hover:decoration-foreground',
+        'underline decoration-muted-foreground/50 underline-offset-4 transition-[text-decoration-color] hover:decoration-foreground',
         className,
       )}
       data-mdx="a"
