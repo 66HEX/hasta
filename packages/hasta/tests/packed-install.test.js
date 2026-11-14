@@ -37,7 +37,7 @@ test('the packed vanilla/core package installs and imports without any framework
       },
     );
 
-    for (const name of ['react', 'vue', 'svelte']) {
+    for (const name of ['react', 'vue', 'svelte', 'solid-js']) {
       assert.equal(existsSync(join(directory, 'node_modules', name)), false);
     }
 
@@ -47,7 +47,7 @@ test('the packed vanilla/core package installs and imports without any framework
 
     assert.equal(manifest.type, 'module');
 
-    for (const entry of ['.', './core', './vanilla', './react', './vue', './svelte']) {
+    for (const entry of ['.', './core', './vanilla', './react', './vue', './svelte', './solid']) {
       assert.ok(manifest.exports[entry].types.endsWith('.d.ts'));
       assert.ok(manifest.exports[entry].import.endsWith('.js'));
     }

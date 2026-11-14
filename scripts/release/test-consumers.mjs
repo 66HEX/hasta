@@ -190,6 +190,7 @@ try {
         "export { KalmanPredictor } from '@66hex/hasta/core';",
         "export { createHastaController as vanilla } from '@66hex/hasta/vanilla';",
         "export { useHasta as react } from '@66hex/hasta/react';",
+        "export { useHasta as solid, useHastaTarget as solidTarget } from '@66hex/hasta/solid';",
         "export { useHasta as vue } from '@66hex/hasta/vue';",
         "export { useHasta as svelte, attachHastaTarget } from '@66hex/hasta/svelte';",
       ].join('\n'),

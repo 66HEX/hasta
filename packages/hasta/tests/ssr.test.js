@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import test from 'node:test';
+import { setTimeout as nextTurn } from 'node:timers/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 test('React renders its adapter on the server without creating browser resources', async () => {
@@ -73,4 +74,60 @@ test('Svelte server compilation and render skip actions and browser lifecycle wo
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('Solid server rendering keeps controllers inert and disposes owned bindings', async () => {
+  const { renderToString } = await import('solid-js/web');
+  const { useHasta, useHastaTarget } = await import('@66hex/hasta/solid');
+  const owners = [];
+  const bindings = [];
+
+  function Component() {
+    const hasta = useHasta(() => ({ debug: true }));
+
+    const target = useHastaTarget(
+      () => hasta,
+      () => ({
+        when: { type: 'intersects', withinMs: 120 },
+        onPredict() {
+          throw new Error('SSR must never predict');
+        },
+      }),
+    );
+
+    assert.equal(hasta.getDebugSnapshot(), null);
+    assert.equal(target.getBounds(), null);
+    owners.push(hasta);
+    bindings.push(target);
+
+    return 'Solid SSR';
+  }
+
+  assert.match(renderToString(Component), /Solid SSR/u);
+  assert.match(renderToString(Component), /Solid SSR/u);
+  assert.notEqual(owners[0], owners[1]);
+  await nextTurn();
+
+  for (const owner of owners) {
+    assert.throws(() => owner.target({ when: () => true, onPredict() {} }), /destroyed/u);
+  }
+
+  for (const binding of bindings) {
+    binding.ref(null);
+    binding.destroy();
+  }
+
+  assert.equal(typeof document, 'undefined');
+});
+
+test('Solid helpers reject use without an owner', async () => {
+  const { useHasta, useHastaTarget } = await import('@66hex/hasta/solid');
+  const { createHastaController } = await import('@66hex/hasta/vanilla');
+  const hasta = createHastaController();
+  assert.throws(() => useHasta(), /owner|component|root/iu);
+  assert.throws(
+    () => useHastaTarget(hasta, { when: () => true, onPredict() {} }),
+    /owner|component|root/iu,
+  );
+  hasta.destroy();
 });

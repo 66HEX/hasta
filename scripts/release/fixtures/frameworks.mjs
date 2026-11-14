@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 import { useHasta, useHastaTarget } from '@66hex/hasta/react';
+import { useHasta as useSolidHasta, useHastaTarget as useSolidTarget } from '@66hex/hasta/solid';
 import { useHasta as createVueHasta, useHastaTarget as createVueTarget } from '@66hex/hasta/vue';
 import { createElement } from 'react';
 import { renderToString as renderReact } from 'react-dom/server';
+import { renderToString as renderSolid } from 'solid-js/web';
 import { compile } from 'svelte/compiler';
 import { render } from 'svelte/server';
 import { createSSRApp, h } from 'vue';
@@ -54,3 +56,23 @@ assert.match(render(Consumer).body, /Svelte consumer/u);
 assert.equal('window' in globalThis, false);
 
 assert.equal('document' in globalThis, false);
+
+assert.match(
+  renderSolid(() => {
+    const hasta = useSolidHasta(() => ({ debug: true }));
+
+    const target = useSolidTarget(
+      () => hasta,
+      () => ({
+        when: { type: 'intersects', withinMs: 100 },
+        onPredict() {},
+      }),
+    );
+
+    assert.equal(hasta.getDebugSnapshot(), null);
+    assert.equal(target.getBounds(), null);
+
+    return 'Solid consumer';
+  }),
+  /Solid consumer/u,
+);

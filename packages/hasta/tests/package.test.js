@@ -17,9 +17,10 @@ test('public ESM entry points import without browser globals', () => {
     const react = await import('@66hex/hasta/react');
     const vue = await import('@66hex/hasta/vue');
     const svelte = await import('@66hex/hasta/svelte');
+    const solid = await import('@66hex/hasta/solid');
     assert.equal(root.createHasta, vanilla.createHasta);
     assert.equal(typeof vanilla.createHastaController, 'function');
-    for (const adapter of [react, vue, svelte]) assert.equal(typeof adapter.useHasta, 'function');
+    for (const adapter of [react, vue, svelte, solid]) assert.equal(typeof adapter.useHasta, 'function');
     const controller = vanilla.createHastaController();
     controller.target({ when: { type: 'intersects', withinMs: 100 }, onPredict() {} });
     controller.destroy();

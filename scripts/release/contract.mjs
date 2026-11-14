@@ -6,7 +6,7 @@ export const PACKAGE_NAME = '@66hex/hasta';
 export const REPOSITORY = '66HEX/hasta';
 export const REGISTRY = 'https://registry.npmjs.org/';
 export const MAX_UNPACKED_SIZE = 1_000_000;
-export const ENTRYPOINTS = ['.', './core', './vanilla', './react', './vue', './svelte'];
+export const ENTRYPOINTS = ['.', './core', './vanilla', './react', './vue', './svelte', './solid'];
 
 export function registryUrls(version) {
   const packagePath = encodeURIComponent(PACKAGE_NAME);

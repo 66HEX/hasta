@@ -138,6 +138,7 @@
     {
       "files": [
         "packages/hasta/src/runtime/options.ts",
+        "packages/hasta/src/solid/index.ts",
         "packages/hasta/src/runtime/controller.ts",
         "packages/hasta/src/runtime/triggers/subscription.ts",
         "packages/hasta/src/runtime/engine.ts",
@@ -196,10 +197,11 @@
         "unicorn/no-thenable": "off",
       },
     },
-    // Vue and Svelte composables are not React hooks.
+    // Framework adapters outside React do not use React hooks.
     {
       "files": [
         "packages/hasta/src/vue/**",
+        "packages/hasta/src/solid/**",
         "packages/hasta/src/svelte/**",
         "packages/hasta/tests/frameworks/vue.ts",
         "packages/hasta/tests/types/**",
