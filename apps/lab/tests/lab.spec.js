@@ -7,6 +7,25 @@ import { expect, test } from '@playwright/test';
 import { examplesFor } from '../src/features.ts';
 import { completeTask, downloadSession, openSession, resume, uploadSession } from './helpers.js';
 
+async function expectAccessible(page, browserName) {
+  const scan = new AxeBuilder({ page });
+
+  if (browserName === 'firefox') {
+    // Avoid Firefox's axe button-name crash on labelled select triggers, checked below
+    scan.disableRules(['button-name']);
+  }
+
+  expect((await scan.analyze()).violations).toEqual([]);
+
+  for (const button of await page.locator('button:visible, [role="button"]:visible').all()) {
+    await expect(button).toHaveAccessibleName(/\S/u);
+  }
+
+  for (const name of ['Participant ID', 'Session', 'Input device', 'Saved session']) {
+    await expect(page.getByRole('combobox', { name, exact: true })).toBeVisible();
+  }
+}
+
 test('captures raw motion and Hasta, resumes and imports a checked backup', async ({ page }) => {
   await openSession(page);
   await completeTask(page);
@@ -187,18 +206,14 @@ test('fits a laptop viewport, keeps the picker legible, and supports both themes
   await page.keyboard.press('Escape');
   await expect(page.locator('.lab-select-content:visible')).toHaveCount(0);
 
-  if (!(process.platform === 'darwin' && testInfo.project.name === 'firefox')) {
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  }
+  await expectAccessible(page, testInfo.project.name);
 
   await page.getByRole('button', { name: /Switch to .* theme/u }).click();
   await page.evaluate(() =>
     Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {}))),
   );
 
-  if (!(process.platform === 'darwin' && testInfo.project.name === 'firefox')) {
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  }
+  await expectAccessible(page, testInfo.project.name);
 
   await page.screenshot({ path: testInfo.outputPath('collection.png') });
 });
