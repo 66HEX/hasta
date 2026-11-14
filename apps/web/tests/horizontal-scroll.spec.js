@@ -58,9 +58,27 @@ for (const kind of ['code', 'table']) {
   }) => {
     await ready(page);
     const viewport = region(page, kind);
+
+    if (kind === 'table') {
+      // Keep table styling while making the fit independent of documentation text and fonts
+      await viewport.locator('table').evaluate((table) => {
+        table.style.minWidth = '480px';
+
+        for (const cell of table.querySelectorAll('th, td')) {
+          cell.textContent = cell.tagName === 'TH' ? 'Column' : 'Value';
+        }
+      });
+    }
+
+    await expect
+      .poll(() => viewport.evaluate((element) => element.scrollWidth - element.clientWidth))
+      .toBeGreaterThan(0);
     await scrollTo(viewport, 'end');
     await expect(viewport).toHaveAttribute('tabindex', '0');
     await page.setViewportSize({ width: 1440, height: 1000 });
+    await expect
+      .poll(() => viewport.evaluate((element) => element.scrollWidth - element.clientWidth))
+      .toBe(0);
     await expect(viewport).toHaveAttribute('tabindex', '-1');
     await expect(viewport).not.toHaveAttribute('data-scrollable');
     await expect(viewport).toHaveCSS('mask-image', 'none');
