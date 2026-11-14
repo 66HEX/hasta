@@ -1,0 +1,17 @@
+{
+  "baseCommit": "5cf01cf9cd97dd2603a22143fbebaac95343da5d",
+  "description": "Frozen accepted sparse-input predictor after iteration2. Sources are exact pinned Git bytes; compiled Kalman bytes match the accepted final holdout. Iteration3 compares all lanes with this control and separately retains gains against0a503bb.",
+  "compiler": "6.0.3",
+  "sourceSha256": {
+    "core/prediction/kalman-predictor.ts": "356ce60e9b22eacfcf07b4b1dcc4691900e7f107e5c791f489e6246a8afc98bc",
+    "core/prediction/kalman-state.ts": "952223ce4d146b02a1347d3b607146b370d732c071455d7ba3ed5929d4351341",
+    "core/line-rect.ts": "2e49637d0882ab15c0531f2dbbbc0bae408d0b7e767cbccbe855866495a9bb2f",
+    "core/validation.ts": "3de56ff5d00f3a59f31530026e5051b593cfba516eebe7250f2217bdf05e878f"
+  },
+  "sha256": {
+    "core/prediction/kalman-predictor.js": "21c29fb5ef6108091bd59c4b22f483520261e3a09194f13c47a41463c3f9cd1d",
+    "core/prediction/kalman-state.js": "b9037c4edfcf837b6b53eabb749f64fdde5bc84be560df2b6b166edaedbdda0d",
+    "core/line-rect.js": "8cf181e52991a290828aded9bc9e0ca93512ea1f46557d87ce272c4bd2e510a2",
+    "core/validation.js": "7370d1b4a9207696ff776bd91c7fb21f57c6e0cb2f8980fb393b0c9fb22fafcb"
+  }
+}
