@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { KalmanPredictor as FrozenPredictor } from '../benchmarks/stability/baseline-5cf01cf/core/prediction/kalman-predictor.js';
 import { KalmanPredictor } from '../benchmarks/stability/experimental/core/prediction/kalman-predictor.js';
 import { KalmanState } from '../benchmarks/stability/experimental/core/prediction/kalman-state.js';
-import { KalmanPredictor as ProductionPredictor } from '../dist/core/index.js';
 
 function straight(model) {
   for (let timeStamp = 0; timeStamp <= 100; timeStamp++) {
@@ -12,7 +12,7 @@ function straight(model) {
 }
 
 test('experimental filter: all modes preserve the exact linear estimate when innovations are small', () => {
-  const reference = new ProductionPredictor();
+  const reference = new FrozenPredictor();
   const robust = new KalmanPredictor({ mode: 'robust' });
   const adaptive = new KalmanPredictor({ mode: 'adaptive' });
 

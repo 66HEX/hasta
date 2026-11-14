@@ -115,9 +115,9 @@ test('measurements more than 40 ms apart retain linear forecasts even with large
   }
 });
 
-test('dense samples retain the previous robust forecasts and intersections', () => {
-  const tested = new KalmanPredictor();
-  const reference = new PreviousPredictor();
+test('zero-process-noise dense samples retain the previous robust weighting', () => {
+  const tested = new KalmanPredictor({}, { q: 0 });
+  const reference = new PreviousPredictor({}, { q: 0 });
   const rect = { minX: 100, minY: -20, maxX: 120, maxY: 20 };
   let timeStamp = 0;
 
@@ -140,7 +140,7 @@ test('dense samples retain the previous robust forecasts and intersections', () 
   }
 });
 
-test('isolated sparse spikes have less influence while speed-preserving turns keep ordinary weight', () => {
+test('isolated sparse spikes have less influence while turns recover within two samples', () => {
   for (const dt of [1000 / 120, 12, 1000 / 60]) {
     const tested = new KalmanPredictor();
     const reference = new PreviousPredictor();
@@ -158,7 +158,6 @@ test('isolated sparse spikes have less influence while speed-preserving turns ke
   }
 
   const tested = new KalmanPredictor();
-  const reference = new FrozenPredictor();
 
   const positions = [
     [0, 0],
@@ -174,14 +173,19 @@ test('isolated sparse spikes have less influence while speed-preserving turns ke
   for (const [index, [x, y]] of positions.entries()) {
     const timeStamp = index * 10;
     tested.update({ x, y, timeStamp });
-    reference.update({ x, y, timeStamp });
-    assert.deepEqual(tested.predict(timeStamp, 120), reference.predict(timeStamp, 120));
+
+    if (index === 4 || index === 6) {
+      const [start, end] = tested.predict(timeStamp, 120).points;
+      const vx = (end.x - start.x) / 120;
+      const vy = (end.y - start.y) / 120;
+      const expected = index === 4 ? [0, 1] : [-1, 0];
+      assert.ok(Math.hypot(vx - expected[0], vy - expected[1]) < 0.2);
+    }
   }
 });
 
-test('recent measured speed preserves continuing movement while the filtered speed catches up', () => {
+test('irregular samples recover speed after a turn and a subsequent reversal', () => {
   const tested = new KalmanPredictor();
-  const reference = new PreviousPredictor();
 
   const samples = [
     { x: 140, y: 100, timeStamp: 1000 },
@@ -195,13 +199,20 @@ test('recent measured speed preserves continuing movement while the filtered spe
     { x: 155.46227922663093, y: 100, timeStamp: 1064.537720773369 },
   ];
 
-  for (const sample of samples) {
+  for (const [index, sample] of samples.entries()) {
     tested.update(sample);
-    reference.update(sample);
-    assert.deepEqual(
-      tested.predict(sample.timeStamp, 120),
-      reference.predict(sample.timeStamp, 120),
-    );
+
+    if (index === 6 || index === 8) {
+      const [start, end] = tested.predict(sample.timeStamp, 120).points;
+      const vx = (end.x - start.x) / 120;
+      const vy = (end.y - start.y) / 120;
+
+      if (index === 6) {
+        assert.ok(Math.abs(vx) < 0.15 && Math.abs(vy - 1) < 0.15);
+      } else {
+        assert.ok(vx < 0 && vy < -1);
+      }
+    }
   }
 });
 

@@ -35,6 +35,17 @@ const MAX_PROVISIONAL_GAP_MS = 40;
 const MAX_PLAUSIBLE_SPEED_RATIO = 1.5;
 const SAFE_SQUARED_SPEED_RATIO = MAX_PLAUSIBLE_SPEED_RATIO ** 2 * (8 / 9);
 const MIN_NORMAL = 2 ** -1022;
+const STEADY_PROCESS_NOISE_SCALE = 1 / 160;
+const MANEUVER_SETTLING_MS = 32;
+
+const INITIAL_ADAPTATION = {
+  responsiveUntil: -Infinity,
+  maneuverScale: 1,
+  directionX: 0,
+  directionY: 0,
+  samples: 0,
+  durationMs: 0,
+};
 
 function displacement(delta: number, dt: number, durationMs: number): number {
   const velocity = delta / dt;
@@ -68,6 +79,48 @@ export class KalmanPredictor implements Predictor {
   #checkpointDirectionY = 0;
   #checkpointManeuverSamples = 0;
   #checkpointManeuverDurationMs = 0;
+  #adaptation = INITIAL_ADAPTATION;
+  #checkpointAdaptation = INITIAL_ADAPTATION;
+
+  readonly #processNoiseScale = (residualX: number, residualY: number, dt: number): number => {
+    // Small position errors should not become large speed corrections. Restore
+    // responsiveness through settling, not only for the first turn/braking sample
+    const length = Math.hypot(residualX, residualY);
+    const deviation = length / Math.sqrt(this.#measurementVariance);
+    const timeStamp = this.#latest?.timeStamp ?? 0;
+    const directionX = length > 0 ? residualX / length : 0;
+    const directionY = length > 0 ? residualY / length : 0;
+    const previous = this.#adaptation;
+    const aligned = directionX * previous.directionX + directionY * previous.directionY > 0.5;
+    const samples = deviation > 1 ? (aligned ? previous.samples + 1 : 1) : 0;
+    const durationMs = samples > 1 ? Math.min(1000, previous.durationMs + dt) : 0;
+    const confirmed = samples >= 3 && durationMs >= 8;
+    const changing = deviation > 2.5 || confirmed;
+
+    this.#adaptation = {
+      responsiveUntil:
+        dt > MAX_PROVISIONAL_GAP_MS || changing
+          ? timeStamp + MANEUVER_SETTLING_MS
+          : previous.responsiveUntil,
+      maneuverScale: confirmed
+        ? 2
+        : timeStamp <= previous.responsiveUntil
+          ? previous.maneuverScale
+          : 1,
+      directionX,
+      directionY,
+      samples,
+      durationMs,
+    };
+
+    if (dt > MAX_PROVISIONAL_GAP_MS) {
+      return 1;
+    }
+
+    return timeStamp <= this.#adaptation.responsiveUntil
+      ? this.#adaptation.maneuverScale
+      : STEADY_PROCESS_NOISE_SCALE;
+  };
 
   readonly #measurementInflation = (
     residualX: number,
@@ -248,9 +301,10 @@ export class KalmanPredictor implements Predictor {
       this.#checkpointDirectionY = this.#directionY;
       this.#checkpointManeuverSamples = this.#maneuverSamples;
       this.#checkpointManeuverDurationMs = this.#maneuverDurationMs;
+      this.#checkpointAdaptation = this.#adaptation;
     }
 
-    if (!this.#filter.update(this.#latest, this.#measurementInflation)) {
+    if (!this.#filter.update(this.#latest, this.#measurementInflation, this.#processNoiseScale)) {
       // Retain the prior so a correction at this timestamp can still recover its history
       this.#restoreMetadata();
       this.#failedTimeStamp = sample.timeStamp;
@@ -395,6 +449,7 @@ export class KalmanPredictor implements Predictor {
     this.#directionY = this.#checkpointDirectionY;
     this.#maneuverSamples = this.#checkpointManeuverSamples;
     this.#maneuverDurationMs = this.#checkpointManeuverDurationMs;
+    this.#adaptation = this.#checkpointAdaptation;
   }
 
   #resetFilter(): void {
@@ -414,5 +469,7 @@ export class KalmanPredictor implements Predictor {
     this.#checkpointDirectionY = 0;
     this.#checkpointManeuverSamples = 0;
     this.#checkpointManeuverDurationMs = 0;
+    this.#adaptation = INITIAL_ADAPTATION;
+    this.#checkpointAdaptation = INITIAL_ADAPTATION;
   }
 }

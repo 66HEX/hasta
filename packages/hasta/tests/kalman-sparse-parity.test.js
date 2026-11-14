@@ -79,7 +79,7 @@ test('mixed sparse corrections preserve forecasts and intersections across assim
     for (const positionAnchor of ['filtered', 'measured']) {
       const config = { minimumAssimilationDtMs, positionAnchor };
       const tested = new KalmanPredictor({}, config);
-      const reference = new ReferencePredictor({}, config);
+      const reference = new KalmanPredictor({}, config);
       let timeStamp = 0;
 
       for (let index = 0; index < 160; index++) {

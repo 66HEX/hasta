@@ -33,6 +33,8 @@ type MeasurementInflation = (
   dt: number,
 ) => number;
 
+type ProcessNoiseScale = (residualX: number, residualY: number, dt: number) => number;
+
 function finiteEstimate(estimate: KalmanEstimate): boolean {
   return (
     Number.isFinite(estimate.x) &&
@@ -79,7 +81,11 @@ export class KalmanState {
   }
 
   /** Returns false on arithmetic failure, restoring the checkpoint before this timestamp */
-  update(sample: PointerSample, measurementInflation?: MeasurementInflation): boolean {
+  update(
+    sample: PointerSample,
+    measurementInflation?: MeasurementInflation,
+    processNoiseScale?: ProcessNoiseScale,
+  ): boolean {
     if (
       !Number.isFinite(sample.x) ||
       !Number.isFinite(sample.y) ||
@@ -107,6 +113,7 @@ export class KalmanState {
         sample.timeStamp - this.#timeStamp,
         this.#estimate,
         measurementInflation,
+        processNoiseScale,
       );
     }
 
@@ -166,17 +173,19 @@ export class KalmanState {
     dt: number,
     previous: KalmanEstimate,
     measurementInflation?: MeasurementInflation,
+    processNoiseScale?: ProcessNoiseScale,
   ): boolean {
-    const noiseVV = this.#q * dt;
+    const predictedX = previous.x + previous.vx * dt;
+    const predictedY = previous.y + previous.vy * dt;
+    const residualX = sample.x - predictedX;
+    const residualY = sample.y - predictedY;
+    const scale = processNoiseScale?.(residualX, residualY, dt) ?? 1;
+    const noiseVV = this.#q * scale * dt;
     const noisePV = noiseVV * (dt / 2);
     const noisePP = noisePV * ((dt * 2) / 3);
     const pp = this.#pp + dt * (2 * this.#pv + dt * this.#vv) + noisePP;
     const pv = this.#pv + dt * this.#vv + noisePV;
     const vv = this.#vv + noiseVV;
-    const predictedX = previous.x + previous.vx * dt;
-    const predictedY = previous.y + previous.vy * dt;
-    const residualX = sample.x - predictedX;
-    const residualY = sample.y - predictedY;
 
     const measurementVariance =
       measurementInflation === undefined
@@ -207,6 +216,8 @@ export class KalmanState {
 
     if (
       !Number.isFinite(dt) ||
+      !Number.isFinite(scale) ||
+      scale < 0 ||
       !Number.isFinite(measurementVariance) ||
       measurementVariance <= 0 ||
       !Number.isFinite(variance) ||
