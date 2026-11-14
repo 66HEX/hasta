@@ -1,6 +1,8 @@
 ## How it works
 
-Hasta uses a [Kalman filter](https://www.cs.cmu.edu/~motionplanning/papers/sbp_papers/kalman/welch_intro_kalman.pdf) with a constant-velocity motion model to estimate pointer position and velocity. The first two valid samples with distinct timestamps initialize the estimate. Later measurements update it using their elapsed time and the filter's estimate of uncertainty. The filter receives the accepted mouse sample stream, including coalesced events when available. This smooths measurement noise, but it can lag behind sudden changes in direction.
+Hasta uses a [Kalman filter](https://www.cs.cmu.edu/~motionplanning/papers/sbp_papers/kalman/welch_intro_kalman.pdf) with a constant-velocity motion model to estimate pointer position and velocity. The first two valid samples with distinct timestamps initialize the estimate. Later measurements update it using their elapsed time and the filter's estimate of uncertainty. The filter receives the accepted mouse sample stream, including coalesced events when available.
+
+When samples arrive no more than 8 ms apart, an isolated measurement that disagrees strongly with the estimated motion receives less weight. Consecutive deviations in a similar direction restore normal weighting so the filter can follow a genuine change in movement. Longer gaps use ordinary Kalman updates and clear that confirmation history. This reduces the influence of brief spikes in dense input streams, but can delay some predictions after a turn.
 
 `KalmanPredictor` projects the estimated position forward to the current frame time, then extends a straight trajectory using the estimated velocity. Its `KalmanPrediction` result contains the start and end points of that trajectory. Each intersection rule uses its own `withinMs`; `horizonMs` sets the forecast for custom predicates. The forecast assumes constant velocity, so longer horizons and larger margins increase the chance of a match that the pointer never reaches.
 

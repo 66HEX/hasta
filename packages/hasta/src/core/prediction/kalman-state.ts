@@ -26,6 +26,13 @@ interface Checkpoint {
   vv: number;
 }
 
+type MeasurementInflation = (
+  residualX: number,
+  residualY: number,
+  innovationVariance: number,
+  dt: number,
+) => number;
+
 function finiteEstimate(estimate: KalmanEstimate): boolean {
   return (
     Number.isFinite(estimate.x) &&
@@ -72,7 +79,7 @@ export class KalmanState {
   }
 
   /** Returns false on arithmetic failure, restoring the checkpoint before this timestamp */
-  update(sample: PointerSample): boolean {
+  update(sample: PointerSample, measurementInflation?: MeasurementInflation): boolean {
     if (
       !Number.isFinite(sample.x) ||
       !Number.isFinite(sample.y) ||
@@ -95,7 +102,12 @@ export class KalmanState {
     } else if (this.#estimate === null) {
       accepted = this.#initialize(this.#first, sample);
     } else if (this.#timeStamp !== null) {
-      accepted = this.#assimilate(sample, sample.timeStamp - this.#timeStamp, this.#estimate);
+      accepted = this.#assimilate(
+        sample,
+        sample.timeStamp - this.#timeStamp,
+        this.#estimate,
+        measurementInflation,
+      );
     }
 
     if (!accepted) {
@@ -149,20 +161,31 @@ export class KalmanState {
     return true;
   }
 
-  #assimilate(sample: PointerSample, dt: number, previous: KalmanEstimate): boolean {
+  #assimilate(
+    sample: PointerSample,
+    dt: number,
+    previous: KalmanEstimate,
+    measurementInflation?: MeasurementInflation,
+  ): boolean {
     const noiseVV = this.#q * dt;
     const noisePV = noiseVV * (dt / 2);
     const noisePP = noisePV * ((dt * 2) / 3);
     const pp = this.#pp + dt * (2 * this.#pv + dt * this.#vv) + noisePP;
     const pv = this.#pv + dt * this.#vv + noisePV;
     const vv = this.#vv + noiseVV;
-    const variance = pp + this.#r;
-    const kp = pp / variance;
-    const kv = pv / variance;
     const predictedX = previous.x + previous.vx * dt;
     const predictedY = previous.y + previous.vy * dt;
     const residualX = sample.x - predictedX;
     const residualY = sample.y - predictedY;
+
+    const measurementVariance =
+      measurementInflation === undefined
+        ? this.#r
+        : this.#r * measurementInflation(residualX, residualY, pp + this.#r, dt);
+
+    const variance = pp + measurementVariance;
+    const kp = pp / variance;
+    const kv = pv / variance;
 
     const estimate = {
       x: predictedX + kp * residualX,
@@ -172,16 +195,20 @@ export class KalmanState {
     };
 
     // Factored Joseph update keeps each contribution to the variance nonnegative
-    const retained = this.#r / variance;
+    const retained = measurementVariance / variance;
     const slope = pp === 0 ? 0 : pv / pp;
     const conditionalVV = Math.max(0, vv - pv * slope);
     const adjustedSlope = slope - kv;
-    const nextPP = retained * retained * pp + kp * kp * this.#r;
-    const nextPV = retained * adjustedSlope * pp + kp * kv * this.#r;
-    const nextVV = adjustedSlope * adjustedSlope * pp + conditionalVV + kv * kv * this.#r;
+    const nextPP = retained * retained * pp + kp * kp * measurementVariance;
+    const nextPV = retained * adjustedSlope * pp + kp * kv * measurementVariance;
+
+    const nextVV =
+      adjustedSlope * adjustedSlope * pp + conditionalVV + kv * kv * measurementVariance;
 
     if (
       !Number.isFinite(dt) ||
+      !Number.isFinite(measurementVariance) ||
+      measurementVariance <= 0 ||
       !Number.isFinite(variance) ||
       !finiteEstimate(estimate) ||
       !Number.isFinite(nextPP) ||

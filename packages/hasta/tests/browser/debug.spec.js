@@ -433,8 +433,16 @@ for (const scenario of [
         predictor.update({ x: 20, y: 110, timeStamp: 1020 });
         predictor.update({ x: 400, y: 110, timeStamp });
 
+        const hit = predictor.intersectRect(1035, 120, {
+          minX: 100,
+          minY: 100,
+          maxX: 110,
+          maxY: 120,
+        });
+
         return {
           expectedStart: predictor.predict(1035, 120).points[0].x,
+          expectedIntersection: hit === null ? null : { etaMs: hit.offsetMs, point: hit.point },
           previousStart: started.forecast.points[0].x,
           previousGeneratedAt: started.forecast.generatedAt,
           pendingStatus: pending.status,
@@ -457,7 +465,7 @@ for (const scenario of [
       { timeStamp: scenario.timeStamp },
     );
 
-    const { expectedStart, ...observed } = result;
+    const { expectedStart, expectedIntersection, ...observed } = result;
     expect(observed).toEqual({
       previousStart: 30,
       previousGeneratedAt: 1030,
@@ -474,7 +482,7 @@ for (const scenario of [
       evaluatedStatus: 'tracking',
       evaluatedStart: expectedStart,
       evaluatedGeneratedAt: 1035,
-      evaluatedIntersection: null,
+      evaluatedIntersection: expectedIntersection,
       calls: 1,
     });
   });

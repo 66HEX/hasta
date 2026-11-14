@@ -27,6 +27,11 @@ export interface KalmanPredictorConfig extends KalmanConfig {
 export const DEFAULT_ASSIMILATION_INTERVAL_MS = 0;
 export const DEFAULT_POSITION_ANCHOR: 'filtered' | 'measured' = 'filtered';
 
+const INNOVATION_LIMIT = 6;
+const MAX_MEASUREMENT_INFLATION = 1e6;
+const MANEUVER_MIN_DURATION_MS = 2;
+const MAX_PROVISIONAL_GAP_MS = 8;
+
 function displacement(delta: number, dt: number, durationMs: number): number {
   const velocity = delta / dt;
 
@@ -50,6 +55,54 @@ export class KalmanPredictor implements Predictor {
   #failedTimeStamp: number | null = null;
   #previous: PointerSample | null = null;
   #latest: PointerSample | null = null;
+  #directionX = 0;
+  #directionY = 0;
+  #maneuverSamples = 0;
+  #maneuverDurationMs = 0;
+  #checkpointDirectionX = 0;
+  #checkpointDirectionY = 0;
+  #checkpointManeuverSamples = 0;
+  #checkpointManeuverDurationMs = 0;
+
+  readonly #measurementInflation = (
+    residualX: number,
+    residualY: number,
+    innovationVariance: number,
+    dt: number,
+  ): number => {
+    // Sparse measurements cannot corroborate a provisional outlier promptly
+    if (dt > MAX_PROVISIONAL_GAP_MS) {
+      this.#directionX = 0;
+      this.#directionY = 0;
+      this.#maneuverSamples = 0;
+      this.#maneuverDurationMs = 0;
+
+      return 1;
+    }
+
+    const length = Math.hypot(residualX, residualY);
+    const normalizedLength = length / Math.sqrt(innovationVariance);
+    const directionX = length > 0 ? residualX / length : 0;
+    const directionY = length > 0 ? residualY / length : 0;
+    const aligned = directionX * this.#directionX + directionY * this.#directionY > 0.5;
+    const large = normalizedLength > INNOVATION_LIMIT;
+    this.#maneuverSamples = large ? (aligned ? this.#maneuverSamples + 1 : 1) : 0;
+    this.#maneuverDurationMs = large && aligned ? Math.min(1000, this.#maneuverDurationMs + dt) : 0;
+    this.#directionX = directionX;
+    this.#directionY = directionY;
+
+    // Persistent innovations restore ordinary weighting for a change in motion
+    const maneuver =
+      this.#maneuverSamples >= 2 && this.#maneuverDurationMs >= MANEUVER_MIN_DURATION_MS;
+
+    // Preserve arithmetic-failure recovery when the innovation is not representable
+    return maneuver || !Number.isFinite(normalizedLength ** 2)
+      ? 1
+      : Math.min(
+          MAX_MEASUREMENT_INFLATION,
+          Math.max(1, (normalizedLength / INNOVATION_LIMIT) ** 2),
+        );
+  };
 
   constructor(options: KalmanOptions = {}, config: KalmanPredictorConfig = {}) {
     this.#filter = new KalmanState(config);
@@ -125,9 +178,13 @@ export class KalmanPredictor implements Predictor {
       this.#checkpointSamples = this.#filterSamples;
       this.#checkpointPrevious = this.#previousAssimilated;
       this.#checkpointLatest = this.#latestAssimilated;
+      this.#checkpointDirectionX = this.#directionX;
+      this.#checkpointDirectionY = this.#directionY;
+      this.#checkpointManeuverSamples = this.#maneuverSamples;
+      this.#checkpointManeuverDurationMs = this.#maneuverDurationMs;
     }
 
-    if (!this.#filter.update(this.#latest)) {
+    if (!this.#filter.update(this.#latest, this.#measurementInflation)) {
       // Retain the prior so a correction at this timestamp can still recover its history
       this.#restoreMetadata();
       this.#failedTimeStamp = sample.timeStamp;
@@ -268,6 +325,10 @@ export class KalmanPredictor implements Predictor {
     this.#filterSamples = this.#checkpointSamples;
     this.#previousAssimilated = this.#checkpointPrevious;
     this.#latestAssimilated = this.#checkpointLatest;
+    this.#directionX = this.#checkpointDirectionX;
+    this.#directionY = this.#checkpointDirectionY;
+    this.#maneuverSamples = this.#checkpointManeuverSamples;
+    this.#maneuverDurationMs = this.#checkpointManeuverDurationMs;
   }
 
   #resetFilter(): void {
@@ -279,5 +340,13 @@ export class KalmanPredictor implements Predictor {
     this.#checkpointPrevious = null;
     this.#checkpointLatest = null;
     this.#failedTimeStamp = null;
+    this.#directionX = 0;
+    this.#directionY = 0;
+    this.#maneuverSamples = 0;
+    this.#maneuverDurationMs = 0;
+    this.#checkpointDirectionX = 0;
+    this.#checkpointDirectionY = 0;
+    this.#checkpointManeuverSamples = 0;
+    this.#checkpointManeuverDurationMs = 0;
   }
 }
