@@ -278,6 +278,9 @@ test('pointer status stays live through brief stops without delaying debug expir
   const debug = page.locator('[data-hasta-debug]');
   await demo.scrollIntoViewIfNeeded();
   const box = await demo.locator('[data-demo-stage]').boundingBox();
+  // Let pointer activity from enabling the overlay expire before observing new transitions
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(320);
   await expect(status).toHaveAttribute('data-live', 'false');
   await status.evaluate((element) => {
     window.pointerStatusChanges = [];
