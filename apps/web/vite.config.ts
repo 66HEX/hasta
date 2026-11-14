@@ -48,7 +48,7 @@ export default defineConfig({
     alias: [
       { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
       {
-        find: /^@66hex\/hasta\/(vanilla|react|vue|svelte|core)$/u,
+        find: /^@66hex\/hasta\/(vanilla|react|vue|svelte|solid|core)$/u,
         replacement:
           fileURLToPath(new URL('../../packages/hasta/src/', import.meta.url)) + '$1/index.ts',
       },

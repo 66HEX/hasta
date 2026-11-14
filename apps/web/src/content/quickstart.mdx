@@ -86,4 +86,25 @@ const target = useHastaTarget(hasta, {
 ```
 
 </FrameworkPanel>
+<FrameworkPanel value="solid">
+
+```tsx Inbox.tsx
+import { useHasta, useHastaTarget } from '@66hex/hasta/solid';
+
+export function Inbox() {
+  const hasta = useHasta({ horizonMs: 160 });
+  const target = useHastaTarget(hasta, {
+    when: { type: 'intersects', withinMs: 160 },
+    onPredict: ({ etaMs }) => {
+      console.log(`Inbox in ${Math.round(etaMs)} ms`);
+    },
+  });
+
+  return <button ref={target.ref}>Inbox</button>;
+}
+```
+
+Call both helpers during component setup. Pass getters when options read signals or reactive props.
+
+</FrameworkPanel>
 </FrameworkCode>

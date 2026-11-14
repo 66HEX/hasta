@@ -10,6 +10,7 @@ const frameworkIcons: Record<Framework, string> = {
   react: '/icons/frameworks/react.svg',
   vue: '/icons/frameworks/vue.svg',
   svelte: '/icons/frameworks/svelte.svg',
+  solid: '/icons/frameworks/solid.svg',
 };
 
 function FrameworkLabel({ framework }: { framework: Framework }) {

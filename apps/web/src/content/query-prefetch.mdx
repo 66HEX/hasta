@@ -128,4 +128,38 @@ const events = {
 ```
 
 </FrameworkPanel>
+<FrameworkPanel value="solid">
+
+```tsx
+import { useQueryClient } from '@tanstack/solid-query';
+import { useHasta, useHastaTarget } from '@66hex/hasta/solid';
+import { projectQuery } from './queries';
+
+export function ProjectButton(props: { onOpen: () => void }) {
+  const queryClient = useQueryClient();
+  const hasta = useHasta({ horizonMs: 160 });
+  const warm = async () => {
+    await queryClient.query(projectQuery('42')).catch(() => undefined);
+  };
+  const target = useHastaTarget(hasta, {
+    when: { type: 'intersects', withinMs: 160 },
+    stableForMs: 30,
+    onPredict: warm,
+  });
+
+  return (
+    <button
+      type="button"
+      ref={target.ref}
+      onMouseEnter={warm}
+      onFocus={warm}
+      onClick={() => props.onOpen()}
+    >
+      Project details
+    </button>
+  );
+}
+```
+
+</FrameworkPanel>
 </FrameworkCode>

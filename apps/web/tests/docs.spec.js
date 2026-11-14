@@ -195,6 +195,19 @@ test('the header framework choice updates all examples and persists on reload', 
   await expect(page.locator('[data-framework-panel]').last()).toContainText(
     '@tanstack/svelte-query',
   );
+  await selectFramework(page, 'Solid');
+
+  for (const panel of await page.locator('[data-framework-panel]').all()) {
+    await expect(panel).toContainText('@66hex/hasta/solid');
+  }
+
+  await expect(page.locator('[data-framework-panel]').first()).toContainText('ref={target.ref}');
+  await expect(page.locator('[data-framework-panel]').last()).toContainText(
+    '@tanstack/solid-query',
+  );
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Code framework' })).toContainText('Solid');
+  await expect(page.locator('[data-framework-panel]').first()).toContainText('@66hex/hasta/solid');
   await selectFramework(page, 'Vanilla');
   await expect(page.locator('[data-framework-panel]').first()).toContainText('hasta.destroy()');
   await expect(page.locator('[data-framework-panel]').last()).toContainText('@tanstack/query-core');
@@ -229,6 +242,30 @@ test('Shiki code copies only the selected framework without toolbar text', async
   expect(copied).toContain('@66hex/hasta/svelte');
   expect(copied).not.toContain('@66hex/hasta/react');
   expect(copied).not.toContain('Copied');
+});
+
+test('Solid examples copy the selected JSX and load the framework icon', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: async (value) => {
+          window.copiedCode = value;
+        },
+      },
+    });
+  });
+  await ready(page);
+  await selectFramework(page, 'Solid');
+  const panel = page.locator('[data-framework-panel]').first();
+  await panel.getByRole('button', { name: 'Copy code' }).click();
+  await expect(panel.getByRole('status')).toHaveText('Copied');
+  const copied = await page.evaluate(() => window.copiedCode);
+  expect(copied).toContain('@66hex/hasta/solid');
+  expect(copied).toContain('ref={target.ref}');
+  expect(copied).not.toContain('@66hex/hasta/react');
+  const icon = page.getByRole('combobox', { name: 'Code framework' }).locator('img');
+  await expect(icon).toHaveAttribute('src', '/icons/frameworks/solid.svg');
+  expect(await icon.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
 });
 
 test('clipboard rejection gives usable feedback', async ({ page }) => {
@@ -462,7 +499,7 @@ test('mobile width stays bounded for every framework and long tables', async ({ 
     expect(box.width).toBe(390);
   }
 
-  for (const framework of ['React', 'Vanilla', 'Vue', 'Svelte']) {
+  for (const framework of ['React', 'Vanilla', 'Vue', 'Solid', 'Svelte']) {
     await selectFramework(page, framework);
     await expectNoOverflow(page);
   }

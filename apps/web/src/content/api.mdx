@@ -4,7 +4,7 @@ Positions and margins use viewport CSS pixels; durations use milliseconds. Times
 
 ### Entrypoints
 
-Hasta is ESM. Adapters support React 19, Vue 3.5+, and Svelte 5.32+; install only the framework you use. Vanilla has no framework dependency.
+Hasta is ESM. Adapters support React 19, Vue 3.5+, Svelte 5.32+, and Solid 1.9+; install only the framework you use. Vanilla has no framework dependency.
 
 | Import                 | Exports                                                          |
 | ---------------------- | ---------------------------------------------------------------- |
@@ -12,11 +12,22 @@ Hasta is ESM. Adapters support React 19, Vue 3.5+, and Svelte 5.32+; install onl
 | `@66hex/hasta/react`   | `useHasta`, `useHastaTarget`                                     |
 | `@66hex/hasta/vue`     | Same helpers, accepting reactive refs/getters                    |
 | `@66hex/hasta/svelte`  | `useHasta`; action `hastaTarget`; attachment `attachHastaTarget` |
+| `@66hex/hasta/solid`   | `useHasta`, `useHastaTarget`, accepting reactive getters         |
 | `@66hex/hasta/core`    | DOM-free geometry, `KalmanPredictor`, and spatial index          |
 
 `@66hex/hasta/core` also exports `KalmanOptions` for the predictor's options and `KalmanPrediction` for its two-point forecast. `KalmanPredictor` exposes `update(sample)`, `predict(now, horizonMs)`, `intersectRect(now, horizonMs, rect)`, and `reset()`.
 
 Prefer the controller for a shared API across frameworks. The lower-level `createHasta()` requires a browser document: call `track(element)`, then `target.when(condition, callback, options)`, which returns an unsubscribe function. Its targets expose `getBounds()`, `invalidate()`, and `untrack()`.
+
+### Solid helpers
+
+Call `useHasta()` and `useHastaTarget()` during component setup or inside an owned Solid scope. The controller connects on mount and is destroyed when its owner is disposed. Target bindings have their own cleanup, so a child can release its target while a shared controller stays connected.
+
+Both helpers accept plain options or getters. For reactive values, use `useHasta(() => ({ horizonMs: horizon() }))` and `useHastaTarget(hasta, () => ({ when: { type: 'intersects', withinMs: horizon() }, onPredict }))`. Read signals and props inside the getter; passing their current values in a plain object captures those values once. Each update replaces the options, so include every option you want to keep.
+
+Use `ref={target.ref}` on an HTML element. The ref detaches when its Solid scope is disposed, including a conditional `Show` branch. A binding tracks one element at a time. For DOM managed outside Solid, call `target.ref(null)` when removing the element.
+
+The controller argument can also be a getter, such as `useHastaTarget(() => props.hasta, options)`. Switching controllers transfers the target and cancels its previous subscription. Callback and option updates on the same controller reuse the binding.
 
 ### Controller options
 

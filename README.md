@@ -2,7 +2,7 @@
 
 A little ahead of the pointer.
 
-Hasta tracks element bounds and predicts mouse movement so you can prefetch data or prepare previews before hover. It includes adapters for vanilla JavaScript, React, Vue, and Svelte.
+Hasta tracks element bounds and predicts mouse movement so you can prefetch data or prepare previews before hover. It includes adapters for vanilla JavaScript, React, Vue, Svelte, and Solid.
 
 ## Usage
 

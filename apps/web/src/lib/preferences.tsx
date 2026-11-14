@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
-export const frameworks = ['vanilla', 'react', 'vue', 'svelte'] as const;
+export const frameworks = ['vanilla', 'react', 'vue', 'svelte', 'solid'] as const;
 
 export type Framework = (typeof frameworks)[number];
 
-export const frameworkNames = { vanilla: 'Vanilla', react: 'React', vue: 'Vue', svelte: 'Svelte' };
+export const frameworkNames = {
+  vanilla: 'Vanilla',
+  react: 'React',
+  vue: 'Vue',
+  svelte: 'Svelte',
+  solid: 'Solid',
+};
 
 export function isFramework(value: string | null): value is Framework {
   return frameworks.some((framework) => framework === value);
