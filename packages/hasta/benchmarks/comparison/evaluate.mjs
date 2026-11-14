@@ -95,8 +95,14 @@ export function summarize(values) {
   };
 }
 
-export function evaluateTrace(trace, config, algorithmSeed, detailed = true) {
-  const model = createModel(config, algorithmSeed);
+export function evaluateTrace(
+  trace,
+  config,
+  algorithmSeed,
+  detailed = true,
+  factory = createModel,
+) {
+  const model = factory(config, algorithmSeed);
   const errors = HORIZONS.map(() => []);
   const postChange = HORIZONS.map(() => []);
   const etaErrors = [];
