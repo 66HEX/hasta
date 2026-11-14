@@ -1,3 +1,5 @@
+This is the historical first filter study, completed at checkpoint `0a503bbc60adfdece2ca42f06a67b0254966c93b`. Its references to the current filter describe that checkpoint. The subsequent sparse-input change and its independent final results are in [SPARSE-FILTER-RESULTS.md](./SPARSE-FILTER-RESULTS.md).
+
 # Numerical filter results
 
 The accepted change reduces the influence of isolated large measurement residuals during dense input. It preserves the existing API, constant-velocity state model and noise constants (`q: 0.0016`, `r: 0.25`). On the final untouched synthetic set, mean trace-level endpoint error at 120 ms fell by **5.82%**. First-action correctness and useful coverage were unchanged. Updating the filter costs **33.4% more** in the microbenchmark, and some callbacks arrive later.

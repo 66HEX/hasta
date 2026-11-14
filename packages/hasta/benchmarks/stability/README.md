@@ -1,10 +1,10 @@
 # Prediction and callback stability
 
-This harness compares the current library with the production predictor and subscription frozen at commit `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The library keeps its existing API. The runtime requires new pointer evidence before starting a speculative callback.
+This directory preserves versioned numerical and callback controls. The latest [filter study](SPARSE-FILTER-RESULTS.md) compares production with the accepted filter at `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). It keeps the existing public API.
 
-The frozen implementation lives in `baseline-fa9ac8d/`. Its manifest records source and compiled-file hashes; tests verify the captured bytes.
+Historical general runners still default to the original predictor and subscription at `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The snapshots in `baseline-fa9ac8d/` and `baseline-0a503bb/` have source and compiled-file integrity manifests. The runtime requires new pointer evidence before starting a speculative callback.
 
-The [filter results](FILTER-RESULTS.md) isolate numerical changes while keeping the current callback policy on both sides. The earlier [callback-only results](RESULTS.md) record the observation-freshness change before the filter update.
+The [first filter results](FILTER-RESULTS.md) record the dense-input numerical improvement while using the same callback policy on both sides. The earlier [callback-only results](RESULTS.md) record observation freshness before either filter update.
 
 ## Isolate a filter change
 
@@ -87,3 +87,36 @@ node packages/hasta/benchmarks/stability/perf.mjs --output /tmp/hasta-stability-
 ```
 
 This measures frozen/current `update` and `predict`, with three warmup rounds and nine measured rounds in rotating order. `--experiments` also measures the internal numerical snapshots and their uncertainty accessor. Times are microseconds per call from batch means, including immutable output creation. They do not measure individual-event tail latency or the full browser runtime.
+
+The second numerical study freezes the previously accepted filter at `0a503bb`. Its
+[protocol](./SPARSE-FILTER-PROTOCOL.md) separates balanced cadence measurements from the old
+480-trace regression corpus. [Decisions and results](./SPARSE-FILTER-RESULTS.md) include rejected
+candidates. These numerical experiments keep the existing public predictor API.
+
+```sh
+# Exploratory training may use3 repetitions. Development always uses12.
+node packages/hasta/benchmarks/stability/filter-study-run.mjs --stage training --repeats 3 --candidate /absolute/source-only/index.mjs --label hypothesis --output /tmp/hypothesis-training.json
+node packages/hasta/benchmarks/stability/filter-study-run.mjs --stage development --candidate /absolute/source-only/index.mjs --label hypothesis --output /tmp/hypothesis-development.json
+# Run only after a passing development selection.
+node packages/hasta/benchmarks/stability/filter-study-run.mjs --stage cadence --candidate /absolute/source-only/index.mjs --label hypothesis --selection /tmp/hypothesis-development.json --output /tmp/hypothesis-cadence.json
+# Keep the external historical regression check on the new control explicit.
+node packages/hasta/benchmarks/stability/filter-external.mjs --control 0a503bb --candidate /absolute/source-only/index.mjs --label hypothesis --output /tmp/hypothesis-external.json
+```
+
+The new runner evaluates fixed120/30 actions for acceptance and fixed120/0 as a diagnostic.
+It compacts replay output after each trace to avoid retaining every intersection object.
+All profiles and cadences remain grouped within their shared motion seed for bootstrap
+inference. Candidate source directories must contain only the frozen source dependencies;
+write result JSON elsewhere because source fingerprints include JavaScript and JSON files.
+
+After source integration, rerun development using built production with no `--candidate`.
+Final evaluation uses `--stage final --selection /path/to/production-development.json` and
+requires the same passing production selection, source hashes, gates, and control. The
+reserved final set must remain unopened until production approval. A new source revision
+needs another development freeze; a revision after final results also needs a new holdout.
+
+Existing `filter-run.mjs`, `filter-external.mjs`, `filter-cadence.mjs`, and `perf.mjs` retain
+`fa9ac8d` as the default control for historical use. Select `--control 0a503bb` explicitly for
+this study. For CPU measurements use `node packages/hasta/benchmarks/stability/perf.mjs
+--control 0a503bb --output /tmp/hypothesis-performance.json` only when the machine is idle
+and a candidate has passed quality checks.
