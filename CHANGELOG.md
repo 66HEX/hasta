@@ -20,10 +20,13 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Active speculative intersection callbacks can retain their signal through near-boundary prediction misses for up to 32 ms, using an additional 6 px release margin and direction and speed checks. Confirmed contact departure, expired input, target removal, and pause or disconnection still cancel immediately. Custom predicates still cancel on their first false result.
 - Reduced repeated predictor work by reusing adaptation buffers, validated samples, and projections shared by queries with the same time and horizon.
 - The documentation header now reads the library version from its package manifest.
+- Updated the interactive demo's card animations and reduced the saturation of secondary and muted theme colors.
 
 ### Fixed
 
 - Reduced velocity and trajectory jitter during steady pointer movement while preserving responsiveness to turns, braking, and reversals.
+- Kept the demo's reset button inside its settings column at narrow viewport widths across platforms.
+- Made table resize tests independent of documentation text width while retaining checks for scrolling, keyboard access, masks, and scrollbar removal.
 - Extended publication verification retries to allow npm package and provenance metadata to propagate after publishing.
 
 ## [0.2.0] - 2026-11-14
