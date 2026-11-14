@@ -34,7 +34,11 @@ npm ci
 npm run dev
 ```
 
-The documentation site lives in [`apps/web`](apps/web), and the library in [`packages/hasta`](packages/hasta). Run `npm run build` to build both. To run all checks, install the test browsers with `npm run browsers:install`, then run `npm run check`.
+The documentation site lives in [`apps/web`](apps/web), and the library in [`packages/hasta`](packages/hasta). Run `npm run build` to build all workspaces. To run all checks, install the test browsers with `npm run browsers:install`, then run `npm run check`.
+
+The cursor data collector lives in [`apps/lab`](apps/lab). Run `npm run dev:lab` to open it at [localhost:5174](http://localhost:5174). Participants P01–P05 each complete two sessions of 12 practice tasks and 120 collection tasks, using their own mouse or touchpad. Each block has 18 target selections and six gate tasks, followed by a break and a verified compressed JSON backup. Recordings stay in IndexedDB until the participant downloads and sends them. The lab shares the documentation site's styles, fonts, and UI components.
+
+Run `npm run test:lab` for the collection browser checks. Build the static application with `npm run build:lab`.
 
 ## Deployment
 

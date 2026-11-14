@@ -154,7 +154,7 @@
     },
     // Browser evaluate callbacks are serialized. Scenarios await steps and probe invalid inputs.
     {
-      "files": ["packages/hasta/tests/**", "apps/web/tests/**"],
+      "files": ["packages/hasta/tests/**", "apps/web/tests/**", "apps/lab/tests/**"],
       "rules": {
         "unicorn/consistent-function-scoping": "off",
         "no-shadow": "off",
