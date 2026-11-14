@@ -95,6 +95,15 @@ export class KalmanState {
       return true;
     }
 
+    return this.updateValidated(sample, measurementInflation, processNoiseScale);
+  }
+
+  /** Internal path for finite, ordered samples already copied by KalmanPredictor */
+  updateValidated(
+    sample: PointerSample,
+    measurementInflation?: MeasurementInflation,
+    processNoiseScale?: ProcessNoiseScale,
+  ): boolean {
     if (sample.timeStamp === this.#timeStamp) {
       this.#restore();
     } else {

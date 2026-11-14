@@ -62,6 +62,7 @@ export class KalmanPredictor implements Predictor {
   readonly #minimumAssimilationDtMs: number;
   readonly #positionAnchor: 'filtered' | 'measured';
   readonly #measurementVariance: number;
+  #residualLength = 0;
   #filterSamples = 0;
   #previousAssimilated: PointerSample | null = null;
   #latestAssimilated: PointerSample | null = null;
@@ -86,45 +87,44 @@ export class KalmanPredictor implements Predictor {
     // Small position errors should not become large speed corrections. Restore
     // responsiveness through settling, not only for the first turn/braking sample
     const length = Math.hypot(residualX, residualY);
+    this.#residualLength = length;
     const deviation = length / Math.sqrt(this.#measurementVariance);
     const timeStamp = this.#latest?.timeStamp ?? 0;
     const directionX = length > 0 ? residualX / length : 0;
     const directionY = length > 0 ? residualY / length : 0;
-    const previous = this.#adaptation;
+    const previous = this.#checkpointAdaptation;
     const aligned = directionX * previous.directionX + directionY * previous.directionY > 0.5;
     const samples = deviation > 1 ? (aligned ? previous.samples + 1 : 1) : 0;
     const durationMs = samples > 1 ? Math.min(1000, previous.durationMs + dt) : 0;
     const confirmed = samples >= 3 && durationMs >= 8;
     const changing = deviation > 2.5 || confirmed;
 
-    this.#adaptation = {
-      responsiveUntil:
-        dt > MAX_PROVISIONAL_GAP_MS || changing
-          ? timeStamp + MANEUVER_SETTLING_MS
-          : previous.responsiveUntil,
-      maneuverScale: confirmed
-        ? 2
-        : timeStamp <= previous.responsiveUntil
-          ? previous.maneuverScale
-          : 1,
-      directionX,
-      directionY,
-      samples,
-      durationMs,
-    };
+    const next = this.#adaptation;
+
+    next.responsiveUntil =
+      dt > MAX_PROVISIONAL_GAP_MS || changing
+        ? timeStamp + MANEUVER_SETTLING_MS
+        : previous.responsiveUntil;
+    next.maneuverScale = confirmed
+      ? 2
+      : timeStamp <= previous.responsiveUntil
+        ? previous.maneuverScale
+        : 1;
+    next.directionX = directionX;
+    next.directionY = directionY;
+    next.samples = samples;
+    next.durationMs = durationMs;
 
     if (dt > MAX_PROVISIONAL_GAP_MS) {
       return 1;
     }
 
-    return timeStamp <= this.#adaptation.responsiveUntil
-      ? this.#adaptation.maneuverScale
-      : STEADY_PROCESS_NOISE_SCALE;
+    return timeStamp <= next.responsiveUntil ? next.maneuverScale : STEADY_PROCESS_NOISE_SCALE;
   };
 
   readonly #measurementInflation = (
-    residualX: number,
-    residualY: number,
+    _residualX: number,
+    _residualY: number,
     innovationVariance: number,
     dt: number,
   ): number => {
@@ -193,10 +193,10 @@ export class KalmanPredictor implements Predictor {
       return 1;
     }
 
-    const length = Math.hypot(residualX, residualY);
+    // Process adaptation runs first for the same residual, including replacements
+    const length = this.#residualLength;
     const normalizedLength = length / Math.sqrt(innovationVariance);
-    const directionX = length > 0 ? residualX / length : 0;
-    const directionY = length > 0 ? residualY / length : 0;
+    const { directionX, directionY } = this.#adaptation;
     const aligned = directionX * this.#directionX + directionY * this.#directionY > 0.5;
     const large = normalizedLength > INNOVATION_LIMIT;
     this.#maneuverSamples = large ? (aligned ? this.#maneuverSamples + 1 : 1) : 0;
@@ -255,7 +255,13 @@ export class KalmanPredictor implements Predictor {
 
     const latest = this.#latest;
 
-    if (latest !== null) {
+    if (latest === null) {
+      // Allocate scratch buffers only when the first valid stream begins
+      if (this.#adaptation === INITIAL_ADAPTATION) {
+        this.#adaptation = { ...INITIAL_ADAPTATION };
+        this.#checkpointAdaptation = { ...INITIAL_ADAPTATION };
+      }
+    } else {
       if (sample.timeStamp < latest.timeStamp) {
         return;
       }
@@ -273,7 +279,7 @@ export class KalmanPredictor implements Predictor {
         } else if (this.#failedTimeStamp !== null) {
           // A later timestamp starts a fresh estimate from the last raw measurement
           this.#resetFilter();
-          this.#filter.update(latest);
+          this.#filter.updateValidated(latest);
           this.#filterSamples = 1;
           this.#latestAssimilated = latest;
         }
@@ -301,10 +307,19 @@ export class KalmanPredictor implements Predictor {
       this.#checkpointDirectionY = this.#directionY;
       this.#checkpointManeuverSamples = this.#maneuverSamples;
       this.#checkpointManeuverDurationMs = this.#maneuverDurationMs;
+      // Keep the previous estimate intact while reusing the older scratch buffer
+      const scratch = this.#checkpointAdaptation;
       this.#checkpointAdaptation = this.#adaptation;
+      this.#adaptation = scratch;
     }
 
-    if (!this.#filter.update(this.#latest, this.#measurementInflation, this.#processNoiseScale)) {
+    if (
+      !this.#filter.updateValidated(
+        this.#latest,
+        this.#measurementInflation,
+        this.#processNoiseScale,
+      )
+    ) {
       // Retain the prior so a correction at this timestamp can still recover its history
       this.#restoreMetadata();
       this.#failedTimeStamp = sample.timeStamp;
@@ -449,7 +464,15 @@ export class KalmanPredictor implements Predictor {
     this.#directionY = this.#checkpointDirectionY;
     this.#maneuverSamples = this.#checkpointManeuverSamples;
     this.#maneuverDurationMs = this.#checkpointManeuverDurationMs;
-    this.#adaptation = this.#checkpointAdaptation;
+
+    const previous = this.#checkpointAdaptation;
+    const current = this.#adaptation;
+    current.responsiveUntil = previous.responsiveUntil;
+    current.maneuverScale = previous.maneuverScale;
+    current.directionX = previous.directionX;
+    current.directionY = previous.directionY;
+    current.samples = previous.samples;
+    current.durationMs = previous.durationMs;
   }
 
   #resetFilter(): void {
@@ -469,7 +492,7 @@ export class KalmanPredictor implements Predictor {
     this.#checkpointDirectionY = 0;
     this.#checkpointManeuverSamples = 0;
     this.#checkpointManeuverDurationMs = 0;
-    this.#adaptation = INITIAL_ADAPTATION;
-    this.#checkpointAdaptation = INITIAL_ADAPTATION;
+    this.#adaptation = { ...INITIAL_ADAPTATION };
+    this.#checkpointAdaptation = { ...INITIAL_ADAPTATION };
   }
 }
