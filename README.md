@@ -43,3 +43,5 @@ Run `npm run test:lab` for browser and data checks. Build once with `npm run bui
 ## Deployment
 
 The site runs on Cloudflare Workers at [hasta.madebyhex.com](https://hasta.madebyhex.com). Run `npx wrangler login` once, then `npm run deploy` to build and publish the site, including its Open Graph image. Use `npm run deploy:check` to validate the build without publishing.
+
+The collection app has its own Worker and domain at [hasta-lab.madebyhex.com](https://hasta-lab.madebyhex.com), configured in `wrangler.lab.jsonc`. Run `npm run deploy:lab:check` to validate its deployment and `npm run deploy:lab` to publish it. Participant links can prefill setup, for example `https://hasta-lab.madebyhex.com/?participant=P01&session=1`. Keep the deployed collector unchanged while participants complete the study.

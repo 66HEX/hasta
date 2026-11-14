@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hasta-lab",
+  "account_id": "77c1178f8a0ea36c2d6d7b3dd19fea97",
+  "compatibility_date": "2026-11-14",
+  "build": {
+    "command": "npm run build:lab",
+  },
+  "assets": {
+    "directory": "./apps/lab/dist",
+    "not_found_handling": "none",
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "hasta-lab.madebyhex.com", "custom_domain": true }],
+}
