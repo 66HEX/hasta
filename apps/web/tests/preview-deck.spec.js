@@ -65,6 +65,50 @@ test('keyboard and direct activation select previews without manufacturing predi
   await expect(page.locator('[data-prediction-count="0"]')).toHaveCount(2);
 });
 
+test('stability waits for a continuous match and zero restores immediate callbacks', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.goto('/');
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
+  const stability = page.getByRole('slider', { name: 'Stability' });
+  await expect(stability).toHaveAttribute('aria-valuenow', '0');
+  await stability.press('End');
+  await expect(stability).toHaveAttribute('aria-valuenow', '200');
+  await stability.press('Home');
+
+  for (let step = 0; step < 3; step++) {
+    await stability.press('ArrowRight');
+  }
+
+  await expect(stability).toHaveAttribute('aria-valuenow', '30');
+  const target = page.locator('[data-demo-target="Settings"]');
+  const box = await target.boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.clock.runFor(16);
+  await page.mouse.move(x + 1, y);
+  await page.clock.runFor(16);
+  await expect(target).toHaveAttribute('data-prediction-count', '0');
+  await page.clock.runFor(32);
+  await expect(target).toHaveAttribute('data-prediction-count', '1');
+  await page.clock.runFor(120);
+
+  await page.mouse.move(x + 2, y);
+  await page.clock.runFor(16);
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(160);
+  await expect(target).toHaveAttribute('data-prediction-count', '1');
+
+  await stability.press('Home');
+  await page.mouse.move(x, y);
+  await page.clock.runFor(16);
+  await page.mouse.move(x + 1, y);
+  await page.clock.runFor(16);
+  await expect(target).toHaveAttribute('data-prediction-count', '2');
+});
+
 test('preview transitions reverse in place and reduced motion keeps the controls usable', async ({
   page,
 }) => {

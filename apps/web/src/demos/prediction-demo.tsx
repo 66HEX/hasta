@@ -27,6 +27,7 @@ function DemoTarget({
   icon,
   horizon,
   margin,
+  stability,
   onPredict,
   onCancel,
   onHover,
@@ -40,6 +41,7 @@ function DemoTarget({
   icon: IconName;
   horizon: number;
   margin: number;
+  stability: number;
   onPredict: (name: PreviewName, event: IntersectionEvent) => void;
   onCancel: (name: PreviewName, signal: AbortSignal) => void;
   onHover: (name: PreviewName | null) => void;
@@ -57,6 +59,7 @@ function DemoTarget({
 
   const binding = useHastaTarget(controller, {
     when: { type: 'intersects', withinMs: horizon, marginPx: margin, includeCurrent: true },
+    stableForMs: stability,
     onPredict(event) {
       clearTimeout(feedbackTimer.current);
       setPredicted(true);
@@ -135,6 +138,7 @@ export function PredictionDemo({
   const [hovered, setHovered] = useState<PreviewName | null>(null);
   const [focused, setFocused] = useState<PreviewName | null>(null);
   const [selected, setSelected] = useState<PreviewName | null>(null);
+  const [stability, setStability] = useState(0);
   const active = focused ?? hovered ?? anticipated?.name ?? selected;
 
   useEffect(() => {
@@ -270,6 +274,7 @@ export function PredictionDemo({
                     {...target}
                     horizon={horizon}
                     margin={margin}
+                    stability={stability}
                     onPredict={onPredict}
                     onCancel={onCancel}
                     onHover={setHovered}
@@ -285,7 +290,7 @@ export function PredictionDemo({
           <CardFooter>
             <div className="flex w-full flex-col gap-4">
               {controls && (
-                <div className="grid grid-cols-2 gap-6 text-xs text-muted-foreground">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs text-muted-foreground sm:grid-cols-3">
                   <div>
                     <div className="mb-3 flex justify-between gap-2">
                       <span id={`${id}-horizon-label`}>Look ahead</span>
@@ -314,6 +319,22 @@ export function PredictionDemo({
                       step={2}
                       value={[margin]}
                       onValueChange={(values) => setMargin(values[0] ?? 8)}
+                    />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <div className="mb-3 flex justify-between gap-2">
+                      <span id={`${id}-stability-label`}>Stability</span>
+                      <output className="font-mono font-medium text-foreground">
+                        {stability} ms
+                      </output>
+                    </div>
+                    <Slider
+                      aria-labelledby={`${id}-stability-label`}
+                      min={0}
+                      max={200}
+                      step={10}
+                      value={[stability]}
+                      onValueChange={(values) => setStability(values[0] ?? 0)}
                     />
                   </div>
                 </div>
