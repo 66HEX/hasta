@@ -1,6 +1,8 @@
 # Prediction and callback stability
 
-This directory preserves versioned numerical and callback controls. The latest [CPU study](ITERATION3-RESULTS.md) measures faster updates with exact forecast and callback parity against `5cf01cf`. The preceding [numerical study](SPARSE-FILTER-RESULTS.md) compares that predictor with `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). Both keep the existing public API.
+The current predictor adds adaptive velocity smoothing and bounded intersection release hysteresis. Run `node packages/hasta/benchmarks/stability/cursor-jitter.mjs` after building to compare endpoint jitter, repeated starts, acquisition lead, and maneuver response with the frozen `5cf01cf` predictor. The replay reports filter-only and filter-plus-hysteresis results separately across five cadences and noisy, quantized, and irregular input. These are synthetic diagnostics; the browser tests exercise the actual engine, including coalesced input and lifecycle cancellation.
+
+This directory preserves versioned numerical and callback controls. The studies below describe earlier implementations. The latest [CPU study](ITERATION3-RESULTS.md) measures faster updates with exact forecast and callback parity against `5cf01cf`. The preceding [numerical study](SPARSE-FILTER-RESULTS.md) compares that predictor with `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). Both keep the existing public API.
 
 Historical general runners still default to the original predictor and subscription at `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The snapshots in `baseline-fa9ac8d/`, `baseline-0a503bb/`, and `baseline-5cf01cf/` have source and compiled-file integrity manifests. The runtime requires new pointer evidence before starting a speculative callback.
 

@@ -60,6 +60,8 @@ Pass these to `controller.target()` or your framework's target helper.
 
 New forecast callbacks require a new measurement timestamp, for both intersection conditions and custom predicates. Animation frames, same-time corrections, and cooldown expiry alone cannot start or restart them. With `includeCurrent`, confirmed contact can complete `stableForMs` while the pointer remains still.
 
+Intersection rules use bounded release hysteresis: an active speculative match can survive a near miss for up to 32 ms within an extra 6 px margin. A turn or substantial slowdown ends retention sooner. The extra margin never starts a callback, and `stableForMs` still controls activation only. Custom predicates retain their immediate cancellation behavior.
+
 ### Target binding
 
 | Method            | Effect                                                              |
