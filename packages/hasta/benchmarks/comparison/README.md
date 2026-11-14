@@ -2,6 +2,8 @@
 
 This harness compares forecast accuracy, target-hit stability, and model cost. `cv` uses a frozen build from commit `23e16ac`, so changes to the default predictor do not change the baseline. The production `KalmanPredictor` uses a Kalman filter with a constant-velocity motion model. The production filter has a separate experiment in [kalman-experiment.mjs](./kalman-experiment.mjs).
 
+The [action stability harness](../stability/README.md) adds event-driven silence, slow quantized movement, fresh-evidence callbacks and raw lab replay, with optional benchmark-only numerical experiments. It freezes the later production Kalman implementation from `fa9ac8d`. Its action-level results complement the historical trajectory comparison below.
+
 Tune the production Kalman filter and evaluate it on new seeds:
 
 ```sh
