@@ -74,8 +74,8 @@ function PreviewCard({
         className={cn(
           'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden border border-border bg-card text-card-foreground shadow-sm data-[active=true]:translate-x-0 data-[active=true]:translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-lg data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
           profile
-            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16 data-[muted=true]:blur-xs'
-            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16 data-[muted=true]:blur-xs',
+            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 data-[muted=true]:blur-xs sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16'
+            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 data-[muted=true]:blur-xs sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16',
         )}
         data-view={name}
         data-active={active === name}
@@ -100,7 +100,6 @@ function PreviewCard({
 }
 
 export function PreviewDeck({ active }: { active: PreviewName | null }) {
-
   return (
     <div
       className="group/deck pointer-events-none absolute inset-x-0 top-6 bottom-18"
