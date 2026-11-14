@@ -15,6 +15,7 @@ import {
   registryUrls,
 } from './contract.mjs';
 
+const MAX_PROPAGATION_ATTEMPTS = 60;
 const [version, tarballPath] = process.argv.slice(2);
 
 if (!version || !tarballPath) {
@@ -50,11 +51,11 @@ async function verify(attempt = 1) {
     const attestations = await registryDocument(url);
     assert.ok(attestations.attestations?.length > 0, 'Registry has not exposed provenance data');
   } catch (error) {
-    if (attempt === 12) {
+    if (attempt === MAX_PROPAGATION_ATTEMPTS) {
       throw error;
     }
 
-    console.error(`Registry verification ${attempt}/12: ${error.message}`);
+    console.error(`Registry verification ${attempt}/${MAX_PROPAGATION_ATTEMPTS}: ${error.message}`);
     await setTimeout(10_000);
 
     return verify(attempt + 1);
@@ -71,11 +72,13 @@ async function auditSignatures(attempt = 1) {
   } catch (error) {
     const output = `${error.stdout ?? ''}\n${error.stderr ?? ''}`;
 
-    if (attempt === 12 || !isTransientRegistryError(output)) {
+    if (attempt === MAX_PROPAGATION_ATTEMPTS || !isTransientRegistryError(output)) {
       throw error;
     }
 
-    console.error(`Signature audit ${attempt}/12: registry metadata is still propagating`);
+    console.error(
+      `Signature audit ${attempt}/${MAX_PROPAGATION_ATTEMPTS}: registry metadata is still propagating`,
+    );
     await setTimeout(10_000);
 
     return auditSignatures(attempt + 1);
