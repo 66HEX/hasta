@@ -24,7 +24,13 @@
     "test:unit": "npm run test:unit --workspace=hasta",
     "test:browser": "npm run build && npm run test:browser:run",
     "test:browser:run": "npm run test:browser:run --workspace=hasta && npm run test --workspace=@hasta/web && npm run test --workspace=@hasta/lab",
-    "check": "npm run format:check && npm run lint && npm run test:quality && npm run typecheck && npm run build && npm run test:run && npm run pack:check",
+    "check": "npm run ci:quality && npm run ci:e2e",
+    "ci:quality": "npm run format:check && npm run lint && npm run test:quality && npm run test:release && npm run typecheck && npm run build && npm run test:unit:run && npm run pack:check",
+    "ci:e2e": "npm run test:browser:run",
+    "audit:dependencies": "npm audit --audit-level=high",
+    "test:unit:run": "node --test packages/hasta/tests/*.test.js",
+    "test:release": "node --test scripts/release/*.test.mjs",
+    "release:consumers": "node scripts/release/test-consumers.mjs",
     "pack:check": "npm run pack:check --workspace=hasta",
     "browsers:install": "playwright install chromium firefox webkit",
     "bench": "npm run bench --workspace=hasta",
@@ -60,5 +66,6 @@
   },
   "engines": {
     "node": ">=24"
-  }
+  },
+  "packageManager": "npm@11.19.0"
 }

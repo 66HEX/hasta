@@ -1,0 +1,126 @@
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish npm package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: npm-production
+    env:
+      NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out exact release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up exact Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Pin npm
+        shell: bash
+        run: |
+          npm install --global npm@11.19.0
+          test "$(node --version)" = "v$(cat .node-version)"
+          test "npm@$(npm --version)" = "$(node -p 'require("./package.json").packageManager')"
+          test "$(npm config get registry)" = "https://registry.npmjs.org/"
+
+      - name: Validate stable release identity and workspace versions
+        id: release
+        env:
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: node scripts/release/preflight.mjs "$GITHUB_EVENT_PATH" "$RELEASE_REPOSITORY" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release tag commit is on main
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        shell: bash
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          TAG_COMMIT="$(git rev-list --max-count=1 "$RELEASE_TAG")"
+          test "$TAG_COMMIT" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "$TAG_COMMIT" refs/remotes/origin/main
+
+      - name: Verify npm version is unpublished
+        run: node scripts/release/assert-unpublished.mjs "${{ steps.release.outputs.version }}"
+
+      - name: Install dependencies from lockfile
+        run: npm ci
+
+      - name: Audit high-severity dependencies
+        run: npm run audit:dependencies
+
+      - name: Install test browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Run full release gate and build
+        run: npm run check
+
+      - name: Pack the release artifact once
+        id: pack
+        env:
+          PACK_DIRECTORY: ${{ runner.temp }}/hasta-release-artifact
+        shell: bash
+        run: |
+          mkdir -p "$PACK_DIRECTORY"
+          PACK_METADATA="$PACK_DIRECTORY/npm-pack.json"
+          npm pack --json --ignore-scripts --pack-destination "$PACK_DIRECTORY" --workspace hasta > "$PACK_METADATA"
+          node scripts/release/validate-packed-artifact.mjs "$PACK_METADATA" "$PACK_DIRECTORY" "${{ steps.release.outputs.version }}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test exact tarball with current and minimum peers
+        run: npm run release:consumers -- "${{ steps.pack.outputs.tarball }}"
+
+      - name: Dry-run exact tarball publication
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --dry-run --ignore-scripts --access public --tag latest
+
+      - name: Publish exact tarball through npm trusted publishing
+        run: npm publish "${{ steps.pack.outputs.tarball }}" --ignore-scripts --access public --tag latest
+
+      - name: Verify registry version, latest, integrity, provenance, and signatures
+        run: node scripts/release/verify-publication.mjs "${{ steps.release.outputs.version }}" "${{ steps.pack.outputs.tarball }}"
+
+      - name: Smoke test exact registry version with current and minimum peers
+        run: npm run release:consumers -- "${{ steps.release.outputs.version }}"
+
+      - name: Preserve exact release artifact and metadata
+        if: ${{ !cancelled() && steps.pack.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hasta-v${{ steps.release.outputs.version }}
+          path: |
+            ${{ steps.pack.outputs.tarball }}
+            ${{ steps.pack.outputs.metadata }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Preserve browser failure traces
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-browser-failures
+          path: |
+            packages/hasta/test-results
+            apps/web/test-results
+            apps/lab/test-results
+          if-no-files-found: ignore
+          retention-days: 14
