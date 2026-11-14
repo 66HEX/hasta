@@ -96,6 +96,7 @@ test('header prediction follows both demo sliders', async ({ page }) => {
 test('one debug overlay includes the header and keeps prediction active when disabled', async ({
   page,
 }) => {
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
   const debug = page.getByRole('switch', { name: 'Show the library debug overlay' });
   await debug.focus();
@@ -119,7 +120,10 @@ test('one debug overlay includes the header and keeps prediction active when dis
     '3 targets · 400 ms ahead',
   );
   await expect(overlay.locator('[data-hasta-margin="40"]')).toHaveCount(3);
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
   await approachBrand(page);
+  await page.clock.runFor(16);
+  await page.clock.resume();
   const card = page.getByRole('dialog', { name: 'Surprise from Doakes' });
   await expect(card).toBeVisible();
   await page.keyboard.press('Escape');
@@ -130,7 +134,10 @@ test('one debug overlay includes the header and keeps prediction active when dis
   await expect(overlay).toHaveCount(1);
   await debug.press('Space');
   await expect(overlay).toHaveCount(0);
+  await page.clock.pauseAt(new Date('2026-01-01T00:02:00Z'));
   await approachBrand(page);
+  await page.clock.runFor(16);
+  await page.clock.resume();
   await expect(card).toBeVisible();
 });
 
