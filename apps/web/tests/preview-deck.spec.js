@@ -1,41 +1,125 @@
 import { expect, test } from '@playwright/test';
 
-test('a real forecast opens a preview before hover and cancels when the approach expires', async ({
-  page,
-}) => {
-  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-  await page.goto('/');
-  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
-  const target = page.locator('[data-demo-target="Settings"]');
-  await target.scrollIntoViewIfNeeded();
-  const box = await target.boundingBox();
-  const x = box.x + box.width / 2;
-  await page.mouse.move(x, box.y - 140);
+async function previewColors(demo, name) {
+  return demo.evaluate(
+    (element, token) => {
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--accent-foreground)';
+      probe.style.backgroundColor = `color-mix(in oklab, var(${token}) 10%, transparent)`;
+      probe.style.borderColor = `var(${token})`;
+      probe.style.outlineColor = 'var(--accent)';
+      element.append(probe);
+      const style = getComputedStyle(probe);
 
-  for (let index = 0; index < 21; index++) {
-    await page.mouse.move(x, box.y - 135 + index * 6);
-    await page.clock.runFor(16);
-  }
+      const values = {
+        foreground: style.color,
+        background: style.backgroundColor,
+        border: style.borderColor,
+        heading: style.outlineColor,
+      };
 
-  const deck = page.locator('[data-preview-active]');
-  await expect(deck).toHaveAttribute('data-preview-active', 'Settings');
-  expect(await target.evaluate((element) => element.matches(':hover'))).toBe(false);
-  await expect(page.locator('[data-demo="prediction"] figcaption')).toContainText(
-    /Settings predicted [1-9]\d* ms before entry/u,
+      probe.remove();
+
+      return values;
+    },
+    name === 'Profile' ? '--color-emerald-500' : '--color-blue-500',
   );
-  await expect(deck.locator('[data-view="Settings"]')).toHaveAttribute('data-active', 'true');
-  await page.clock.runFor(200);
-  await expect(deck).toHaveAttribute('data-preview-active', 'none');
+}
 
-  await page.mouse.move(x, box.y + box.height / 2);
-  await page.clock.runFor(16);
-  await expect(deck).toHaveAttribute('data-preview-active', 'Settings');
-  await page.clock.runFor(120);
-  await expect(target).toHaveAttribute('data-predicted', 'false');
-  await expect(deck).toHaveAttribute('data-preview-active', 'Settings');
-  await page.mouse.move(0, 0);
-  await expect(deck).toHaveAttribute('data-preview-active', 'none');
-});
+async function expectPreviewColors(demo, name, colors) {
+  const target = demo.getByRole('button', { name: `Preview ${name}` });
+  const card = demo.locator(`[data-view="${name}"]`);
+  await expect(card).toHaveAttribute('data-active', 'true');
+  await expect(card).toHaveCSS('border-color', colors.border);
+  await expect(target).toHaveCSS('border-color', colors.border);
+  await expect(target).toHaveCSS('background-color', colors.background);
+
+  const corners = demo.locator('[data-preview-corner]');
+  await expect(corners).toHaveCount(4);
+
+  for (const corner of await corners.all()) {
+    await expect(corner).toHaveCSS('border-color', colors.border);
+    await expect(corner).toHaveCSS('opacity', '1');
+  }
+}
+
+for (const theme of ['light', 'dark']) {
+  test(`hover and focus share the card colors in the ${theme} theme`, async ({ page }) => {
+    await page.addInitScript((theme) => localStorage.setItem('hasta.theme', theme), theme);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const demo = page.locator('[data-demo="prediction"]');
+
+    for (const name of ['Profile', 'Settings']) {
+      const colors = await previewColors(demo, name);
+      const target = demo.getByRole('button', { name: `Preview ${name}` });
+      await target.focus();
+      await expectPreviewColors(demo, name, colors);
+      const card = demo.locator(`[data-view="${name}"]`);
+      await expect(card.locator(':scope > div').first()).toHaveCSS(
+        'background-color',
+        colors.heading,
+      );
+      await expect(target).toHaveCSS('color', colors.foreground);
+
+      const deckBox = await demo.locator('[data-preview-active]').boundingBox();
+      const cardBox = await card.boundingBox();
+      expect(cardBox.x + cardBox.width / 2).toBeCloseTo(deckBox.x + deckBox.width / 2, 0);
+
+      await demo.getByRole('slider', { name: 'Look ahead' }).focus();
+      await target.hover();
+      await expectPreviewColors(demo, name, colors);
+      await page.mouse.move(0, 0);
+    }
+  });
+}
+
+for (const name of ['Profile', 'Settings']) {
+  test(`a real forecast colors ${name} before hover and cancels when the approach expires`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+    await page.goto('/');
+    await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
+    const demo = page.locator('[data-demo="prediction"]');
+    const colors = await previewColors(demo, name);
+    const target = demo.locator(`[data-demo-target="${name}"]`);
+    await target.scrollIntoViewIfNeeded();
+    const box = await target.boundingBox();
+    const x = box.x + box.width / 2;
+    await page.mouse.move(x, box.y - 140);
+
+    for (let index = 0; index < 21; index++) {
+      await page.mouse.move(x, box.y - 135 + index * 6);
+      await page.clock.runFor(16);
+    }
+
+    const deck = page.locator('[data-preview-active]');
+    await expect(deck).toHaveAttribute('data-preview-active', name);
+    await expect(target).toHaveAttribute('data-predicted', 'true');
+    await expectPreviewColors(demo, name, colors);
+    expect(await target.evaluate((element) => element.matches(':hover'))).toBe(false);
+    await expect(page.locator('[data-demo="prediction"] figcaption')).toContainText(
+      new RegExp(`${name} predicted [1-9]\\d* ms before entry`, 'u'),
+    );
+    await page.clock.runFor(200);
+    await expect(deck).toHaveAttribute('data-preview-active', 'none');
+    await expect(demo.locator('[data-preview-corner]').first()).toHaveCSS('opacity', '0');
+    await expect(target).not.toHaveCSS('border-color', colors.border);
+    await expect(target).not.toHaveCSS('background-color', colors.background);
+
+    await page.mouse.move(x, box.y + box.height / 2);
+    await page.clock.runFor(16);
+    await expect(deck).toHaveAttribute('data-preview-active', name);
+    await page.clock.runFor(120);
+    await expect(target).toHaveAttribute('data-predicted', 'false');
+    await expect(deck).toHaveAttribute('data-preview-active', name);
+    await expectPreviewColors(demo, name, colors);
+    await page.mouse.move(0, 0);
+    await expect(deck).toHaveAttribute('data-preview-active', 'none');
+  });
+}
 
 test('keyboard and direct activation select previews without manufacturing predictions', async ({
   page,
@@ -118,26 +202,26 @@ test('preview transitions reverse in place and reduced motion keeps the controls
   const profile = page.getByRole('button', { name: 'Preview Profile' });
   const settings = page.getByRole('button', { name: 'Preview Settings' });
   await profile.focus();
-  const card = page.locator('.preview-card[data-view="Profile"]');
+  const card = page.locator('[data-view="Profile"]');
 
   const transition = await card.evaluate((element) => {
     const animation = element
       .getAnimations()
-      .find((value) => value.transitionProperty === 'transform');
+      .find((value) => value.transitionProperty === 'translate');
 
     const frames = animation?.effect.getKeyframes();
 
     return { duration: animation?.effect.getTiming().duration, frames: frames?.length };
   });
 
-  expect(transition.duration).toBe(420);
+  expect(transition.duration).toBe(300);
   expect(transition.frames).toBe(2);
   await settings.focus();
   await expect(page.locator('[data-preview-active]')).toHaveAttribute(
     'data-preview-active',
     'Settings',
   );
-  await expect(page.locator('.preview-card[data-active="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-view][data-active="true"]')).toHaveCount(1);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await profile.focus();
@@ -146,13 +230,15 @@ test('preview transitions reverse in place and reduced motion keeps the controls
     'Profile',
   );
 
-  const durations = await page.locator('.preview-deck, .preview-deck *').evaluateAll((elements) =>
-    elements.flatMap((element) =>
-      getComputedStyle(element)
-        .transitionDuration.split(',')
-        .map((duration) => Number(duration.trim().slice(0, -1))),
-    ),
-  );
+  const durations = await page
+    .locator('[data-preview-active], [data-preview-active] *')
+    .evaluateAll((elements) =>
+      elements.flatMap((element) =>
+        getComputedStyle(element)
+          .transitionDuration.split(',')
+          .map((duration) => Number(duration.trim().slice(0, -1))),
+      ),
+    );
 
   expect(Math.max(...durations)).toBeLessThanOrEqual(0.001);
 });

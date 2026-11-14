@@ -12,8 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { PreviewDeck } from '@/demos/preview-deck';
 import type { PreviewName } from '@/demos/preview-deck';
 import { usePrediction } from '@/lib/prediction';
-
-import './prediction-demo.css';
+import { cn } from '@/lib/utils';
 
 const targets: readonly { name: PreviewName; icon: IconName }[] = [
   { name: 'Profile', icon: 'user' },
@@ -94,7 +93,16 @@ function DemoTarget({
     <button
       type="button"
       ref={targetRef}
-      className="preview-target"
+      className={cn(
+        'relative flex h-12 min-w-0 cursor-pointer items-center justify-center gap-2 border border-border bg-card px-3 text-xs text-muted-foreground after:absolute after:-inset-x-px after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[active=true]:text-accent-foreground data-[active=true]:after:scale-x-100 motion-safe:transition-colors motion-safe:duration-150 motion-safe:after:transition-transform motion-safe:after:duration-150 sm:justify-start',
+        name === 'Profile'
+          ? 'after:bg-emerald-500 hover:border-emerald-500 hover:bg-emerald-500/10'
+          : 'after:bg-blue-500 hover:border-blue-500 hover:bg-blue-500/10',
+        (active || predicted || recent) &&
+          (name === 'Profile'
+            ? 'border-emerald-500 bg-emerald-500/10'
+            : 'border-blue-500 bg-blue-500/10'),
+      )}
       aria-label={`Preview ${name}`}
       aria-pressed={selected}
       data-active={active}
@@ -117,11 +125,11 @@ function DemoTarget({
       onBlur={() => onFocus(null)}
       onClick={() => onSelect(name)}
     >
-      <span className="preview-target-icon">
-        <Icon name={icon} />
+      <span className="grid place-items-center">
+        <Icon name={icon} className="size-4" />
       </span>
       <span>{name}</span>
-      <span className="preview-target-mark" aria-hidden="true">
+      <span className="ml-auto hidden text-muted-foreground sm:block" aria-hidden="true">
         ↗
       </span>
     </button>
@@ -301,7 +309,7 @@ export function PredictionDemo({
           <CardContent>
             <div
               data-demo-stage=""
-              className="prediction-stage"
+              className="relative isolate h-96"
               data-active-view={active ?? 'none'}
             >
               <div
@@ -312,30 +320,36 @@ export function PredictionDemo({
                 <span
                   aria-hidden="true"
                   data-pointer-dot=""
-                  className="size-1.5 shrink-0 scale-75 rounded-full bg-muted-foreground/50 transition-[background-color,scale] duration-150 ease-out group-data-[live=true]/pointer-status:scale-100 group-data-[live=true]/pointer-status:bg-emerald-600 motion-reduce:transition-none"
+                  className="size-1.5 shrink-0 scale-75 rounded-full bg-muted-foreground/50 transition duration-150 ease-out group-data-[live=true]/pointer-status:scale-100 group-data-[live=true]/pointer-status:bg-emerald-500 motion-reduce:transition-none"
                 />
                 <span className="grid">
                   <span
                     aria-hidden={moving}
                     data-pointer-idle=""
-                    className="col-start-1 row-start-1 whitespace-nowrap transition-[opacity,translate,filter] duration-150 ease-out group-data-[live=true]/pointer-status:-translate-y-1 group-data-[live=true]/pointer-status:opacity-0 group-data-[live=true]/pointer-status:blur-[2px] motion-reduce:translate-y-0 motion-reduce:blur-none motion-reduce:transition-none"
+                    className="col-start-1 row-start-1 whitespace-nowrap transition duration-150 ease-out group-data-[live=true]/pointer-status:-translate-y-1 group-data-[live=true]/pointer-status:opacity-0 group-data-[live=true]/pointer-status:blur-xs motion-reduce:translate-y-0 motion-reduce:blur-none motion-reduce:transition-none"
                   >
                     Idle
                   </span>
                   <span
                     aria-hidden={!moving}
                     data-pointer-live=""
-                    className="col-start-1 row-start-1 translate-y-1 whitespace-nowrap opacity-0 blur-[2px] transition-[opacity,translate,filter] duration-150 ease-out group-data-[live=true]/pointer-status:translate-y-0 group-data-[live=true]/pointer-status:opacity-100 group-data-[live=true]/pointer-status:blur-none motion-reduce:translate-y-0 motion-reduce:blur-none motion-reduce:transition-none"
+                    className="col-start-1 row-start-1 translate-y-1 whitespace-nowrap opacity-0 blur-xs transition duration-150 ease-out group-data-[live=true]/pointer-status:translate-y-0 group-data-[live=true]/pointer-status:opacity-100 group-data-[live=true]/pointer-status:blur-none motion-reduce:translate-y-0 motion-reduce:blur-none motion-reduce:transition-none"
                   >
                     Tracking
                   </span>
                 </span>
               </div>
-              <span className="preview-stage-label" aria-hidden="true">
+              <span
+                className="absolute top-0 right-0 text-xs tracking-wide text-muted-foreground"
+                aria-hidden="true"
+              >
                 LIVE PREVIEW
               </span>
               <PreviewDeck active={active} />
-              <fieldset className="preview-targets" aria-label="Preview a view">
+              <fieldset
+                className="absolute bottom-2 left-1/2 m-0 grid w-full max-w-80 -translate-x-1/2 grid-cols-2 gap-2 border-0 p-0"
+                aria-label="Preview a view"
+              >
                 {targets.map((target) => (
                   <DemoTarget
                     key={`${target.name}-${activity}`}
@@ -359,15 +373,18 @@ export function PredictionDemo({
               </fieldset>
             </div>
           </CardContent>
-          <CardFooter>
-            <div className="flex w-full flex-col gap-4">
-              {controls && (
-                <fieldset className="prediction-controls">
-                  <legend className="sr-only">Prediction settings</legend>
-                  <div className="prediction-sliders">
+          {(controls || overlay) && (
+            <CardFooter>
+              <fieldset
+                data-demo-controls=""
+                className="m-0 grid w-full min-w-0 grid-cols-2 gap-6 border-0 p-0 text-xs"
+              >
+                <legend className="sr-only">Prediction settings</legend>
+                {controls && (
+                  <>
                     {sliders.map((slider) => (
-                      <div className="prediction-control" key={slider.key}>
-                        <div className="flex justify-between gap-2">
+                      <div className="min-w-0" key={slider.key}>
+                        <div className="flex min-h-9 justify-between gap-2 sm:min-h-5">
                           <span className="min-w-0" id={`${id}-${slider.key}-label`}>
                             {slider.label}
                           </span>
@@ -376,6 +393,7 @@ export function PredictionDemo({
                           </output>
                         </div>
                         <Slider
+                          className="py-3 [&_[data-slot=slider-thumb]]:after:-inset-3.5"
                           aria-labelledby={`${id}-${slider.key}-label`}
                           aria-describedby={`${id}-${slider.key}-description`}
                           aria-valuetext={`${slider.value} ${slider.unit === 'ms' ? 'milliseconds' : 'pixels'}`}
@@ -385,59 +403,109 @@ export function PredictionDemo({
                           value={[slider.value]}
                           onValueChange={(values) => slider.setValue(values[0] ?? slider.value)}
                         />
-                        <p id={`${id}-${slider.key}-description`}>{slider.description}</p>
+                        <p
+                          className="text-xs leading-relaxed text-muted-foreground"
+                          id={`${id}-${slider.key}-description`}
+                        >
+                          {slider.description}
+                        </p>
                       </div>
                     ))}
-                  </div>
-                  <div className="prediction-switches">
-                    <div className="prediction-switch">
-                      <label htmlFor={`${id}-contact`}>Include current contact</label>
-                      <Switch
-                        id={`${id}-contact`}
-                        aria-describedby={`${id}-contact-description`}
-                        checked={includeCurrent}
-                        onCheckedChange={setIncludeCurrent}
-                      />
-                      <p id={`${id}-contact-description`}>
+                    <div className="grid min-w-0 content-start gap-1">
+                      <div className="flex min-h-14 items-center justify-between gap-2 sm:min-h-11">
+                        <label
+                          className="flex min-h-11 cursor-pointer items-center"
+                          htmlFor={`${id}-contact`}
+                        >
+                          Include current contact
+                        </label>
+                        <Switch
+                          className="after:-inset-y-3"
+                          id={`${id}-contact`}
+                          aria-describedby={`${id}-contact-description`}
+                          checked={includeCurrent}
+                          onCheckedChange={setIncludeCurrent}
+                        />
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed text-muted-foreground"
+                        id={`${id}-contact-description`}
+                      >
                         Count contact and crossings as a match.
                       </p>
                     </div>
-                    <div className="prediction-switch">
-                      <label htmlFor={`${id}-once`}>Once per target</label>
-                      <Switch
-                        id={`${id}-once`}
-                        aria-describedby={`${id}-once-description`}
-                        checked={once}
-                        onCheckedChange={setOnce}
-                      />
-                      <p id={`${id}-once-description`}>
+                    <div className="grid min-w-0 content-start gap-1">
+                      <div className="flex min-h-14 items-center justify-between gap-2 sm:min-h-11">
+                        <label
+                          className="flex min-h-11 cursor-pointer items-center"
+                          htmlFor={`${id}-once`}
+                        >
+                          Once per target
+                        </label>
+                        <Switch
+                          className="after:-inset-y-3"
+                          id={`${id}-once`}
+                          aria-describedby={`${id}-once-description`}
+                          checked={once}
+                          onCheckedChange={setOnce}
+                        />
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed text-muted-foreground"
+                        id={`${id}-once-description`}
+                      >
                         One callback per target. Reset activity to try again.
                       </p>
                     </div>
+                    <div className="grid min-w-0 content-start gap-1">
+                      <div className="flex min-h-14 items-center justify-between gap-2 sm:min-h-11">
+                        <span id={`${id}-reset-label`}>Reset activity</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          aria-label="Reset activity"
+                          aria-describedby={`${id}-reset-description`}
+                          onClick={resetActivity}
+                        >
+                          Reset
+                        </Button>
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed text-muted-foreground"
+                        id={`${id}-reset-description`}
+                      >
+                        Clear predictions and counts. Keep your settings.
+                      </p>
+                    </div>
+                  </>
+                )}
+                {overlay && (
+                  <div className="flex min-h-14 min-w-0 items-center justify-between gap-2 self-start sm:min-h-11">
+                    <label
+                      className="flex min-h-11 cursor-pointer items-center"
+                      htmlFor={`${id}-overlay`}
+                    >
+                      Show the library debug overlay
+                    </label>
+                    <Switch
+                      className="after:-inset-y-3"
+                      id={`${id}-overlay`}
+                      checked={debug}
+                      onCheckedChange={setDebug}
+                    />
                   </div>
-                  <div className="prediction-reset">
-                    <p>Clear predictions and counts. Keep your settings.</p>
-                    <Button type="button" variant="outline" onClick={resetActivity}>
-                      Reset activity
-                    </Button>
-                  </div>
-                </fieldset>
-              )}
-              {overlay && (
-                <div className="flex items-center justify-between gap-3 text-xs">
-                  <label htmlFor={`${id}-overlay`}>Show the library debug overlay</label>
-                  <Switch id={`${id}-overlay`} checked={debug} onCheckedChange={setDebug} />
-                </div>
-              )}
-            </div>
-          </CardFooter>
+                )}
+              </fieldset>
+            </CardFooter>
+          )}
         </Card>
       </Surface>
       <figcaption className="p-4 text-center text-xs leading-relaxed text-muted-foreground">
         <output className="flex min-h-5 flex-wrap items-center justify-center gap-2">
           {result ? (
             <>
-              <span className="size-1.5 rounded-full bg-emerald-700 dark:bg-emerald-300" />
+              <span className="size-1.5 rounded-full bg-primary" />
               {result.name} predicted {result.eta} ms before entry
               <span className="border-l pl-2 text-muted-foreground">
                 {result.count} {result.count === 1 ? 'callback' : 'callbacks'}

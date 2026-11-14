@@ -75,23 +75,34 @@ for (const width of [320, 390, 1280]) {
         await slider.press('End');
       }
 
-      const layout = await demo
-        .locator('.prediction-sliders, .prediction-switches')
-        .evaluateAll((grids) =>
-          grids.map((grid) => ({
-            columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length,
-            inside: [...grid.children].every((element) => {
-              const rect = element.getBoundingClientRect();
+      const cells = await demo.locator('[data-demo-controls] > div').evaluateAll((elements) =>
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
 
-              return rect.left >= 0 && rect.right <= innerWidth;
-            }),
-          })),
-        );
+          return { left: rect.left, right: rect.right, top: rect.top, width: rect.width };
+        }),
+      );
 
-      expect(layout).toEqual([
-        { columns: 2, inside: true },
-        { columns: 2, inside: true },
-      ]);
+      expect(cells).toHaveLength(8);
+
+      for (let index = 0; index < cells.length; index++) {
+        expect(cells[index].left).toBe(cells[index % 2].left);
+        expect(cells[index].width).toBe(cells[index % 2].width);
+        expect(cells[index].left).toBeGreaterThanOrEqual(0);
+        expect(cells[index].right).toBeLessThanOrEqual(width);
+        expect(cells[index].top).toBe(cells[index - (index % 2)].top);
+      }
+
+      const reset = demo.getByRole('button', { name: 'Reset activity' });
+      const resetBox = await reset.boundingBox();
+      const resetLabel = await demo.locator('[id$="-reset-label"]').boundingBox();
+      expect(resetLabel.x + resetLabel.width).toBeLessThan(resetBox.x);
+      expect(resetBox.x + resetBox.width).toBeCloseTo(cells[6].right, 0);
+      await expect(reset).toHaveText('Reset');
+      await expect(reset).toHaveCSS('height', '28px');
+      await expect(
+        demo.getByRole('switch', { name: 'Show the library debug overlay' }),
+      ).toBeVisible();
 
       const tracks = await demo
         .locator('[data-slot="slider-track"]')

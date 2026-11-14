@@ -1,89 +1,152 @@
+import { useId } from 'react';
+import type { ReactNode } from 'react';
+
 import { Icon } from '@/components/icon';
+import { cn } from '@/lib/utils';
 
 export type PreviewName = 'Profile' | 'Settings';
 
 function ProfilePreview() {
   return (
-    <div className="preview-profile">
-      <div className="preview-avatar">
-        <Icon name="user" />
+    <div className="flex flex-wrap items-center gap-3 px-3 py-4">
+      <div className="grid size-10 shrink-0 place-items-center border border-border bg-muted">
+        <Icon name="user" className="size-5" />
       </div>
       <div>
-        <strong>Alex Morgan</strong>
-        <span>Design engineer</span>
+        <strong className="block text-xs font-normal">Alex Morgan</strong>
+        <span className="block text-xs text-muted-foreground">Design engineer</span>
       </div>
-      <div className="preview-profile-meta">
+      <div className="flex w-full justify-between pt-2 text-xs text-muted-foreground">
         <span>12 projects</span>
-        <span>
-          Available <i />
+        <span className="flex items-center gap-1">
+          Available <i className="size-1 bg-primary" />
         </span>
       </div>
     </div>
   );
 }
 
+function PreviewToggle() {
+  return (
+    <i className="relative block h-3 w-6 shrink-0 border border-border bg-muted after:absolute after:top-px after:left-px after:size-2 after:bg-muted-foreground group-data-[active=true]/preview-card:after:translate-x-3 group-data-[active=true]/preview-card:after:bg-primary motion-safe:after:transition motion-safe:after:duration-150 motion-safe:after:ease-out" />
+  );
+}
+
 function SettingsPreview() {
   return (
-    <div className="preview-settings">
-      <div>
+    <div className="divide-y divide-border px-3 py-2 text-xs">
+      <div className="flex items-center justify-between py-2">
         <span>Appearance</span>
-        <span>
-          <Icon name="sun" /> Auto
+        <span className="flex items-center gap-1 text-muted-foreground">
+          <Icon name="sun" className="size-3" /> Auto
         </span>
       </div>
-      <div>
+      <div className="flex items-center justify-between py-2">
         <span>Notifications</span>
-        <i className="preview-toggle" />
+        <PreviewToggle />
       </div>
-      <div>
+      <div className="flex items-center justify-between gap-2 py-2">
         <span>Stay a little ahead</span>
-        <i className="preview-toggle" />
+        <PreviewToggle />
+      </div>
+    </div>
+  );
+}
+
+function PreviewCard({
+  name,
+  active,
+  children,
+}: {
+  name: PreviewName;
+  active: PreviewName | null;
+  children: ReactNode;
+}) {
+  const profile = name === 'Profile';
+
+  return (
+    <div
+      className={cn(
+        'absolute top-10 left-1/2 w-52 -translate-x-1/2 sm:w-60',
+        active === name && 'z-10',
+      )}
+    >
+      <div
+        className={cn(
+          'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden border border-border bg-card text-card-foreground shadow-sm data-[active=true]:translate-x-0 data-[active=true]:-translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-lg data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
+          profile
+            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16'
+            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16',
+        )}
+        data-view={name}
+        data-active={active === name}
+        data-muted={active !== null && active !== name}
+      >
+        <div className="flex h-8 items-center gap-2 border-b border-border bg-muted px-3 text-xs group-data-[active=true]/preview-card:bg-accent group-data-[active=true]/preview-card:text-accent-foreground motion-safe:transition-colors motion-safe:duration-150">
+          <Icon name={profile ? 'user' : 'settings'} className="size-3" />
+          <span>{name}</span>
+          <span className="ml-auto text-muted-foreground">{profile ? '01' : '02'}</span>
+        </div>
+        {children}
+        <div className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-between border-t border-dashed border-border px-3 text-xs tracking-wide text-muted-foreground">
+          <span>{profile ? 'YOUR SPACE' : 'MAKE IT YOURS'}</span>
+          <Icon
+            name="check"
+            className="size-3 scale-25 text-primary opacity-0 blur-sm group-data-[active=true]/preview-card:scale-100 group-data-[active=true]/preview-card:opacity-100 group-data-[active=true]/preview-card:blur-none motion-safe:transition motion-safe:duration-300 motion-safe:ease-out"
+          />
+        </div>
       </div>
     </div>
   );
 }
 
 export function PreviewDeck({ active }: { active: PreviewName | null }) {
+  const gridId = useId();
+
   return (
-    <div className="preview-deck" data-preview-active={active ?? 'none'} aria-hidden="true">
-      <div className="preview-grid" />
-      <div className="preview-orbit">
-        <span />
-        <span />
-        <span />
-        <span />
+    <div
+      className="group/deck pointer-events-none absolute inset-x-0 top-6 bottom-18"
+      data-preview-active={active ?? 'none'}
+      data-active={active !== null}
+      aria-hidden="true"
+    >
+      <svg className="absolute inset-0 size-full mask-radial-from-10% mask-radial-to-70% text-base text-border">
+        <defs>
+          <pattern id={gridId} width="1em" height="1em" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="currentColor" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill={`url(#${gridId})`} />
+      </svg>
+      <div
+        className={cn(
+          'absolute inset-x-6 inset-y-6 mx-auto max-w-sm border border-dashed border-border/65 text-primary',
+          active === 'Profile' && 'text-emerald-500',
+          active === 'Settings' && 'text-blue-500',
+        )}
+      >
+        {[
+          '-top-px -left-px border-t border-l',
+          '-top-px -right-px border-t border-r',
+          '-bottom-px -left-px border-b border-l',
+          '-right-px -bottom-px border-r border-b',
+        ].map((corner) => (
+          <span
+            key={corner}
+            data-preview-corner=""
+            className={cn(
+              'absolute size-2 border-current opacity-0 group-data-[active=true]/deck:opacity-100 motion-safe:transition-opacity motion-safe:duration-150',
+              corner,
+            )}
+          />
+        ))}
       </div>
-      <div className="preview-cards">
-        <div className="preview-card" data-view="Profile" data-active={active === 'Profile'}>
-          <div className="preview-card-heading">
-            <Icon name="user" />
-            <span>Profile</span>
-            <span>01</span>
-          </div>
-          <ProfilePreview />
-          <div className="preview-card-footer">
-            <span>YOUR SPACE</span>
-            <Icon name="check" />
-          </div>
-        </div>
-        <div className="preview-card" data-view="Settings" data-active={active === 'Settings'}>
-          <div className="preview-card-heading">
-            <Icon name="settings" />
-            <span>Settings</span>
-            <span>02</span>
-          </div>
-          <SettingsPreview />
-          <div className="preview-card-footer">
-            <span>MAKE IT YOURS</span>
-            <Icon name="check" />
-          </div>
-        </div>
-      </div>
-      <div className="preview-ready">
-        <Icon name="check" />
-        <span>Preview ready</span>
-      </div>
-      <div className="preview-idle-label">A little ahead of you.</div>
+      <PreviewCard name="Profile" active={active}>
+        <ProfilePreview />
+      </PreviewCard>
+      <PreviewCard name="Settings" active={active}>
+        <SettingsPreview />
+      </PreviewCard>
     </div>
   );
 }
