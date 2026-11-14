@@ -1,3 +1,7 @@
+This report records the numerical behavior accepted at checkpoint `5cf01cf`. The later
+[CPU optimization](ITERATION3-RESULTS.md) preserves that behavior exactly while reducing
+update cost; it does not change the numerical results or tradeoffs below.
+
 The production filter passed the reserved final holdout against the accepted Hasta filter
 at `0a503bbc60adfdece2ca42f06a67b0254966c93b`. Mean trace error at 120 ms fell by 6.65%, and the
 targeted 8–17 ms timed-spike error fell by 17.60%. All 644 predefined checks passed. The

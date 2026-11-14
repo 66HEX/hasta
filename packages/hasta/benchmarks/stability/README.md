@@ -1,8 +1,8 @@
 # Prediction and callback stability
 
-This directory preserves versioned numerical and callback controls. The latest [filter study](SPARSE-FILTER-RESULTS.md) compares production with the accepted filter at `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). It keeps the existing public API.
+This directory preserves versioned numerical and callback controls. The latest [CPU study](ITERATION3-RESULTS.md) measures faster updates with exact forecast and callback parity against `5cf01cf`. The preceding [numerical study](SPARSE-FILTER-RESULTS.md) compares that predictor with `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). Both keep the existing public API.
 
-Historical general runners still default to the original predictor and subscription at `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The snapshots in `baseline-fa9ac8d/` and `baseline-0a503bb/` have source and compiled-file integrity manifests. The runtime requires new pointer evidence before starting a speculative callback.
+Historical general runners still default to the original predictor and subscription at `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The snapshots in `baseline-fa9ac8d/`, `baseline-0a503bb/`, and `baseline-5cf01cf/` have source and compiled-file integrity manifests. The runtime requires new pointer evidence before starting a speculative callback.
 
 The [first filter results](FILTER-RESULTS.md) record the dense-input numerical improvement while using the same callback policy on both sides. The earlier [callback-only results](RESULTS.md) record observation freshness before either filter update.
 
@@ -120,3 +120,22 @@ Existing `filter-run.mjs`, `filter-external.mjs`, `filter-cadence.mjs`, and `per
 this study. For CPU measurements use `node packages/hasta/benchmarks/stability/perf.mjs
 --control 0a503bb --output /tmp/hypothesis-performance.json` only when the machine is idle
 and a candidate has passed quality checks.
+
+Iteration 3 separates exact CPU optimization from action-behavior research. Its frozen
+current control is `5cf01cf`; the older `0a503bb` remains a retention reference. See the
+[protocol](ITERATION3-PROTOCOL.md) and [results](ITERATION3-RESULTS.md). Historical runners
+and their default controls remain unchanged.
+
+```sh
+node packages/hasta/benchmarks/stability/iteration3-run.mjs --lane cpu --stage development --label optimization --output /tmp/optimization-development.json
+node packages/hasta/benchmarks/stability/iteration3-run.mjs --lane cpu --stage cadence --label optimization --selection /tmp/optimization-development.json --output /tmp/optimization-cadence.json
+```
+
+Use `--candidate /absolute/source-only/index.mjs` for a frozen research candidate, and omit
+it after production integration. `--lane actions` applies the separately preregistered
+behavior gates. Exploratory training accepts `--stage training --repeats 3`; development,
+cadence validation, and final always use 12 repetitions. Exact query digests preserve
+Float64 values and signed zero; callback episodes at both stability durations are checked
+separately. CPU acceptance also requires two isolated timing confirmations before the final
+set may be opened. The final command uses `--stage final` and the same passing production
+selection, source fingerprints, lane, and label.
