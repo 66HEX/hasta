@@ -343,3 +343,201 @@ test('predicate errors consume the rejected sample before recovery', async ({ pa
 
   expect(result).toEqual({ idle: [], calls: [1021], errors: ['predicate failed'] });
 });
+
+test('near-boundary misses retain one episode even outside the spatial query, then expire', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const engine = h.createHasta({ debug: true });
+    const element = h.element({ x: 125, width: 20 });
+    const events = [];
+    engine
+      .track(element)
+      .when({ type: 'intersects', withinMs: 120 }, (event) => events.push(event));
+    h.pointer(1000, 0);
+    h.pointer(1010, 10);
+    h.frame();
+    element.style.left = '135px';
+    h.pointer(1011, 11);
+    h.frame();
+    const retained = !events[0].signal.aborted;
+    const debug = engine.getDebugSnapshot().targets[0].rules[0];
+    element.style.left = '125px';
+    h.pointer(1012, 12);
+    h.frame();
+    const recovered = events.length;
+
+    for (const now of [1013, 1029, 1044, 1045]) {
+      element.style.left = `${now - 1000 + 124}px`;
+      h.frame(now);
+    }
+
+    const expired = events[0].signal.aborted;
+    const calls = events.length;
+    engine.destroy();
+
+    return { retained, recovered, expired, calls, debug };
+  });
+
+  expect(result.retained).toBe(true);
+  expect(result.debug.latched).toBe(true);
+  expect(result.debug.matches).toBe(false);
+  expect(result.recovered).toBe(1);
+  expect(result.expired).toBe(true);
+  expect(result.calls).toBe(1);
+});
+
+test('release padding never starts a prediction outside the real target', async ({ page }) => {
+  const calls = await page.evaluate(() => {
+    const h = window.harness;
+    const engine = h.createHasta();
+    let count = 0;
+    engine
+      .track(h.element({ x: 135, width: 20 }))
+      .when({ type: 'intersects', withinMs: 120 }, () => count++);
+    h.pointer(1000, 0);
+    h.pointer(1010, 10);
+    h.frame();
+    engine.destroy();
+
+    return count;
+  });
+
+  expect(calls).toBe(0);
+});
+
+for (const kind of ['turn', 'brake', 'reverse']) {
+  test(`${kind} releases a speculative target promptly`, async ({ page }) => {
+    const result = await page.evaluate((kind) => {
+      const h = window.harness;
+      const engine = h.createHasta();
+      const events = [];
+      engine
+        .track(h.element({ x: 230, width: 20 }))
+        .when({ type: 'intersects', withinMs: 160 }, (event) => events.push(event));
+
+      for (let t = 0; t <= 1000; t += 8) {
+        h.pointer(1000 + t, t * 0.2, 110);
+      }
+
+      h.frame();
+      const started = events.length;
+      let releasedAt = null;
+
+      for (let t = 8; t <= 80; t += 8) {
+        const x = kind === 'reverse' ? 200 - t * 0.2 : kind === 'brake' ? 200 + t * 0.04 : 200;
+        const y = kind === 'turn' ? 110 + t * 0.2 : 110;
+        h.pointer(2000 + t, x, y);
+        h.frame();
+
+        if (events[0]?.signal.aborted) {
+          releasedAt ??= t;
+        }
+      }
+
+      const calls = events.length;
+      engine.destroy();
+
+      return { started, releasedAt, calls };
+    }, kind);
+
+    expect(result.started).toBe(1);
+    expect(result.releasedAt).not.toBeNull();
+    expect(result.releasedAt).toBeLessThanOrEqual(48);
+    expect(result.calls).toBe(1);
+  });
+}
+
+test('noisy monotonic pointer input reaches the target once across 100 seeds', async ({ page }) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const runs = [];
+
+    for (let initialSeed = 1; initialSeed <= 100; initialSeed++) {
+      const engine = h.createHasta();
+      const element = h.element({ x: 250, width: 80 });
+      let starts = 0;
+      let cancellations = 0;
+      engine.track(element).when({ type: 'intersects', withinMs: 160 }, (event) => {
+        starts++;
+        event.signal.addEventListener('abort', () => cancellations++);
+      });
+      let seed = initialSeed;
+      let nextSample = 0;
+
+      for (let frame = 0; frame <= 81; frame++) {
+        const now = frame * (1000 / 60);
+        const batch = [];
+
+        while (nextSample <= now) {
+          seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+          batch.push({
+            x: nextSample * 0.2 + seed / 2 ** 32 - 0.5,
+            y: 110,
+            timeStamp: 1000 + nextSample,
+          });
+          nextSample += 8;
+        }
+
+        if (batch.length > 0) {
+          const last = batch.at(-1);
+          h.pointer(1000 + now, last.x, last.y, { coalesced: batch });
+        }
+
+        h.frame(1000 + now);
+      }
+
+      runs.push({ starts, cancellations });
+      engine.destroy();
+      element.remove();
+    }
+
+    return {
+      repeated: runs.filter((run) => run.starts > 1).length,
+      missed: runs.filter((run) => run.starts === 0).length,
+      cancellations: runs.reduce((sum, run) => sum + run.cancellations, 0),
+    };
+  });
+
+  expect(result).toEqual({ repeated: 0, missed: 0, cancellations: 0 });
+});
+
+for (const action of ['pause', 'untrack', 'hide', 'expire']) {
+  test(`${action} cancels an episode held by release hysteresis`, async ({ page }) => {
+    const result = await page.evaluate((action) => {
+      const h = window.harness;
+      const engine = h.createHasta();
+      const element = h.element({ x: 125, width: 20 });
+      const target = engine.track(element);
+      let signal;
+      target.when({ type: 'intersects', withinMs: 120 }, (event) => {
+        signal = event.signal;
+      });
+      h.pointer(1000, 0);
+      h.pointer(1010, 10);
+      h.frame();
+      element.style.left = '135px';
+      h.frame(1011);
+      const held = !signal.aborted;
+
+      if (action === 'pause') {
+        engine.pause();
+      } else if (action === 'untrack') {
+        target.untrack();
+      } else if (action === 'hide') {
+        element.style.display = 'none';
+        h.frame(1012);
+      } else {
+        h.frame(1110);
+      }
+
+      const aborted = signal.aborted;
+      engine.destroy();
+
+      return { held, aborted };
+    }, action);
+
+    expect(result).toEqual({ held: true, aborted: true });
+  });
+}

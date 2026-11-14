@@ -13,6 +13,7 @@ import {
   normalizeIntersectsCondition,
   debugConfiguration,
 } from './options.js';
+import { IntersectionHysteresis, RELEASE_MARGIN_PX } from './triggers/intersection-hysteresis.js';
 import { Subscription } from './triggers/subscription.js';
 import type { SubscriptionOptions } from './triggers/subscription.js';
 import type {
@@ -35,6 +36,7 @@ type Rule = {
 } & (
   | {
       kind: 'intersection';
+      hysteresis: IntersectionHysteresis;
       condition: Required<IntersectsCondition>;
       subscription: Subscription<IntersectionContext>;
     }
@@ -645,7 +647,15 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           continue;
         }
 
-        if (rule.kind === 'intersection' && !candidates.has(target.id)) {
+        if (rule.kind === 'intersection' && !rule.subscription.latched) {
+          rule.hysteresis.reset();
+        }
+
+        if (
+          rule.kind === 'intersection' &&
+          !candidates.has(target.id) &&
+          !rule.subscription.latched
+        ) {
           rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
@@ -739,8 +749,25 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           }
 
           if (rule.kind === 'intersection' && intersection === null) {
+            const retained =
+              rule.subscription.latched &&
+              rule.hysteresis.retain(
+                now,
+                forecast,
+                predictor.intersectRect(now, horizon, expand(rect, margin + RELEASE_MARGIN_PX)) !==
+                  null,
+              );
+
+            if (retained) {
+              continue;
+            }
+
             rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
             continue;
+          }
+
+          if (rule.kind === 'intersection') {
+            rule.hysteresis.match(forecast, observedContact);
           }
 
           const context: PredictionContext = Object.freeze({
@@ -911,6 +938,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           id: nextRuleId++,
           debug: null,
           kind: 'intersection',
+          hysteresis: new IntersectionHysteresis(),
           condition: normalizeIntersectsCondition(condition),
           subscription: new Subscription<IntersectionContext>(
             callback,
