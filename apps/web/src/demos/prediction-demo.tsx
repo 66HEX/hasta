@@ -452,7 +452,7 @@ export function PredictionDemo({
                       </p>
                     </div>
                     <div className="grid min-w-0 content-start gap-1">
-                      <div className="flex min-h-14 items-center justify-between gap-2 sm:min-h-11">
+                      <div className="flex min-h-14 items-center justify-between gap-1 sm:min-h-11 sm:gap-2">
                         <span id={`${id}-reset-label`}>Reset activity</span>
                         <Button
                           type="button"
