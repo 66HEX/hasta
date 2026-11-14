@@ -3,7 +3,9 @@ import { expect, test } from '@playwright/test';
 test('a real forecast opens a preview before hover and cancels when the approach expires', async ({
   page,
 }) => {
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
   await page.goto('/');
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
   const target = page.locator('[data-demo-target="Settings"]');
   await target.scrollIntoViewIfNeeded();
   const box = await target.boundingBox();
@@ -12,7 +14,7 @@ test('a real forecast opens a preview before hover and cancels when the approach
 
   for (let index = 0; index < 21; index++) {
     await page.mouse.move(x, box.y - 135 + index * 6);
-    await page.waitForTimeout(16);
+    await page.clock.runFor(16);
   }
 
   const deck = page.locator('[data-preview-active]');
@@ -22,10 +24,13 @@ test('a real forecast opens a preview before hover and cancels when the approach
     /Settings predicted [1-9]\d* ms before entry/u,
   );
   await expect(deck.locator('[data-view="Settings"]')).toHaveAttribute('data-active', 'true');
+  await page.clock.runFor(200);
   await expect(deck).toHaveAttribute('data-preview-active', 'none');
 
   await page.mouse.move(x, box.y + box.height / 2);
+  await page.clock.runFor(16);
   await expect(deck).toHaveAttribute('data-preview-active', 'Settings');
+  await page.clock.runFor(120);
   await expect(target).toHaveAttribute('data-predicted', 'false');
   await expect(deck).toHaveAttribute('data-preview-active', 'Settings');
   await page.mouse.move(0, 0);

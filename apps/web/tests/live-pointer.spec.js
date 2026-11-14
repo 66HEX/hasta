@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+// Keep pointer timestamps and expiry timers together while commands cross the browser protocol
+async function openWithPausedClock(page) {
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.goto('/');
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
+}
+
 async function configure(demo, horizon, margin) {
   const lookAhead = demo.getByRole('slider', { name: 'Look ahead' });
   const targetMargin = demo.getByRole('slider', { name: 'Target margin' });
@@ -19,7 +26,7 @@ async function configure(demo, horizon, margin) {
 }
 
 test('moving inside the target reactivates it after each idle expiry', async ({ page }) => {
-  await page.goto('/');
+  await openWithPausedClock(page);
   const demo = page.locator('[data-demo="prediction"]');
   const target = demo.locator('[data-demo-target="Settings"]');
   await target.scrollIntoViewIfNeeded();
@@ -27,28 +34,32 @@ test('moving inside the target reactivates it after each idle expiry', async ({ 
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
   await page.mouse.move(x, y);
+  await page.clock.runFor(200);
+  const initialCount = Number(await target.getAttribute('data-prediction-count'));
 
   for (let cycle = 0; cycle < 5; cycle++) {
     await expect(target).toHaveAttribute('data-predicted', 'false');
 
     for (let step = 0; step < 4; step++) {
       await page.mouse.move(x - 3 + step * 2, y);
-      await page.waitForTimeout(16);
+      await page.clock.runFor(16);
     }
 
     await expect(target).toHaveAttribute('data-predicted', 'true');
+    await page.clock.runFor(120);
     await expect(target).toHaveAttribute('data-predicted', 'false');
   }
 
-  await expect(demo.locator('figcaption')).toContainText('5 callbacks');
+  await expect(target).toHaveAttribute('data-prediction-count', String(initialCount + 5));
 });
 
 for (const width of [390, 1440]) {
   test(`fast live sweeps light both targets at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto('/');
+    await openWithPausedClock(page);
     const demo = page.locator('[data-demo="prediction"]');
     await configure(demo, 60, 0);
+    await page.clock.runFor(16);
     const targets = demo.locator('[data-demo-target]');
     await targets.first().scrollIntoViewIfNeeded();
     const first = await targets.first().boundingBox();
@@ -62,10 +73,11 @@ for (const width of [390, 1440]) {
       const start = run % 2 === 0 ? left : right;
       const end = run % 2 === 0 ? right : left;
       await page.mouse.move(start, y);
-      await page.waitForTimeout(20);
+      await page.clock.runFor(20);
       await page.mouse.move(start + (run % 2 === 0 ? -1 : 1), y);
-      await page.waitForTimeout(20);
+      await page.clock.runFor(20);
       await page.mouse.move(end, y);
+      await page.clock.runFor(16);
       await expect
         .poll(() =>
           targets.evaluateAll((elements) =>
@@ -80,6 +92,7 @@ for (const width of [390, 1440]) {
           ),
         )
         .toBe(true);
+      await page.clock.runFor(140);
       await expect
         .poll(() =>
           targets.evaluateAll((elements) =>
@@ -195,7 +208,7 @@ for (const overlay of [false, true]) {
   test(`pointer status follows page-wide movement with debug ${overlay ? 'on' : 'off'}`, async ({
     page,
   }) => {
-    await page.goto('/');
+    await openWithPausedClock(page);
     const demo = page.locator('[data-demo="prediction"]');
 
     if (overlay) {
@@ -218,7 +231,7 @@ for (const overlay of [false, true]) {
 
       for (let step = 0; step < 4; step++) {
         await page.mouse.move(startX + step * 2, box.y + 45);
-        await page.waitForTimeout(16);
+        await page.clock.runFor(16);
       }
 
       await expect(status).toHaveAttribute('data-live', 'true');
@@ -227,6 +240,7 @@ for (const overlay of [false, true]) {
         await expect(debug).toHaveAttribute('data-hasta-status', 'tracking');
       }
 
+      await page.clock.runFor(320);
       await expect(status).toHaveAttribute('data-live', 'false');
 
       if (overlay) {
@@ -257,7 +271,7 @@ for (const overlay of [false, true]) {
 test('pointer status stays live through brief stops without delaying debug expiry', async ({
   page,
 }) => {
-  await page.goto('/');
+  await openWithPausedClock(page);
   const demo = page.locator('[data-demo="prediction"]');
   await demo.getByRole('switch', { name: 'Show the library debug overlay' }).check();
   const status = demo.locator('[data-demo-pointer-status]');
@@ -277,15 +291,17 @@ test('pointer status stays live through brief stops without delaying debug expir
 
   for (let cycle = 0; cycle < 4; cycle++) {
     await page.mouse.move(box.x - 60 + cycle * 4, box.y + 45);
-    await page.waitForTimeout(16);
+    await page.clock.runFor(16);
     await page.mouse.move(box.x - 58 + cycle * 4, box.y + 45);
+    await page.clock.runFor(16);
     await expect(status).toHaveAttribute('data-live', 'true');
     await expect(debug).toHaveAttribute('data-hasta-status', 'tracking');
-    await page.waitForTimeout(150);
+    await page.clock.runFor(150);
     await expect(debug).toHaveAttribute('data-hasta-status', 'idle');
     await expect(status).toHaveAttribute('data-live', 'true');
   }
 
+  await page.clock.runFor(320);
   await expect(status).toHaveAttribute('data-live', 'false');
   expect(await page.evaluate(() => window.pointerStatusChanges)).toEqual(['true', 'false']);
 });
