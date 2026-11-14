@@ -59,6 +59,16 @@ test('recovers a closed recording and blocks a second collection tab', async ({
   await expect(second.getByRole('button', { name: 'Open session' })).toBeDisabled();
   await second.close();
   await page.bringToFront();
+  await page.evaluate(() => {
+    // Simulate abrupt termination without allowing graceful interruption handlers to save first
+    for (const [target, type] of [
+      [window, 'blur'],
+      [document, 'visibilitychange'],
+      [document, 'pointerout'],
+    ]) {
+      target.addEventListener(type, (event) => event.stopImmediatePropagation(), { capture: true });
+    }
+  });
   await page.getByRole('button', { name: 'Start', exact: true }).click();
   await page.reload();
   await resume(page);
