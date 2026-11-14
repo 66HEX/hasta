@@ -17,7 +17,7 @@ const PredictionContext = createContext<PredictionState | null>(null);
 
 export function PredictionProvider({ children }: { children: ReactNode }) {
   const [horizon, setHorizon] = useState(160);
-  const [margin, setMargin] = useState(8);
+  const [margin, setMargin] = useState(4);
   const [debug, setDebug] = useState(false);
   const controller = useHasta({ horizonMs: horizon, debug });
 
