@@ -5,6 +5,8 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { DoakesVideo } from '@/components/doakes-video';
 import { usePrediction } from '@/lib/prediction';
 
+import { Badge } from './ui/badge';
+
 const replayCooldownMs = 10_000;
 
 export function HeaderBrand() {
@@ -143,7 +145,7 @@ export function HeaderBrand() {
           <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
           <h1>hasta</h1>
         </a>
-        <span className="rounded border px-1.5 py-0.5 text-xs text-muted-foreground">0.2.0</span>
+        <Badge variant="secondary">0.2.0</Badge>
       </div>
       <Popover.Portal>
         <Popover.Positioner
