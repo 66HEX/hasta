@@ -147,7 +147,7 @@ test('Tab visits visible controls and gives slider thumbs a visible focus ring',
     footer: true,
     name: expect.stringContaining('Back to top'),
   });
-  expect(visited.filter((control) => control.slider)).toHaveLength(2);
+  expect(visited.filter((control) => control.slider)).toHaveLength(3);
   expect(visited.filter((control) => control.name === 'Code framework')).toHaveLength(1);
   await page.keyboard.press(previous);
   await expect(page.locator('footer').getByRole('link', { name: 'Marek Jóźwiak' })).toBeFocused();
