@@ -1,0 +1,10 @@
+{
+  "purpose": "Internal benchmark experiments only. Not exported or used by the production library.",
+  "capturedFrom": "Working build before API-scope simplification",
+  "sha256": {
+    "core/prediction/kalman-state.js": "36e0f0124c90864151e1273572a6ddfaa1b905671dcbd9bf1092a58a7388090a",
+    "core/prediction/kalman-predictor.js": "e79ccfce05328352ba1f841ddc0e46b71aaec54eca3037f551f26124082ab271",
+    "core/line-rect.js": "8cf181e52991a290828aded9bc9e0ca93512ea1f46557d87ce272c4bd2e510a2",
+    "core/validation.js": "7370d1b4a9207696ff776bd91c7fb21f57c6e0cb2f8980fb393b0c9fb22fafcb"
+  }
+}

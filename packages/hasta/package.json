@@ -75,6 +75,9 @@
     "bench:comparison:perf": "node benchmarks/comparison/perf.mjs",
     "bench:comparison:archive": "node benchmarks/comparison/archive.mjs",
     "bench:kalman": "npm run build && node benchmarks/comparison/kalman-experiment.mjs",
+    "bench:stability": "npm run build && node benchmarks/stability/run.mjs",
+    "bench:stability:lab": "node benchmarks/stability/lab-run.mjs",
+    "bench:stability:perf": "node benchmarks/stability/perf.mjs",
     "test:frameworks": "playwright test -c playwright.frameworks.config.js"
   },
   "peerDependencies": {

@@ -1,0 +1,19 @@
+{
+  "baseCommit": "fa9ac8da5ca593b2cc541eb0007f6d0d190aab06",
+  "description": "Frozen production Kalman predictor and subscription before stability changes. Compiled directly from Git HEAD, never from the mutable working tree.",
+  "compiler": "6.0.3",
+  "sourceSha256": {
+    "core/prediction/kalman-state.ts": "8c197d09572d628adad21bc798d8f0aab1e66a8574e62b92082afbf0ae0fa301",
+    "core/prediction/kalman-predictor.ts": "21876c309edca27e22b30a13272e587043d488207b0eaa4028b15b66900746b1",
+    "core/line-rect.ts": "2e49637d0882ab15c0531f2dbbbc0bae408d0b7e767cbccbe855866495a9bb2f",
+    "core/validation.ts": "3de56ff5d00f3a59f31530026e5051b593cfba516eebe7250f2217bdf05e878f",
+    "runtime/triggers/subscription.ts": "44ab163dadbbd280448bf928f4e3aea1a6f3e8672fd63aa9b025ee7ff2acdf91"
+  },
+  "sha256": {
+    "core/prediction/kalman-state.js": "52c393b9b79db85b4c25e8965922e71d9a02b64e2300b3ced81e4a4bba4964d5",
+    "core/prediction/kalman-predictor.js": "658fd74c17b09650f5cfdc8a7e8b3799798c8dce366c52c9012b1fa2d020b390",
+    "core/line-rect.js": "8cf181e52991a290828aded9bc9e0ca93512ea1f46557d87ce272c4bd2e510a2",
+    "core/validation.js": "7370d1b4a9207696ff776bd91c7fb21f57c6e0cb2f8980fb393b0c9fb22fafcb",
+    "runtime/triggers/subscription.js": "ad9c4761948a00e75472d698030f97db48d5a45a6025f0aa6db11a9a39cb41b4"
+  }
+}
