@@ -60,7 +60,9 @@ test('forecast ETA includes time spent measuring layout', async ({ page }) => {
   expect(result).toEqual([{ eta: 60, at: 1040, predictedAt: 1100 }]);
 });
 
-test('a failed DOM measurement is isolated and recovers on the next frame', async ({ page }) => {
+test('a failed DOM measurement recovers bounds immediately and predictions on fresh input', async ({
+  page,
+}) => {
   const result = await page.evaluate(() => {
     const h = window.harness;
     const errors = [];
@@ -88,12 +90,16 @@ test('a failed DOM measurement is isolated and recovers on the next frame', asyn
     bad.getBoundingClientRect = measure;
     h.frame(1030);
     const repairedBounds = target.getBounds();
+    const idle = recoveredCalls;
+    h.pointer(1031, 31);
+    h.frame();
     engine.destroy();
 
     return {
       errors,
       goodCalls,
       recoveredCalls,
+      idle,
       failedBounds,
       framesAfterFailure,
       repaired: repairedBounds !== null,
@@ -105,6 +111,7 @@ test('a failed DOM measurement is isolated and recovers on the next frame', asyn
     errors: ['layout failed'],
     goodCalls: 1,
     recoveredCalls: 1,
+    idle: 0,
     failedBounds: null,
     framesAfterFailure: 1,
     repaired: true,
@@ -289,13 +296,17 @@ test('identical rules keep separate cooldown, once and cancellation state', asyn
     h.frame();
     const beforeCooldown = events.length;
     h.frame(1050);
+    const waiting = events.length;
+    h.pointer(1050, 50);
+    h.frame();
     engine.destroy();
 
-    return { events, beforeCooldown };
+    return { events, beforeCooldown, waiting };
   });
 
   expect(result).toEqual({
     beforeCooldown: 2,
+    waiting: 2,
     events: [
       ['first', 80],
       ['third', 80],

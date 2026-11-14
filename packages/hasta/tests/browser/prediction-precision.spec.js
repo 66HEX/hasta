@@ -5,9 +5,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => window.ready);
 });
 
-test('fractional event timestamps preserve corner hits and their dwell timers', async ({
-  page,
-}) => {
+test('fractional event timestamps preserve corner hits on fresh input', async ({ page }) => {
   const failures = await page.evaluate(() => {
     const h = window.harness;
     const failures = [];
@@ -20,9 +18,7 @@ test('fractional event timestamps preserve corner hits and their dwell timers', 
           const events = [];
           engine
             .track(element)
-            .when({ type: 'intersects', withinMs: 120 }, (event) => events.push(event), {
-              stableForMs: interval / 2,
-            });
+            .when({ type: 'intersects', withinMs: 120 }, (event) => events.push(event));
           h.pointer(1000, 100, 100);
           h.pointer(1000 + interval, 100 + dx, 100 + dy);
           h.frame();
@@ -175,7 +171,7 @@ test('a stable corner prediction matures without resetting the dwell timer betwe
   });
 
   expect(result).toEqual({
-    hits: [{ at: 1060, predictedAt: 1140, aborted: false }],
+    hits: [{ at: 1063, predictedAt: 1140, aborted: false }],
     departed: true,
   });
 });

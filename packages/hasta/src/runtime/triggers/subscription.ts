@@ -36,6 +36,7 @@ export class Subscription<T extends object> {
   #fired = false;
   #running = false;
   #stableSince: number | null = null;
+  #lastEvidenceTime: number | null = null;
   #lastFired = -Infinity;
   #controller: AbortController | null = null;
   #pending: symbol | null = null;
@@ -75,13 +76,33 @@ export class Subscription<T extends object> {
     });
   }
 
-  evaluate(matches: boolean, now: number, context: T | null, canStart = true): (() => void) | null {
+  evaluate(
+    matches: boolean,
+    now: number,
+    context: T | null,
+    canStart = true,
+    evidenceTime?: number,
+    observedContact = false,
+  ): (() => void) | null {
     if (!this.#active) {
       return null;
     }
 
     if (!Number.isFinite(now)) {
       throw new RangeError('Evaluation time must be finite.');
+    }
+
+    if (evidenceTime !== undefined && (!Number.isFinite(evidenceTime) || evidenceTime > now)) {
+      throw new RangeError('Evidence time must be finite and no later than evaluation time.');
+    }
+
+    const observationTime = observedContact ? now : (evidenceTime ?? now);
+
+    const corroborated =
+      observedContact || evidenceTime === undefined || evidenceTime !== this.#lastEvidenceTime;
+
+    if (evidenceTime !== undefined) {
+      this.#lastEvidenceTime = evidenceTime;
     }
 
     if (!matches || context === null) {
@@ -100,15 +121,19 @@ export class Subscription<T extends object> {
       return null;
     }
 
-    if (this.#stableSince === null || now < this.#stableSince) {
-      this.#stableSince = now;
+    if (!corroborated) {
+      return null;
+    }
+
+    if (this.#stableSince === null || observationTime < this.#stableSince) {
+      this.#stableSince = observationTime;
     }
 
     if (
       this.#pending !== null ||
       this.#running ||
       (this.#once && this.#fired) ||
-      now - this.#stableSince < this.#stableForMs ||
+      observationTime - this.#stableSince < this.#stableForMs ||
       now - this.#lastFired < this.#cooldownMs
     ) {
       return null;

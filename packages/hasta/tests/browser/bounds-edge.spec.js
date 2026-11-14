@@ -36,7 +36,7 @@ test('tracks fractional, negative and transformed border boxes in viewport coord
   expect(result.measured.maxX - result.measured.minX).toBeGreaterThan(40.25);
 });
 
-test('display none and zero area cancel a hit while restored geometry can start a new episode', async ({
+test('display none and zero area cancel a hit while restored geometry waits for fresh input', async ({
   page,
 }) => {
   const result = await page.evaluate(() => {
@@ -54,21 +54,29 @@ test('display none and zero area cancel a hit while restored geometry can start 
     const hidden = { bounds: target.getBounds(), aborted: signals[0].aborted };
     element.style.display = '';
     h.frame(1040);
+    const firstWait = signals.length;
+    h.pointer(1041, 41);
+    h.frame();
     element.style.width = '0px';
     h.frame(1050);
     const zero = { bounds: target.getBounds(), aborted: signals[1].aborted };
     element.style.width = '10px';
     h.frame(1060);
+    const secondWait = signals.length;
+    h.pointer(1061, 61);
+    h.frame();
     const restored = { bounds: target.getBounds().rect, count: signals.length };
     hasta.destroy();
 
-    return { hidden, zero, restored };
+    return { hidden, zero, restored, firstWait, secondWait };
   });
 
   expect(result).toEqual({
     hidden: { bounds: null, aborted: true },
     zero: { bounds: null, aborted: true },
     restored: { bounds: { minX: 100, minY: 100, maxX: 110, maxY: 120 }, count: 3 },
+    firstWait: 1,
+    secondWait: 2,
   });
 });
 
@@ -166,17 +174,21 @@ test('adopting a target into another document cancels it and restoring ownership
 
     document.body.append(element);
     h.frame(1040);
+    const waiting = signals.length;
+    h.pointer(1041, 41);
+    h.frame();
     const restored = { count: signals.length, x: target.getBounds().rect.minX };
     hasta.destroy();
     iframe.remove();
 
-    return { immediate, foreignState, restored };
+    return { immediate, foreignState, restored, waiting };
   });
 
   expect(result).toEqual({
     immediate: null,
     foreignState: { count: 1, aborted: true, bounds: null },
     restored: { count: 2, x: 100 },
+    waiting: 1,
   });
 });
 

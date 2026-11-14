@@ -387,9 +387,12 @@ test('Vue changing subscription policies and sample expiry honors the latest con
     f.frame(1039);
     const warming = f.state().events.length;
     f.frame(1040);
+    const idleStable = f.state().events.length;
+    f.pointer(1040, 40);
+    f.frame();
     f.frame(1120);
     const stillLive = f.state().events[0].aborted;
-    f.frame(1220);
+    f.frame(1240);
     const expired = f.state().events[0].aborted;
     f.pointer(1240, 0);
     f.pointer(1260, 20);
@@ -404,17 +407,22 @@ test('Vue changing subscription policies and sample expiry honors the latest con
     f.frame();
     const cooling = f.state().events.length;
     f.frame(1310);
+    const idleCooldown = f.state().events.length;
+    f.pointer(1311, 31);
+    f.frame();
     const final = f.state();
     f.destroy();
 
-    return { warming, stillLive, expired, once, cooling, final };
+    return { warming, idleStable, stillLive, expired, once, cooling, idleCooldown, final };
   });
 
   expect(result.warming).toBe(0);
+  expect(result.idleStable).toBe(0);
   expect(result.stillLive).toBe(false);
   expect(result.expired).toBe(true);
   expect(result.once).toBe(1);
   expect(result.cooling).toBe(2);
+  expect(result.idleCooldown).toBe(2);
   expect(result.final.events.map((event) => event.version)).toEqual([1, 2, 2]);
   expect(result.final.snapshot.targets[0].rules).toHaveLength(1);
   expect(result.final.errors).toEqual([]);

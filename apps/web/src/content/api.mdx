@@ -45,18 +45,20 @@ Prefer the controller for a shared API across frameworks. The lower-level `creat
 
 Pass these to `controller.target()` or your framework's target helper.
 
-| Option                | Default  | Meaning                                                      |
-| --------------------- | -------- | ------------------------------------------------------------ |
-| `when`                | Required | Intersection rule or `(context) => boolean`                  |
-| `when.withinMs`       | Required | Arrival deadline for `intersects`                            |
-| `when.marginPx`       | `0`      | Expand every edge of the rectangle                           |
-| `when.includeCurrent` | `false`  | Include current contact and observed crossings with zero ETA |
-| `onPredict`           | Required | `(event) => void \| Promise<void>`                           |
-| `once`                | `false`  | Start at most once per subscription                          |
-| `stableForMs`         | `0`      | Continuous matching time before starting                     |
-| `cooldownMs`          | `0`      | Minimum interval between starts                              |
+| Option                | Default  | Meaning                                                         |
+| --------------------- | -------- | --------------------------------------------------------------- |
+| `when`                | Required | Intersection rule or `(context) => boolean`                     |
+| `when.withinMs`       | Required | Arrival deadline for `intersects`                               |
+| `when.marginPx`       | `0`      | Expand every edge of the rectangle                              |
+| `when.includeCurrent` | `false`  | Include current contact and observed crossings with zero ETA    |
+| `onPredict`           | Required | `(event) => void \| Promise<void>`                              |
+| `once`                | `false`  | Start at most once per subscription                             |
+| `stableForMs`         | `0`      | Span of matching observations before a forecast callback starts |
+| `cooldownMs`          | `0`      | Minimum interval between starts                                 |
 
 `horizonMs`, `maxSampleAgeMs`, and `withinMs` must be finite and positive. `marginPx`, `stableForMs`, and `cooldownMs` must be finite and nonnegative.
+
+New forecast callbacks require a new measurement timestamp, for both intersection conditions and custom predicates. Animation frames, same-time corrections, and cooldown expiry alone cannot start or restart them. With `includeCurrent`, confirmed contact can complete `stableForMs` while the pointer remains still.
 
 ### Target binding
 
@@ -80,7 +82,7 @@ Pass these to `controller.target()` or your framework's target helper.
 | `predictedAt`, `evaluatedAt` | Entry timestamp and evaluation timestamp                        |
 | `signal`                     | `AbortSignal` tied to this match                                |
 
-A custom predicate receives `PredictionContext`. Its callback receives `PredictionEvent`: `intersection` can be `null`, and top-level `etaMs` / `predictedAt` are absent.
+A custom predicate receives `PredictionContext` and still runs on every evaluated frame. Geometry or external-state changes can cancel a match, but starting its callback also requires a new measurement. Its callback receives `PredictionEvent`: `intersection` can be `null`, and top-level `etaMs` / `predictedAt` are absent.
 
 ### Debugging
 

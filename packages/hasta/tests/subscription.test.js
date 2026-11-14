@@ -469,3 +469,69 @@ test('disposing pending async work never allows a later invocation or mutates ol
   assert.equal(subscription.getDebugState().running, false);
   assert.equal(subscription.getDebugState().latched, false);
 });
+
+test('observation timestamps corroborate stability while repeated frames cannot start an action', () => {
+  const events = [];
+
+  const subscription = new Subscription(
+    (event) => events.push(event),
+    { stableForMs: 30 },
+    noError,
+  );
+
+  const observed = (matches, now, timeStamp) =>
+    subscription.evaluate(matches, now, context, true, timeStamp)?.();
+
+  observed(false, 100, 100);
+  observed(true, 132, 100);
+  observed(true, 164, 100);
+  assert.equal(events.length, 0);
+  observed(true, 170, 150);
+  observed(true, 210, 150);
+  assert.equal(events.length, 0);
+  observed(true, 215, 180);
+  assert.equal(events.length, 1);
+  subscription.invalidate();
+  observed(true, 216, 180);
+  observed(true, 250, 180);
+  assert.equal(events.length, 1);
+  observed(true, 260, 250);
+  observed(true, 290, 280);
+  assert.equal(events.length, 2);
+});
+
+test('new evidence is required after a miss even with zero stability duration', () => {
+  const events = [];
+  const subscription = new Subscription((event) => events.push(event), {}, noError);
+  subscription.evaluate(false, 100, null, true, 100);
+  subscription.evaluate(true, 120, context, true, 100)?.();
+  assert.equal(events.length, 0);
+  subscription.evaluate(true, 121, context, true, 101)?.();
+  assert.equal(events.length, 1);
+  subscription.evaluate(false, 122, null, true, 101);
+  subscription.evaluate(true, 123, context, true, 101)?.();
+  assert.equal(events.length, 1);
+});
+
+test('explicit evidence times must be finite and no later than evaluation', () => {
+  const subscription = new Subscription(() => {}, {}, noError);
+
+  for (const value of [NaN, Infinity, 11]) {
+    assert.throws(() => subscription.evaluate(true, 10, context, true, value), RangeError);
+  }
+});
+
+test('contact dwell does not turn an old measurement into fresh forecast evidence', () => {
+  const events = [];
+
+  const subscription = new Subscription((event) => events.push(event), { cooldownMs: 50 }, noError);
+
+  subscription.evaluate(true, 100, context, true, 100)?.();
+  subscription.evaluate(false, 110, null, true, 110);
+  subscription.evaluate(true, 120, context, true, 111, true)?.();
+  subscription.evaluate(true, 130, context, true, 111, true)?.();
+  subscription.evaluate(true, 150, context, true, 111)?.();
+  assert.equal(events.length, 1);
+  subscription.evaluate(true, 151, context, true, 151)?.();
+  assert.equal(events.length, 2);
+});

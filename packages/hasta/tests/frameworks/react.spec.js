@@ -287,6 +287,9 @@ test('React can switch condition types and replace subscription policies', async
     h.frame(1040);
     const beforeStable = h.state().events.length;
     h.frame(1041);
+    const idleStable = h.state().events.length;
+    h.pointer(1042, 42);
+    h.frame();
     const matched = h.state();
     h.pointer(1200, 0);
     h.pointer(1220, 20);
@@ -301,18 +304,23 @@ test('React can switch condition types and replace subscription policies', async
     h.frame();
     const cooling = h.state().events.length;
     h.frame(1272);
+    const idleCooldown = h.state().events.length;
+    h.pointer(1273, 33);
+    h.frame();
     const final = h.state();
     h.mount(false);
 
-    return { beforeStable, matched, once, cooling, final };
+    return { beforeStable, idleStable, matched, once, cooling, idleCooldown, final };
   });
 
   expect(result.beforeStable).toBe(1);
+  expect(result.idleStable).toBe(1);
   expect(result.matched.events.map((event) => event.version)).toEqual([1, 2]);
   expect(result.matched.events[0].aborted).toBe(true);
   expect(result.matched.snapshot.targets[0].rules[0].kind).toBe('predicate');
   expect(result.once).toBe(2);
   expect(result.cooling).toBe(3);
+  expect(result.idleCooldown).toBe(3);
   expect(result.final.events.map((event) => event.version)).toEqual([1, 2, 3, 3]);
   expect(result.final.snapshot.targets[0].rules).toHaveLength(1);
 });

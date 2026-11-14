@@ -249,7 +249,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
   };
 
-  const invalidateRules = () => {
+  const invalidateRules = (observation?: { evaluatedAt: number; timeStamp: number }) => {
     const epoch = generation;
 
     for (const target of [...targets.values()]) {
@@ -258,7 +258,17 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           return;
         }
 
-        rule.subscription.invalidate();
+        if (observation === undefined) {
+          rule.subscription.invalidate();
+        } else {
+          rule.subscription.evaluate(
+            false,
+            observation.evaluatedAt,
+            null,
+            true,
+            observation.timeStamp,
+          );
+        }
       }
     }
   };
@@ -567,7 +577,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
 
     if (!prediction) {
-      invalidateRules();
+      invalidateRules({ evaluatedAt: now, timeStamp: pointer.timeStamp });
       publishDebug();
       requestFrame();
 
@@ -631,12 +641,12 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         if (!target.bounds) {
-          rule.subscription.invalidate();
+          rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
 
         if (rule.kind === 'intersection' && !candidates.has(target.id)) {
-          rule.subscription.invalidate();
+          rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
 
@@ -649,7 +659,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         if (!forecast) {
-          rule.subscription.invalidate();
+          rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
 
@@ -665,6 +675,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           }
 
           let intersection = byHorizon.get(horizon);
+          let observedContact = false;
 
           if (intersection === undefined) {
             const hit = candidates.has(target.id)
@@ -691,6 +702,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             }
 
             intersection = contact ?? intersection;
+            observedContact = contact !== null;
           }
 
           if (rule.kind === 'intersection' && intersection === null && rule.subscription.latched) {
@@ -723,10 +735,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               etaMs: 0,
               point: Object.freeze({ x: pointer.x, y: pointer.y }),
             });
+            observedContact = true;
           }
 
           if (rule.kind === 'intersection' && intersection === null) {
-            rule.subscription.invalidate();
+            rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
             continue;
           }
 
@@ -763,7 +776,14 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               };
             }
 
-            callback = rule.subscription.evaluate(intersection !== null, now, event, eligible);
+            callback = rule.subscription.evaluate(
+              intersection !== null,
+              now,
+              event,
+              eligible,
+              pointer.timeStamp,
+              observedContact,
+            );
           } else {
             const matches: unknown = rule.condition(context);
 
@@ -784,7 +804,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               rule.debug = { matches, eligible: matches, intersection };
             }
 
-            callback = rule.subscription.evaluate(matches, now, context);
+            callback = rule.subscription.evaluate(matches, now, context, true, pointer.timeStamp);
           }
 
           if (callback) {
@@ -792,7 +812,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           }
         } catch (error) {
           if (epoch === generation) {
-            rule.subscription.invalidate();
+            rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           }
 
           reportError(error);

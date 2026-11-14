@@ -139,13 +139,17 @@ test('updates bounds after layout shifts and transforms without size changes', a
     element.style.transform = 'translateX(-100px)';
     h.frame(1030);
     const after = target.getBounds();
+    const waiting = [...hits];
+    h.pointer(1031, 31);
+    h.frame();
     hasta.destroy();
 
-    return { before, after, hits };
+    return { before, after, hits, waiting };
   });
 
   expect(result.before.rect.minX).toBe(300);
   expect(result.after.rect.minX).toBe(100);
+  expect(result.waiting).toEqual([]);
   expect(result.hits).toEqual([100]);
 });
 
@@ -211,18 +215,22 @@ test('parks detached and zero-size elements and measures reconnected elements', 
     document.body.append(element);
     h.frame(1040);
     const reconnected = target.getBounds();
+    const waiting = events.length;
+    h.pointer(1041, 41);
+    h.frame();
     element.style.display = 'none';
     h.frame(1050);
     const hidden = target.getBounds();
     hasta.destroy();
 
-    return { detached, aborted, reconnected, hidden, count: events.length };
+    return { detached, aborted, reconnected, hidden, count: events.length, waiting };
   });
 
   expect(result.detached).toBeNull();
   expect(result.aborted).toBe(true);
   expect(result.reconnected.rect.minX).toBe(100);
   expect(result.hidden).toBeNull();
+  expect(result.waiting).toBe(1);
   expect(result.count).toBe(2);
 });
 
