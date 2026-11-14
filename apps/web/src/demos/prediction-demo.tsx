@@ -339,12 +339,6 @@ export function PredictionDemo({
                   </span>
                 </span>
               </div>
-              <span
-                className="absolute top-0 right-0 text-xs tracking-wide text-muted-foreground"
-                aria-hidden="true"
-              >
-                LIVE PREVIEW
-              </span>
               <PreviewDeck active={active} />
               <fieldset
                 className="absolute bottom-2 left-1/2 m-0 grid w-full max-w-80 -translate-x-1/2 grid-cols-2 gap-2 border-0 p-0"

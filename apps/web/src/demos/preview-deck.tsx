@@ -1,4 +1,3 @@
-import { useId } from 'react';
 import type { ReactNode } from 'react';
 
 import { Icon } from '@/components/icon';
@@ -73,10 +72,10 @@ function PreviewCard({
     >
       <div
         className={cn(
-          'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden border border-border bg-card text-card-foreground shadow-sm data-[active=true]:translate-x-0 data-[active=true]:-translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-lg data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
+          'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden border border-border bg-card text-card-foreground shadow-sm data-[active=true]:translate-x-0 data-[active=true]:translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-lg data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
           profile
-            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16'
-            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16',
+            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16 data-[muted=true]:blur-xs'
+            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16 data-[muted=true]:blur-xs',
         )}
         data-view={name}
         data-active={active === name}
@@ -101,7 +100,6 @@ function PreviewCard({
 }
 
 export function PreviewDeck({ active }: { active: PreviewName | null }) {
-  const gridId = useId();
 
   return (
     <div
@@ -110,17 +108,9 @@ export function PreviewDeck({ active }: { active: PreviewName | null }) {
       data-active={active !== null}
       aria-hidden="true"
     >
-      <svg className="absolute inset-0 size-full mask-radial-from-10% mask-radial-to-70% text-base text-border">
-        <defs>
-          <pattern id={gridId} width="1em" height="1em" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="currentColor" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#${gridId})`} />
-      </svg>
       <div
         className={cn(
-          'absolute inset-x-6 inset-y-6 mx-auto max-w-sm border border-dashed border-border/65 text-primary',
+          'absolute inset-x-6 inset-y-6 mx-auto max-w-sm text-primary',
           active === 'Profile' && 'text-emerald-500',
           active === 'Settings' && 'text-blue-500',
         )}
