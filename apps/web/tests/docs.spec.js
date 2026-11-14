@@ -12,7 +12,7 @@ async function selectFramework(page, name) {
 }
 
 async function approachSettings(page, demo) {
-  await demo.scrollIntoViewIfNeeded();
+  await demo.locator('[data-demo-target="Settings"]').scrollIntoViewIfNeeded();
   const box = await demo.locator('[data-demo-target="Settings"]').boundingBox();
   await page.mouse.move(box.x + box.width * 0.5, box.y - 120);
 

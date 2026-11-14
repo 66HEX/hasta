@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/icon';
 import type { IconName } from '@/components/icon';
 import { Surface } from '@/components/layout';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -28,6 +29,9 @@ function DemoTarget({
   horizon,
   margin,
   stability,
+  cooldown,
+  includeCurrent,
+  once,
   onPredict,
   onCancel,
   onHover,
@@ -42,6 +46,9 @@ function DemoTarget({
   horizon: number;
   margin: number;
   stability: number;
+  cooldown: number;
+  includeCurrent: boolean;
+  once: boolean;
   onPredict: (name: PreviewName, event: IntersectionEvent) => void;
   onCancel: (name: PreviewName, signal: AbortSignal) => void;
   onHover: (name: PreviewName | null) => void;
@@ -58,8 +65,10 @@ function DemoTarget({
   useEffect(() => () => clearTimeout(feedbackTimer.current), []);
 
   const binding = useHastaTarget(controller, {
-    when: { type: 'intersects', withinMs: horizon, marginPx: margin, includeCurrent: true },
+    when: { type: 'intersects', withinMs: horizon, marginPx: margin, includeCurrent },
     stableForMs: stability,
+    cooldownMs: cooldown,
+    once,
     onPredict(event) {
       clearTimeout(feedbackTimer.current);
       setPredicted(true);
@@ -139,7 +148,58 @@ export function PredictionDemo({
   const [focused, setFocused] = useState<PreviewName | null>(null);
   const [selected, setSelected] = useState<PreviewName | null>(null);
   const [stability, setStability] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
+  const [includeCurrent, setIncludeCurrent] = useState(true);
+  const [once, setOnce] = useState(false);
+  const [activity, setActivity] = useState(0);
   const active = focused ?? hovered ?? anticipated?.name ?? selected;
+
+  const sliders = [
+    {
+      key: 'horizon',
+      label: 'Look ahead',
+      value: horizon,
+      min: 60,
+      max: 400,
+      step: 10,
+      unit: 'ms',
+      setValue: setHorizon,
+      description: 'How far ahead to check for a target.',
+    },
+    {
+      key: 'margin',
+      label: 'Target margin',
+      value: margin,
+      min: 0,
+      max: 40,
+      step: 2,
+      unit: 'px',
+      setValue: setMargin,
+      description: 'Expand the area around each target.',
+    },
+    {
+      key: 'stability',
+      label: 'Stability',
+      value: stability,
+      min: 0,
+      max: 200,
+      step: 10,
+      unit: 'ms',
+      setValue: setStability,
+      description: 'Require a sustained match before starting.',
+    },
+    {
+      key: 'cooldown',
+      label: 'Cooldown',
+      value: cooldown,
+      min: 0,
+      max: 1000,
+      step: 50,
+      unit: 'ms',
+      setValue: setCooldown,
+      description: 'Minimum time between callbacks per target.',
+    },
+  ];
 
   useEffect(() => {
     let idleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -225,6 +285,15 @@ export function PredictionDemo({
     setAnticipated((current) => (current?.signal === signal ? null : current));
   }, []);
 
+  const resetActivity = () => {
+    controller.pause();
+    controller.resume();
+    setAnticipated(null);
+    setSelected(null);
+    setResult(null);
+    setActivity((value) => value + 1);
+  };
+
   return (
     <figure data-demo="prediction">
       <Surface>
@@ -269,12 +338,15 @@ export function PredictionDemo({
               <fieldset className="preview-targets" aria-label="Preview a view">
                 {targets.map((target) => (
                   <DemoTarget
-                    key={target.name}
+                    key={`${target.name}-${activity}`}
                     controller={controller}
                     {...target}
                     horizon={horizon}
                     margin={margin}
                     stability={stability}
+                    cooldown={cooldown}
+                    includeCurrent={includeCurrent}
+                    once={once}
                     onPredict={onPredict}
                     onCancel={onCancel}
                     onHover={setHovered}
@@ -290,54 +362,66 @@ export function PredictionDemo({
           <CardFooter>
             <div className="flex w-full flex-col gap-4">
               {controls && (
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-xs text-muted-foreground sm:grid-cols-3">
-                  <div>
-                    <div className="mb-3 flex justify-between gap-2">
-                      <span id={`${id}-horizon-label`}>Look ahead</span>
-                      <output className="font-mono font-medium text-foreground">
-                        {horizon} ms
-                      </output>
-                    </div>
-                    <Slider
-                      aria-labelledby={`${id}-horizon-label`}
-                      min={60}
-                      max={400}
-                      step={10}
-                      value={[horizon]}
-                      onValueChange={(values) => setHorizon(values[0] ?? 160)}
-                    />
+                <fieldset className="prediction-controls">
+                  <legend className="sr-only">Prediction settings</legend>
+                  <div className="prediction-sliders">
+                    {sliders.map((slider) => (
+                      <div className="prediction-control" key={slider.key}>
+                        <div className="flex justify-between gap-2">
+                          <span className="min-w-0" id={`${id}-${slider.key}-label`}>
+                            {slider.label}
+                          </span>
+                          <output className="shrink-0 font-mono font-medium whitespace-nowrap text-foreground">
+                            {slider.value} {slider.unit}
+                          </output>
+                        </div>
+                        <Slider
+                          aria-labelledby={`${id}-${slider.key}-label`}
+                          aria-describedby={`${id}-${slider.key}-description`}
+                          aria-valuetext={`${slider.value} ${slider.unit === 'ms' ? 'milliseconds' : 'pixels'}`}
+                          min={slider.min}
+                          max={slider.max}
+                          step={slider.step}
+                          value={[slider.value]}
+                          onValueChange={(values) => slider.setValue(values[0] ?? slider.value)}
+                        />
+                        <p id={`${id}-${slider.key}-description`}>{slider.description}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <div className="mb-3 flex justify-between gap-2">
-                      <span id={`${id}-margin-label`}>Target margin</span>
-                      <output className="font-mono font-medium text-foreground">{margin} px</output>
+                  <div className="prediction-switches">
+                    <div className="prediction-switch">
+                      <label htmlFor={`${id}-contact`}>Include current contact</label>
+                      <Switch
+                        id={`${id}-contact`}
+                        aria-describedby={`${id}-contact-description`}
+                        checked={includeCurrent}
+                        onCheckedChange={setIncludeCurrent}
+                      />
+                      <p id={`${id}-contact-description`}>
+                        Count contact and crossings as a match.
+                      </p>
                     </div>
-                    <Slider
-                      aria-labelledby={`${id}-margin-label`}
-                      min={0}
-                      max={40}
-                      step={2}
-                      value={[margin]}
-                      onValueChange={(values) => setMargin(values[0] ?? 8)}
-                    />
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <div className="mb-3 flex justify-between gap-2">
-                      <span id={`${id}-stability-label`}>Stability</span>
-                      <output className="font-mono font-medium text-foreground">
-                        {stability} ms
-                      </output>
+                    <div className="prediction-switch">
+                      <label htmlFor={`${id}-once`}>Once per target</label>
+                      <Switch
+                        id={`${id}-once`}
+                        aria-describedby={`${id}-once-description`}
+                        checked={once}
+                        onCheckedChange={setOnce}
+                      />
+                      <p id={`${id}-once-description`}>
+                        One callback per target. Reset activity to try again.
+                      </p>
                     </div>
-                    <Slider
-                      aria-labelledby={`${id}-stability-label`}
-                      min={0}
-                      max={200}
-                      step={10}
-                      value={[stability]}
-                      onValueChange={(values) => setStability(values[0] ?? 0)}
-                    />
                   </div>
-                </div>
+                  <div className="prediction-reset">
+                    <p>Clear predictions and counts. Keep your settings.</p>
+                    <Button type="button" variant="outline" onClick={resetActivity}>
+                      Reset activity
+                    </Button>
+                  </div>
+                </fieldset>
               )}
               {overlay && (
                 <div className="flex items-center justify-between gap-3 text-xs">
