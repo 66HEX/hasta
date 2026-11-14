@@ -20,7 +20,7 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Active speculative intersection callbacks can retain their signal through near-boundary prediction misses for up to 32 ms, using an additional 6 px release margin and direction and speed checks. Confirmed contact departure, expired input, target removal, and pause or disconnection still cancel immediately. Custom predicates still cancel on their first false result.
 - Reduced repeated predictor work by reusing adaptation buffers, validated samples, and projections shared by queries with the same time and horizon.
 - The documentation header now reads the library version from its package manifest.
-- Updated the interactive demo's card animations and reduced the saturation of secondary and muted theme colors.
+- Updated the interactive demo's card animations and darkened the secondary and muted colors in the light theme.
 
 ### Fixed
 
