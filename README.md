@@ -40,8 +40,16 @@ The cursor data collector lives in [`apps/lab`](apps/lab). Run `npm run dev:lab`
 
 Run `npm run test:lab` for browser and data checks. Build once with `npm run build:lab` and host `apps/lab/dist` on a separate HTTPS origin for collection; keep the build unchanged throughout the study. Prepare received backups with `node apps/lab/scripts/prepare.mjs --out DATASET BACKUP...`. This validates integrity and progress, removes duplicate checkpoints, extracts causal features, and reports recording quality and the native Hasta baseline. The study protocol and coordinator instructions are in the intentionally untracked `docs/lab.md`.
 
+## Releases
+
+Publishing a stable GitHub Release tagged `vX.Y.Z` runs the npm release pipeline. It checks the version against the library, workspace references, and lockfile, runs all checks, then publishes the tested tarball through npm trusted publishing. See [CONTRIBUTING.md](CONTRIBUTING.md) for version updates, npm setup, and the first publication. Library releases do not deploy the web apps.
+
 ## Deployment
 
 The site runs on Cloudflare Workers at [hasta.madebyhex.com](https://hasta.madebyhex.com). Run `npx wrangler login` once, then `npm run deploy` to build and publish the site, including its Open Graph image. Use `npm run deploy:check` to validate the build without publishing.
 
 The collection app has its own Worker and domain at [hasta-lab.madebyhex.com](https://hasta-lab.madebyhex.com), configured in `wrangler.lab.jsonc`. Run `npm run deploy:lab:check` to validate its deployment and `npm run deploy:lab` to publish it. Participant links can prefill setup, for example `https://hasta-lab.madebyhex.com/?participant=P01&session=1`. Keep the deployed collector unchanged while participants complete the study.
+
+## License
+
+[MIT](LICENSE).
