@@ -2,11 +2,12 @@ import { MDXProvider } from '@mdx-js/react';
 import { useEffect } from 'react';
 
 import { FrameworkSelect } from '@/components/framework-code';
+import { GitHubIcon } from '@/components/github-icon';
 import { HeaderBrand } from '@/components/header-brand';
 import { Icon } from '@/components/icon';
 import { mdxComponents } from '@/components/mdx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import Documentation from '@/content/index.mdx';
 import { PredictionProvider } from '@/lib/prediction';
@@ -64,11 +65,20 @@ function Document() {
       </a>
       <div className="page-frame">
         <div className="page-column">
-          <header className="layout-band flex flex-wrap items-center justify-between gap-4 p-4">
+          <header className="layout-band flex flex-wrap items-center justify-between gap-2 p-4">
             <HeaderBrand />
             <div className="flex items-center gap-2">
               <FrameworkSelect />
               <ThemeToggle />
+              <a
+                href="https://github.com/66HEX/hasta"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Hasta on GitHub"
+                className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+              >
+                <GitHubIcon />
+              </a>
             </div>
           </header>
           <main id="main-content" tabIndex={-1} className="min-w-0 outline-none">
