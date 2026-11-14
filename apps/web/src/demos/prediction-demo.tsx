@@ -94,14 +94,14 @@ function DemoTarget({
       type="button"
       ref={targetRef}
       className={cn(
-        'relative flex h-12 min-w-0 cursor-pointer items-center justify-center gap-2 border border-border bg-card px-3 text-xs text-muted-foreground after:absolute after:-inset-x-px after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[active=true]:text-accent-foreground data-[active=true]:after:scale-x-100 motion-safe:transition-colors motion-safe:duration-150 motion-safe:after:transition-transform motion-safe:after:duration-150 sm:justify-start',
+        'relative flex h-12 min-w-0 cursor-pointer items-center justify-center gap-2 border border-border bg-card px-3 text-xs text-muted-foreground after:absolute after:-inset-x-px after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[active=true]:text-accent-foreground data-[active=true]:after:scale-x-100 motion-safe:transition-all motion-safe:duration-150 motion-safe:after:transition-all motion-safe:after:duration-150 sm:justify-start',
         name === 'Profile'
-          ? 'after:bg-emerald-500 hover:border-emerald-500 hover:bg-emerald-500/10'
-          : 'after:bg-blue-500 hover:border-blue-500 hover:bg-blue-500/10',
+          ? 'after:bg-emerald-500 hover:border-emerald-500 hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] dark:hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
+          : 'after:bg-blue-500 hover:border-blue-500 hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] dark:hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]',
         (active || predicted || recent) &&
           (name === 'Profile'
-            ? 'border-emerald-500 bg-emerald-500/10'
-            : 'border-blue-500 bg-blue-500/10'),
+            ? 'border-emerald-500 shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] dark:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
+            : 'border-blue-500 shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] dark:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]'),
       )}
       aria-label={`Preview ${name}`}
       aria-pressed={selected}
