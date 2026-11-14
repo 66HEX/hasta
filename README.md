@@ -9,7 +9,7 @@ Hasta tracks element bounds and predicts mouse movement so you can prefetch data
 Run after a button with `id="inbox"` exists:
 
 ```ts
-import { createHastaController } from 'hasta/vanilla';
+import { createHastaController } from '@66hex/hasta/vanilla';
 
 const hasta = createHastaController();
 const target = hasta.target({

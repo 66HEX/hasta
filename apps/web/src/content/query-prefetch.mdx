@@ -3,7 +3,7 @@
 
 ```ts
 import type { QueryClient } from '@tanstack/query-core';
-import { createHastaController } from 'hasta/vanilla';
+import { createHastaController } from '@66hex/hasta/vanilla';
 import { projectQuery } from './queries';
 
 export function prepare(button: HTMLButtonElement, client: QueryClient) {
@@ -38,7 +38,7 @@ Call `prepare(button, queryClient)` after mount. Keep the button's click handler
 
 ```tsx
 import { useQueryClient } from '@tanstack/react-query';
-import { useHasta, useHastaTarget } from 'hasta/react';
+import { useHasta, useHastaTarget } from '@66hex/hasta/react';
 import { projectQuery } from './queries';
 
 export function ProjectButton({ onOpen }: { onOpen: () => void }) {
@@ -68,7 +68,7 @@ export function ProjectButton({ onOpen }: { onOpen: () => void }) {
 ```vue
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
-import { useHasta, useHastaTarget } from 'hasta/vue';
+import { useHasta, useHastaTarget } from '@66hex/hasta/vue';
 import { projectQuery } from './queries';
 
 const emit = defineEmits<{ open: [] }>();
@@ -100,7 +100,7 @@ const events = {
 ```svelte
 <script lang="ts">
   import { useQueryClient } from '@tanstack/svelte-query';
-  import { useHasta, hastaTarget } from 'hasta/svelte';
+  import { useHasta, hastaTarget } from '@66hex/hasta/svelte';
   import { projectQuery } from './queries';
 
   let { onOpen }: { onOpen: () => void } = $props();

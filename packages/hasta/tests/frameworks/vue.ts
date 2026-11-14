@@ -1,5 +1,9 @@
-import { useHasta, useHastaTarget } from 'hasta/vue';
-import type { HastaController, IntersectionTargetOptions, VueTargetBinding } from 'hasta/vue';
+import { useHasta, useHastaTarget } from '@66hex/hasta/vue';
+import type {
+  HastaController,
+  IntersectionTargetOptions,
+  VueTargetBinding,
+} from '@66hex/hasta/vue';
 import { createApp, defineComponent, h, KeepAlive, nextTick, ref } from 'vue';
 import type { ComponentPublicInstance, PropType } from 'vue';
 

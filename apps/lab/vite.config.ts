@@ -75,8 +75,8 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@', replacement: fileURLToPath(new URL('../web/src', import.meta.url)) },
-      { find: /^hasta\/core$/u, replacement: `${source}/core/index.ts` },
-      { find: /^hasta\/vanilla$/u, replacement: `${source}/vanilla/index.ts` },
+      { find: /^@66hex\/hasta\/core$/u, replacement: `${source}/core/index.ts` },
+      { find: /^@66hex\/hasta\/vanilla$/u, replacement: `${source}/vanilla/index.ts` },
     ],
     dedupe: ['react', 'react-dom'],
   },

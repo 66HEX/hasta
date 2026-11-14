@@ -1,5 +1,5 @@
-import { useHastaTarget } from 'hasta/react';
-import type { HastaController, IntersectionEvent } from 'hasta/react';
+import { useHastaTarget } from '@66hex/hasta/react';
+import type { HastaController, IntersectionEvent } from '@66hex/hasta/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { Icon } from '@/components/icon';

@@ -1,5 +1,5 @@
 {
-  "name": "hasta",
+  "name": "@66hex/hasta",
   "version": "0.1.0",
   "description": "Geometry tracking and cursor trajectory prediction for browser interfaces.",
   "homepage": "https://hasta.madebyhex.com",

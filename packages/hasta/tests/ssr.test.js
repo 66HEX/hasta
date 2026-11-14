@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 test('React renders its adapter on the server without creating browser resources', async () => {
   const { createElement } = await import('react');
   const { renderToString } = await import('react-dom/server');
-  const { useHasta, useHastaTarget } = await import('hasta/react');
+  const { useHasta, useHastaTarget } = await import('@66hex/hasta/react');
 
   function Component() {
     const hasta = useHasta({ debug: true });
@@ -30,7 +30,8 @@ test('Vue renders its adapter on the server without connecting the controller', 
   const { createSSRApp, h } = await import('vue');
   const { renderToString } = await import('vue/server-renderer');
 
-  const { useHasta: createVueHasta, useHastaTarget: createVueTarget } = await import('hasta/vue');
+  const { useHasta: createVueHasta, useHastaTarget: createVueTarget } =
+    await import('@66hex/hasta/vue');
 
   const app = createSSRApp({
     setup() {

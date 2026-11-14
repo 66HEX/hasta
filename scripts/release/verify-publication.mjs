@@ -12,6 +12,7 @@ import {
   PACKAGE_NAME,
   parseReleaseTag,
   REGISTRY,
+  registryUrls,
 } from './contract.mjs';
 
 const [version, tarballPath] = process.argv.slice(2);
@@ -38,9 +39,11 @@ async function registryDocument(url) {
 
 async function verify(attempt = 1) {
   try {
+    const urls = registryUrls(version);
+
     const [document, tags] = await Promise.all([
-      registryDocument(`${REGISTRY}${PACKAGE_NAME}/${version}`),
-      registryDocument(`${REGISTRY}-/package/${PACKAGE_NAME}/dist-tags`),
+      registryDocument(urls.version),
+      registryDocument(urls.tags),
     ]);
 
     const url = assertRegistryPublication(document, tags, version, expectedIntegrity);
@@ -105,7 +108,7 @@ try {
     },
   );
   const lock = JSON.parse(readFileSync(join(directory, 'package-lock.json'), 'utf8'));
-  assert.equal(lock.packages['node_modules/hasta'].integrity, expectedIntegrity);
+  assert.equal(lock.packages[`node_modules/${PACKAGE_NAME}`].integrity, expectedIntegrity);
   await auditSignatures();
   console.log(`Verified ${PACKAGE_NAME}@${version}: latest, integrity, provenance, and signatures`);
 } finally {

@@ -11,12 +11,12 @@ test('public ESM entry points import without browser globals', () => {
     import assert from 'node:assert/strict';
     assert.equal(typeof window, 'undefined');
     assert.equal(typeof document, 'undefined');
-    const root = await import('hasta');
-    const core = await import('hasta/core');
-    const vanilla = await import('hasta/vanilla');
-    const react = await import('hasta/react');
-    const vue = await import('hasta/vue');
-    const svelte = await import('hasta/svelte');
+    const root = await import('@66hex/hasta');
+    const core = await import('@66hex/hasta/core');
+    const vanilla = await import('@66hex/hasta/vanilla');
+    const react = await import('@66hex/hasta/react');
+    const vue = await import('@66hex/hasta/vue');
+    const svelte = await import('@66hex/hasta/svelte');
     assert.equal(root.createHasta, vanilla.createHasta);
     assert.equal(typeof vanilla.createHastaController, 'function');
     for (const adapter of [react, vue, svelte]) assert.equal(typeof adapter.useHasta, 'function');

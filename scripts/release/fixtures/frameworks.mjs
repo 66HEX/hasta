@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-import { useHasta, useHastaTarget } from 'hasta/react';
-import { useHasta as createVueHasta, useHastaTarget as createVueTarget } from 'hasta/vue';
+import { useHasta, useHastaTarget } from '@66hex/hasta/react';
+import { useHasta as createVueHasta, useHastaTarget as createVueTarget } from '@66hex/hasta/vue';
 import { createElement } from 'react';
 import { renderToString as renderReact } from 'react-dom/server';
 import { compile } from 'svelte/compiler';

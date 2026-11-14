@@ -1,5 +1,5 @@
-import { hastaTarget } from 'hasta/svelte';
-import { createHastaController } from 'hasta/vanilla';
+import { hastaTarget } from '@66hex/hasta/svelte';
+import { createHastaController } from '@66hex/hasta/vanilla';
 import { flushSync, mount, tick, unmount } from 'svelte';
 
 import Fixture from './SvelteFixture.svelte';

@@ -28,7 +28,7 @@ test('the declared minimum Svelte peer supports client imports and server render
   const directory = mkdtempSync(join(tmpdir(), 'hasta-svelte-min-'));
 
   try {
-    const consumer = join(directory, 'node_modules/hasta');
+    const consumer = join(directory, 'node_modules/@66hex/hasta');
     mkdirSync(consumer, { recursive: true });
     cpSync(join(root, 'dist'), join(consumer, 'dist'), { recursive: true });
     writeFileSync(join(consumer, 'package.json'), JSON.stringify(manifest));
@@ -44,8 +44,8 @@ test('the declared minimum Svelte peer supports client imports and server render
           '-e',
           `
           import assert from 'node:assert/strict';
-          import { createHastaController } from 'hasta/vanilla';
-          import { useHasta, hastaTarget, attachHastaTarget } from 'hasta/svelte';
+          import { createHastaController } from '@66hex/hasta/vanilla';
+          import { useHasta, hastaTarget, attachHastaTarget } from '@66hex/hasta/svelte';
           assert.equal(typeof useHasta, 'function');
           assert.equal(typeof hastaTarget, 'function');
           const hasta = createHastaController();
@@ -72,7 +72,7 @@ test('the declared minimum Svelte peer supports client imports and server render
         import { compile } from 'svelte/compiler';
         import { render } from 'svelte/server';
         const { js } = compile(
-          '<script>import { useHasta } from "hasta/svelte"; const hasta = useHasta({ debug: true });</script><p>{hasta.getDebugSnapshot() === null ? "idle" : "connected"}</p>',
+          '<script>import { useHasta } from "@66hex/hasta/svelte"; const hasta = useHasta({ debug: true });</script><p>{hasta.getDebugSnapshot() === null ? "idle" : "connected"}</p>',
           { filename: 'Minimum.svelte', generate: 'server' },
         );
         writeFileSync('minimum.mjs', js.code);

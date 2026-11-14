@@ -1,7 +1,7 @@
-import { firstSegmentRectIntersection } from 'hasta/core';
-import type { Point, Rect } from 'hasta/core';
-import { createHasta } from 'hasta/vanilla';
-import type { Hasta } from 'hasta/vanilla';
+import { firstSegmentRectIntersection } from '@66hex/hasta/core';
+import type { Point, Rect } from '@66hex/hasta/core';
+import { createHasta } from '@66hex/hasta/vanilla';
+import type { Hasta } from '@66hex/hasta/vanilla';
 
 import { assessTrial } from './quality';
 import type { Outcome, Plan, Session, Target, Trial } from './types';

@@ -1,5 +1,5 @@
 <script>
-  import { useHasta } from 'hasta/svelte';
+  import { useHasta } from '@66hex/hasta/svelte';
 
   const hasta = useHasta({ debug: true });
 </script>

@@ -1,5 +1,5 @@
-import { useHasta } from 'hasta/react';
-import type { HastaController } from 'hasta/react';
+import { useHasta } from '@66hex/hasta/react';
+import type { HastaController } from '@66hex/hasta/react';
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 

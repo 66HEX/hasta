@@ -8,8 +8,8 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "node"],
     "paths": {
-      "hasta": ["../../packages/hasta/src/index.ts"],
-      "hasta/*": ["../../packages/hasta/src/*/index.ts"],
+      "@66hex/hasta": ["../../packages/hasta/src/index.ts"],
+      "@66hex/hasta/*": ["../../packages/hasta/src/*/index.ts"],
       "@/*": ["../web/src/*"]
     },
     "strict": true,

@@ -1,5 +1,5 @@
-import { useHasta, useHastaTarget } from 'hasta/react';
-import type { HastaController, PredictionEvent, TargetOptions } from 'hasta/react';
+import { useHasta, useHastaTarget } from '@66hex/hasta/react';
+import type { HastaController, PredictionEvent, TargetOptions } from '@66hex/hasta/react';
 import { Activity, StrictMode, Suspense, startTransition, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';

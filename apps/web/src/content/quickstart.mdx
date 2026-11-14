@@ -2,7 +2,7 @@
 <FrameworkPanel value="vanilla">
 
 ```ts inbox.ts
-import { createHastaController } from 'hasta/vanilla';
+import { createHastaController } from '@66hex/hasta/vanilla';
 
 const hasta = createHastaController({ horizonMs: 160 });
 const target = hasta.target({
@@ -26,7 +26,7 @@ Run after a button with `id="inbox"` exists. Call `dispose()` when removing the 
 <FrameworkPanel value="react">
 
 ```tsx Inbox.tsx
-import { useHasta, useHastaTarget } from 'hasta/react';
+import { useHasta, useHastaTarget } from '@66hex/hasta/react';
 
 export function Inbox() {
   const hasta = useHasta({ horizonMs: 160 });
@@ -46,7 +46,7 @@ export function Inbox() {
 
 ```vue Inbox.vue
 <script setup lang="ts">
-import { useHasta, useHastaTarget } from 'hasta/vue';
+import { useHasta, useHastaTarget } from '@66hex/hasta/vue';
 
 const hasta = useHasta({ horizonMs: 160 });
 const target = useHastaTarget(hasta, {
@@ -67,7 +67,7 @@ const target = useHastaTarget(hasta, {
 
 ```svelte Inbox.svelte
 <script lang="ts">
-  import { useHasta, hastaTarget } from 'hasta/svelte';
+  import { useHasta, hastaTarget } from '@66hex/hasta/svelte';
 
   const hasta = useHasta({ horizonMs: 160 });
 </script>

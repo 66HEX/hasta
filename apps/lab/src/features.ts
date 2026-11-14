@@ -1,4 +1,4 @@
-import type { Point, Rect } from 'hasta/core';
+import type { Point, Rect } from '@66hex/hasta/core';
 
 import type { Sample, Trial } from './types.ts';
 

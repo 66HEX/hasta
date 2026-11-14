@@ -1,5 +1,5 @@
 /* oxlint-disable anti-slop/no-unknown-parameters, anti-slop/no-runtime-typeof, anti-slop/no-unsafe-dictionary-type -- Imported JSON and IndexedDB records require validation at the boundary */
-import type { Point, Rect } from 'hasta/core';
+import type { Point, Rect } from '@66hex/hasta/core';
 
 import { checksum } from './checksum.ts';
 import { collectionPlan, participants, recordCompletion, studySeed } from './protocol.ts';

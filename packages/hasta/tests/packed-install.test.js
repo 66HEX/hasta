@@ -42,7 +42,7 @@ test('the packed vanilla/core package installs and imports without any framework
     }
 
     const manifest = JSON.parse(
-      readFileSync(join(directory, 'node_modules/hasta/package.json'), 'utf8'),
+      readFileSync(join(directory, 'node_modules/@66hex/hasta/package.json'), 'utf8'),
     );
 
     assert.equal(manifest.type, 'module');
@@ -66,9 +66,9 @@ test('the packed vanilla/core package installs and imports without any framework
         '-e',
         `
       import assert from 'node:assert/strict';
-      import * as root from 'hasta';
-      import * as vanilla from 'hasta/vanilla';
-      import { KalmanPredictor } from 'hasta/core';
+      import * as root from '@66hex/hasta';
+      import * as vanilla from '@66hex/hasta/vanilla';
+      import { KalmanPredictor } from '@66hex/hasta/core';
       assert.equal(root.createHasta, vanilla.createHasta);
       assert.equal(typeof KalmanPredictor, 'function');
       const controller = vanilla.createHastaController();

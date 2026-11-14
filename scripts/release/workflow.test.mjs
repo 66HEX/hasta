@@ -56,4 +56,5 @@ test('publication is gated by validation and tests of the exact tarball', () => 
   }
 
   assert.doesNotMatch(workflow, /wrangler|deploy:lab/u);
+  assert.match(workflow, /--workspace @66hex\/hasta > "\$PACK_METADATA"/u);
 });

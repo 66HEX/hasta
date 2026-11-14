@@ -2,11 +2,20 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 
-export const PACKAGE_NAME = 'hasta';
+export const PACKAGE_NAME = '@66hex/hasta';
 export const REPOSITORY = '66HEX/hasta';
 export const REGISTRY = 'https://registry.npmjs.org/';
 export const MAX_UNPACKED_SIZE = 1_000_000;
 export const ENTRYPOINTS = ['.', './core', './vanilla', './react', './vue', './svelte'];
+
+export function registryUrls(version) {
+  const packagePath = encodeURIComponent(PACKAGE_NAME);
+
+  return {
+    version: `${REGISTRY}${packagePath}/${version}`,
+    tags: `${REGISTRY}-/package/${packagePath}/dist-tags`,
+  };
+}
 
 export function parseReleaseTag(tag) {
   assert.match(tag, /^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u, 'Expected a stable vX.Y.Z tag');
@@ -43,18 +52,21 @@ export function assertReleaseIdentity(manifest, version, repository) {
 export function assertWorkspaceVersions(manifests, lock, version) {
   assert.equal(lock.lockfileVersion, 3);
   assert.equal(lock.packages['packages/hasta']?.version, version, 'Stale library lockfile version');
-  assert.deepEqual(lock.packages['node_modules/hasta'], { resolved: 'packages/hasta', link: true });
+  assert.deepEqual(lock.packages[`node_modules/${PACKAGE_NAME}`], {
+    resolved: 'packages/hasta',
+    link: true,
+  });
   assert.equal(manifests[''].private, true, 'The monorepo must remain private');
 
   for (const workspace of ['apps/web', 'apps/lab']) {
     assert.equal(manifests[workspace].private, true, `${workspace} must remain private`);
     assert.equal(
-      manifests[workspace].dependencies.hasta,
+      manifests[workspace].dependencies[PACKAGE_NAME],
       version,
       `${workspace} has a stale Hasta dependency`,
     );
     assert.equal(
-      lock.packages[workspace]?.dependencies.hasta,
+      lock.packages[workspace]?.dependencies[PACKAGE_NAME],
       version,
       `${workspace} has a stale lockfile`,
     );
@@ -88,7 +100,10 @@ export function assertPackMetadata(metadata, manifest, version) {
   assert.equal(artifact.id, `${PACKAGE_NAME}@${version}`);
   assert.equal(artifact.name, PACKAGE_NAME);
   assert.equal(artifact.version, version);
-  assert.equal(artifact.filename, `${PACKAGE_NAME}-${version}.tgz`);
+  assert.equal(
+    artifact.filename,
+    `${PACKAGE_NAME.replace(/^@/u, '').replace('/', '-')}-${version}.tgz`,
+  );
   assert.ok(Number.isSafeInteger(artifact.size) && artifact.size > 0);
   assert.ok(Number.isSafeInteger(artifact.unpackedSize) && artifact.unpackedSize > 0);
   assert.ok(artifact.unpackedSize < MAX_UNPACKED_SIZE, 'Package exceeds the unpacked size budget');

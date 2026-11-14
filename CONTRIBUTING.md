@@ -27,8 +27,8 @@ Publishing a stable GitHub Release starts `.github/workflows/release.yml`. Pushi
 
    ```sh
    RELEASE_VERSION=0.1.0
-   npm pkg set "version=$RELEASE_VERSION" --workspace=hasta
-   npm pkg set "dependencies.hasta=$RELEASE_VERSION" --workspace=@hasta/web --workspace=@hasta/lab
+   npm pkg set "version=$RELEASE_VERSION" --workspace=@66hex/hasta
+   npm pkg set "dependencies.@66hex/hasta=$RELEASE_VERSION" --workspace=@hasta/web --workspace=@hasta/lab
    npm install --package-lock-only --ignore-scripts
    npm run format
    ```
@@ -46,7 +46,7 @@ Library releases do not deploy either web app. Keep the deployed Lab build uncha
 
 ## npm setup
 
-The release job uses the `npm-production` GitHub environment with `contents: read` and `id-token: write`. No npm token secret is needed for normal releases. Configure the npm trusted publisher for `hasta` with:
+The release job uses the `npm-production` GitHub environment with `contents: read` and `id-token: write`. No npm token secret is needed for normal releases. Configure the npm trusted publisher for `@66hex/hasta` with:
 
 | Setting              | Value                                |
 | -------------------- | ------------------------------------ |
@@ -66,13 +66,13 @@ For a new npm package, the owner first establishes the package through an authen
 ```sh
 RELEASE_DIRECTORY="$(mktemp -d)"
 RELEASE_VERSION="$(node -p 'require("./packages/hasta/package.json").version')"
-npm pack --json --ignore-scripts --workspace hasta --pack-destination "$RELEASE_DIRECTORY" > "$RELEASE_DIRECTORY/npm-pack.json"
+npm pack --json --ignore-scripts --workspace @66hex/hasta --pack-destination "$RELEASE_DIRECTORY" > "$RELEASE_DIRECTORY/npm-pack.json"
 node scripts/release/validate-packed-artifact.mjs "$RELEASE_DIRECTORY/npm-pack.json" "$RELEASE_DIRECTORY" "$RELEASE_VERSION"
-npm run release:consumers -- "$RELEASE_DIRECTORY/hasta-$RELEASE_VERSION.tgz"
-npm publish "$RELEASE_DIRECTORY/hasta-$RELEASE_VERSION.tgz" --dry-run --ignore-scripts --access public --tag latest
+npm run release:consumers -- "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz"
+npm publish "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz" --dry-run --ignore-scripts --access public --tag latest
 ```
 
-The package owner can then run `npm login` and publish that exact tarball with `npm publish "$RELEASE_DIRECTORY/hasta-$RELEASE_VERSION.tgz" --ignore-scripts --access public --tag latest`, completing npm's authentication prompts. A local bootstrap publication does not have GitHub Actions provenance. Subsequent versions use the release workflow above; do not trigger it for the already published bootstrap version.
+The package owner can then run `npm login` and publish that exact tarball with `npm publish "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz" --ignore-scripts --access public --tag latest`, completing npm's authentication prompts. A local bootstrap publication does not have GitHub Actions provenance. Subsequent versions use the release workflow above; do not trigger it for the already published bootstrap version.
 
 ## License
 

@@ -1,8 +1,8 @@
-import { useHasta as useReactHasta, useHastaTarget as useReactTarget } from 'hasta/react';
-import type { DebugOptions, PredictionEvent, Point, TargetOptions } from 'hasta/react';
-import { useHasta as useSvelteHasta, attachHastaTarget } from 'hasta/svelte';
-import { createHasta, createHastaController } from 'hasta/vanilla';
-import { useHasta as useVueHasta, useHastaTarget as useVueTarget } from 'hasta/vue';
+import { useHasta as useReactHasta, useHastaTarget as useReactTarget } from '@66hex/hasta/react';
+import type { DebugOptions, PredictionEvent, Point, TargetOptions } from '@66hex/hasta/react';
+import { useHasta as useSvelteHasta, attachHastaTarget } from '@66hex/hasta/svelte';
+import { createHasta, createHastaController } from '@66hex/hasta/vanilla';
+import { useHasta as useVueHasta, useHastaTarget as useVueTarget } from '@66hex/hasta/vue';
 
 export function vanillaExample(element: HTMLElement) {
   const engine = createHasta();

@@ -5,9 +5,9 @@ This harness compares forecast accuracy, target-hit stability, and model cost. `
 Tune the production Kalman filter and evaluate it on new seeds:
 
 ```sh
-npm --workspace hasta run bench:kalman -- --phase tune --output /tmp/hasta-kalman/results.json
-npm --workspace hasta run bench:kalman -- --phase evaluate --output /tmp/hasta-kalman/results.json
-npm --workspace hasta run bench:comparison:perf -- --results /tmp/hasta-kalman/results.json
+npm --workspace @66hex/hasta run bench:kalman -- --phase tune --output /tmp/hasta-kalman/results.json
+npm --workspace @66hex/hasta run bench:kalman -- --phase evaluate --output /tmp/hasta-kalman/results.json
+npm --workspace @66hex/hasta run bench:comparison:perf -- --results /tmp/hasta-kalman/results.json
 ```
 
 Before `evaluate`, write the selected configuration from `tuning.json` into the library's internal defaults. The script checks that the parameters and protocol match. The current defaults match the saved tuning result. The final evaluation uses new seeds; `protocol.json` freezes all profiles and the objective function. Filter parameters are not part of the public API.
@@ -18,7 +18,7 @@ Run commands from the repository root. Use Node.js 24 or later and the dependenc
 
 ```sh
 npm ci
-npm --workspace hasta run browsers:install
+npm --workspace @66hex/hasta run browsers:install
 ```
 
 Browser installation is required for performance measurements. Accuracy evaluation runs in Node alone.
@@ -26,20 +26,20 @@ Browser installation is required for performance measurements. Accuracy evaluati
 Run the full tuning and accuracy evaluation:
 
 ```sh
-npm --workspace hasta run bench:comparison
+npm --workspace @66hex/hasta run bench:comparison
 ```
 
 The script builds the library, tunes the models, and evaluates the frozen configurations. It writes artifacts to `/tmp/hasta-comparison` by default. `--quick` reduces the parameter grid, trace count, and particle-filter repetitions; use it to check that the harness works:
 
 ```sh
-npm --workspace hasta run bench:comparison -- --quick --output /tmp/hasta-comparison-smoke/results.json
+npm --workspace @66hex/hasta run bench:comparison -- --quick --output /tmp/hasta-comparison-smoke/results.json
 ```
 
 Tuning and evaluation can run separately:
 
 ```sh
-npm --workspace hasta run bench:comparison -- --phase tune --output /tmp/hasta-comparison/results.json
-npm --workspace hasta run bench:comparison -- --phase evaluate --output /tmp/hasta-comparison/results.json
+npm --workspace @66hex/hasta run bench:comparison -- --phase tune --output /tmp/hasta-comparison/results.json
+npm --workspace @66hex/hasta run bench:comparison -- --phase evaluate --output /tmp/hasta-comparison/results.json
 ```
 
 The `evaluate` phase reads `tuning.json` from the directory selected by `--output`. Both phases must use the same mode: full or `--quick`. Both commands rebuild the library. Keep the code unchanged between phases and use a separate output directory for each experiment, because auxiliary filenames are fixed.
@@ -47,7 +47,7 @@ The `evaluate` phase reads `tuning.json` from the directory selected by `--outpu
 After accuracy evaluation, measure performance:
 
 ```sh
-npm --workspace hasta run bench:comparison:perf -- --results /tmp/hasta-comparison/results.json
+npm --workspace @66hex/hasta run bench:comparison:perf -- --results /tmp/hasta-comparison/results.json
 ```
 
 This script uses the configurations in the supplied JSON and the existing `dist`; it does not build the library. It measures Node, Chromium, Firefox, and WebKit in sequence, then measures memory in separate Node processes. `--quick` reduces the number of timing rounds but retains every model in the results file. Stop other benchmarks, tests, and builds while measuring.
@@ -68,7 +68,7 @@ Data generators and particle filters use fixed seeds. To reproduce a result, als
 After both measurements, create a compact archive:
 
 ```sh
-npm --workspace hasta run bench:comparison:archive -- --results /tmp/hasta-comparison/results.json --destination /tmp/hasta-comparison/archive
+npm --workspace @66hex/hasta run bench:comparison:archive -- --results /tmp/hasta-comparison/results.json --destination /tmp/hasta-comparison/archive
 ```
 
 The archive contains compressed raw results in `accuracy.json.gz`, aggregates and additional difference intervals against regression and Kalman in `summary.json`, `performance.json`, and a `provenance.json` manifest. The manifest records SHA-256 hashes of sources, build output, and data, together with the baseline commit and working tree status at archive time. Archive before making further code changes.

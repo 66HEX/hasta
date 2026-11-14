@@ -1,4 +1,4 @@
-import type { Point, Rect, TrajectoryPoint } from 'hasta/core';
+import type { Point, Rect, TrajectoryPoint } from '@66hex/hasta/core';
 
 export interface Provenance {
   revision: string;

@@ -173,8 +173,8 @@ test('the header framework choice updates all examples and persists on reload', 
   await expect(page.locator('[data-framework-panel]')).toHaveCount(2);
 
   for (const panel of await page.locator('[data-framework-panel]').all()) {
-    await expect(panel).toContainText('hasta/vue');
-    await expect(panel).not.toContainText('hasta/react');
+    await expect(panel).toContainText('@66hex/hasta/vue');
+    await expect(panel).not.toContainText('@66hex/hasta/react');
   }
 
   await page.reload();
@@ -201,7 +201,7 @@ test('the header framework choice updates all examples and persists on reload', 
   await selectFramework(page, 'React');
 
   for (const panel of await page.locator('[data-framework-panel]').all()) {
-    await expect(panel).toContainText('hasta/react');
+    await expect(panel).toContainText('@66hex/hasta/react');
   }
 });
 
@@ -226,8 +226,8 @@ test('Shiki code copies only the selected framework without toolbar text', async
   await expect(panel.locator('[data-visible=true]')).toHaveCount(1);
   await expect(panel.locator('[data-visible=true]')).toHaveCSS('transition-duration', '0.2s');
   const copied = await page.evaluate(() => window.copiedCode);
-  expect(copied).toContain('hasta/svelte');
-  expect(copied).not.toContain('hasta/react');
+  expect(copied).toContain('@66hex/hasta/svelte');
+  expect(copied).not.toContain('@66hex/hasta/react');
   expect(copied).not.toContain('Copied');
 });
 
@@ -325,7 +325,7 @@ test('invalid or unavailable storage does not prevent reading the document', asy
   await ready(page);
   await expect(page.getByRole('combobox', { name: 'Code framework' })).toContainText('React');
   await selectFramework(page, 'Vue');
-  await expect(page.locator('[data-framework-panel]').first()).toContainText('hasta/vue');
+  await expect(page.locator('[data-framework-panel]').first()).toContainText('@66hex/hasta/vue');
 });
 
 test('live input triggers the real engine and changing framework preserves the result', async ({

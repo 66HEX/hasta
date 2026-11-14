@@ -6,7 +6,7 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "types": ["vite/client", "svelte", "node"],
-    "paths": { "hasta/*": ["./src/*/index.ts"] }
+    "paths": { "@66hex/hasta/*": ["./src/*/index.ts"] }
   },
   "include": [
     "tests/frameworks/**/*.ts",

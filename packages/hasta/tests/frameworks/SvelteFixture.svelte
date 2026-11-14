@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { attachHastaTarget, hastaTarget, useHasta } from 'hasta/svelte';
-  import type { HastaActionOptions, IntersectionEvent } from 'hasta/svelte';
+  import { attachHastaTarget, hastaTarget, useHasta } from '@66hex/hasta/svelte';
+  import type { HastaActionOptions, IntersectionEvent } from '@66hex/hasta/svelte';
 
   const hasta = useHasta({ debug: { panel: false } });
   const alternate = useHasta({ debug: { panel: false } });

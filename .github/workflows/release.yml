@@ -86,7 +86,7 @@ jobs:
         run: |
           mkdir -p "$PACK_DIRECTORY"
           PACK_METADATA="$PACK_DIRECTORY/npm-pack.json"
-          npm pack --json --ignore-scripts --pack-destination "$PACK_DIRECTORY" --workspace hasta > "$PACK_METADATA"
+          npm pack --json --ignore-scripts --pack-destination "$PACK_DIRECTORY" --workspace @66hex/hasta > "$PACK_METADATA"
           node scripts/release/validate-packed-artifact.mjs "$PACK_METADATA" "$PACK_DIRECTORY" "${{ steps.release.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Smoke test exact tarball with current and minimum peers

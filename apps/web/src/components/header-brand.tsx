@@ -1,5 +1,5 @@
+import { useHastaTarget } from '@66hex/hasta/react';
 import { Popover } from '@base-ui/react/popover';
-import { useHastaTarget } from 'hasta/react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { DoakesVideo } from '@/components/doakes-video';

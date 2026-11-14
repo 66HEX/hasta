@@ -14,9 +14,11 @@ import {
   classifyNpmViewResult,
   integrity,
   isTransientRegistryError,
+  PACKAGE_NAME,
   parseReleaseTag,
   readTarball,
   REGISTRY,
+  registryUrls,
   REPOSITORY,
 } from './contract.mjs';
 
@@ -56,10 +58,10 @@ function packedFixture() {
   const files = [...contents].map(([path, content]) => ({ path, size: content.length }));
 
   const artifact = {
-    id: `hasta@${version}`,
-    name: 'hasta',
+    id: `@66hex/hasta@${version}`,
+    name: '@66hex/hasta',
     version,
-    filename: `hasta-${version}.tgz`,
+    filename: `66hex-hasta-${version}.tgz`,
     size: tarball.length,
     unpackedSize: [...contents.values()].reduce((sum, value) => sum + value.length, 0),
     shasum: createHash('sha1').update(tarball).digest('hex'),
@@ -104,6 +106,7 @@ test('rejects wrong repository, version, private packages, and publication metad
 
   for (const change of [
     { name: 'other' },
+    { name: 'hasta' },
     { private: true },
     { repository: { ...manifest.repository, directory: '.' } },
     { publishConfig: { access: 'public', registry: 'https://example.com/' } },
@@ -127,8 +130,12 @@ test('keeps workspace dependencies, the lockfile, and distributed MIT license co
   const lock = JSON.parse(readFileSync(new URL('package-lock.json', root), 'utf8'));
   assertWorkspaceVersions(manifests, lock, version);
   const stale = structuredClone(lock);
-  stale.packages['apps/lab'].dependencies.hasta = '999.0.0';
+  stale.packages['apps/lab'].dependencies[PACKAGE_NAME] = '999.0.0';
   assert.throws(() => assertWorkspaceVersions(manifests, stale, version));
+  const unscoped = structuredClone(lock);
+  unscoped.packages['node_modules/hasta'] = unscoped.packages[`node_modules/${PACKAGE_NAME}`];
+  delete unscoped.packages[`node_modules/${PACKAGE_NAME}`];
+  assert.throws(() => assertWorkspaceVersions(manifests, unscoped, version));
   assert.throws(() => assertWorkspaceVersions(manifests, lock, '999.0.0'));
   const unsafe = structuredClone(manifests);
   unsafe['apps/web'].private = false;
@@ -169,7 +176,11 @@ test('rejects extra files, missing exports, traversal, wrong identity, and overs
 
   for (const change of [
     { filename: '../hasta.tgz' },
+    { filename: `hasta-${version}.tgz` },
+    { filename: `@66hex/hasta-${version}.tgz` },
+    { id: `hasta@${version}` },
     { name: 'other' },
+    { name: 'hasta' },
     { unpackedSize: 1_000_000 },
     { integrity: 'sha512-invalid' },
     { files: artifact.files.slice(1) },
@@ -202,16 +213,23 @@ test('verifies the actual archive, hashes, file sizes, and packed manifest', () 
   assert.throws(() => assertTarball(tarball, artifact, { ...manifest, private: true }));
 });
 
+test('encodes the scoped name as one registry path segment for versions and dist-tags', () => {
+  assert.deepEqual(registryUrls('0.1.0'), {
+    version: 'https://registry.npmjs.org/%4066hex%2Fhasta/0.1.0',
+    tags: 'https://registry.npmjs.org/-/package/%4066hex%2Fhasta/dist-tags',
+  });
+});
+
 test('requires the registry to expose the exact artifact, latest version, and npm provenance', () => {
   const expected = integrity(Buffer.from('release'));
 
   const document = {
-    name: 'hasta',
+    name: '@66hex/hasta',
     version,
     dist: {
       integrity: expected,
       attestations: {
-        url: `${REGISTRY}-/npm/v1/attestations/hasta@${version}`,
+        url: `${REGISTRY}-/npm/v1/attestations/@66hex%2fhasta@${version}`,
         provenance: { predicateType: 'https://slsa.dev/provenance/v1' },
       },
     },

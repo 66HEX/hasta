@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 
-import { createHasta, createHastaController } from 'hasta';
-import { KalmanPredictor } from 'hasta/core';
-import { createHastaController as vanilla } from 'hasta/vanilla';
+import { createHasta, createHastaController } from '@66hex/hasta';
+import { KalmanPredictor } from '@66hex/hasta/core';
+import { createHastaController as vanilla } from '@66hex/hasta/vanilla';
 
 assert.equal('document' in globalThis, false);
 

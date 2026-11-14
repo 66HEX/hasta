@@ -63,7 +63,7 @@ function smoke(directory, dependencies) {
   );
 
   const installed = JSON.parse(
-    readFileSync(join(directory, 'node_modules/hasta/package.json'), 'utf8'),
+    readFileSync(join(directory, 'node_modules', PACKAGE_NAME, 'package.json'), 'utf8'),
   );
 
   assert.equal(installed.version, version, 'Installed a different Hasta version');
@@ -109,7 +109,7 @@ try {
 
   const vanilla = join(temporary, 'vanilla');
   mkdirSync(vanilla);
-  smoke(vanilla, { hasta: spec });
+  smoke(vanilla, { [PACKAGE_NAME]: spec });
 
   for (const peer of Object.keys(manifest.peerDependencies)) {
     assert.ok(
@@ -133,7 +133,7 @@ try {
 
     peers['react-dom'] = peers.react;
     smoke(directory, {
-      hasta: spec,
+      [PACKAGE_NAME]: spec,
       ...peers,
       '@types/react': development['@types/react'],
       '@types/react-dom': development['@types/react-dom'],
@@ -158,7 +158,7 @@ try {
     cpSync(join(root, 'packages/hasta/tests/types/entrypoints.ts'), join(directory, 'adapters.ts'));
     writeFileSync(
       join(directory, 'core.ts'),
-      "import { KalmanPredictor } from 'hasta/core';\nimport type { Predictor, Point } from 'hasta/core';\nexport const predictor: Predictor = new KalmanPredictor();\nexport const point: Point = { x: 0, y: 0 };\n",
+      "import { KalmanPredictor } from '@66hex/hasta/core';\nimport type { Predictor, Point } from '@66hex/hasta/core';\nexport const predictor: Predictor = new KalmanPredictor();\nexport const point: Point = { x: 0, y: 0 };\n",
     );
 
     for (const resolution of ['NodeNext', 'Bundler']) {
@@ -186,12 +186,12 @@ try {
     writeFileSync(
       join(directory, 'browser.js'),
       [
-        "export { createHasta, createHastaController } from 'hasta';",
-        "export { KalmanPredictor } from 'hasta/core';",
-        "export { createHastaController as vanilla } from 'hasta/vanilla';",
-        "export { useHasta as react } from 'hasta/react';",
-        "export { useHasta as vue } from 'hasta/vue';",
-        "export { useHasta as svelte, attachHastaTarget } from 'hasta/svelte';",
+        "export { createHasta, createHastaController } from '@66hex/hasta';",
+        "export { KalmanPredictor } from '@66hex/hasta/core';",
+        "export { createHastaController as vanilla } from '@66hex/hasta/vanilla';",
+        "export { useHasta as react } from '@66hex/hasta/react';",
+        "export { useHasta as vue } from '@66hex/hasta/vue';",
+        "export { useHasta as svelte, attachHastaTarget } from '@66hex/hasta/svelte';",
       ].join('\n'),
     );
     writeFileSync(
