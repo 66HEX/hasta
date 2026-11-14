@@ -18,6 +18,7 @@
     "packages/hasta/benchmarks/stability/baseline-fa9ac8d/**",
     "packages/hasta/benchmarks/stability/baseline-0a503bb/**",
     "packages/hasta/benchmarks/stability/baseline-5cf01cf/**",
+    "packages/hasta/benchmarks/stability/baseline-d514639/**",
     "packages/hasta/benchmarks/stability/experimental/**",
     "docs/**",
     "**/dist/**",

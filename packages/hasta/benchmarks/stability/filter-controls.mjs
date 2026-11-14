@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-export const FILTER_CONTROLS = Object.freeze(['fa9ac8d', '0a503bb', '5cf01cf']);
+export const FILTER_CONTROLS = Object.freeze(['fa9ac8d', '0a503bb', '5cf01cf', 'd514639']);
 
 export async function loadFilterControl(name = 'fa9ac8d') {
   if (!FILTER_CONTROLS.includes(name)) {
@@ -43,7 +43,9 @@ export async function loadFilterControl(name = 'fa9ac8d') {
         ? 'Frozen fa9ac8d original Kalman predictor; current callback policy, not the frozen legacy Subscription.'
         : name === '0a503bb'
           ? 'Frozen 0a503bb accepted dense-input innovation weighting; current callback policy is identical on both sides.'
-          : 'Frozen 5cf01cf accepted sparse-input correction; current callback policy is identical on both sides.',
+          : name === '5cf01cf'
+            ? 'Frozen 5cf01cf accepted sparse-input correction; current callback policy is identical on both sides.'
+            : 'Frozen d514639 adaptive velocity smoothing; runtime release hysteresis is outside this predictor snapshot.',
     sourceFiles: [
       `benchmarks/stability/baseline-${name}/manifest.json`,
       ...Object.keys(manifest.sha256).map(

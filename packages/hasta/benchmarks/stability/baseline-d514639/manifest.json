@@ -1,0 +1,17 @@
+{
+  "baseCommit": "d5146391a816121c2296ec9a3dcc85caaf70032b",
+  "description": "Adaptive velocity smoothing and bounded runtime release hysteresis. Frozen control for exact CPU optimization; no numerical or policy changes are permitted.",
+  "compiler": "6.0.3",
+  "sourceSha256": {
+    "core/prediction/kalman-predictor.ts": "ebe22904cb711b2a60b1f3cb05ecfba4c8b46f1d5444d42024847414c8b5f0a6",
+    "core/prediction/kalman-state.ts": "a5ed9d632d7764168319c82181322c52508bda819e4b86facee2acb0e77da19c",
+    "core/line-rect.ts": "2e49637d0882ab15c0531f2dbbbc0bae408d0b7e767cbccbe855866495a9bb2f",
+    "core/validation.ts": "3de56ff5d00f3a59f31530026e5051b593cfba516eebe7250f2217bdf05e878f"
+  },
+  "sha256": {
+    "core/prediction/kalman-predictor.js": "090beb9ecd66384e9ff57da9c3b34f964ac75bb0f37d497fac6ba8218d3533b7",
+    "core/prediction/kalman-state.js": "ba0b37835974f25024c0d2a4791dbbff88b430b90760c21d857f75bf93d91259",
+    "core/line-rect.js": "8cf181e52991a290828aded9bc9e0ca93512ea1f46557d87ce272c4bd2e510a2",
+    "core/validation.js": "7370d1b4a9207696ff776bd91c7fb21f57c6e0cb2f8980fb393b0c9fb22fafcb"
+  }
+}
