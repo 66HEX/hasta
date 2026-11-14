@@ -61,7 +61,7 @@ Create this connection when the next release is ready. npm requires its first su
 
 ### First publication
 
-Hasta has no public npm version yet. The package owner must first establish the package on npm through an authenticated publication, then add the trusted publisher in its package settings. Do this once from a reviewed, versioned commit after the full checks pass. Pack and test the artifact before publishing it:
+For a new npm package, the owner first establishes the package through an authenticated publication, then adds the trusted publisher in its package settings. If Hasta already exists in the registry, use the release workflow above. Do the initial publication once from a reviewed, versioned commit after the full checks pass. Pack and test the artifact before publishing it:
 
 ```sh
 RELEASE_DIRECTORY="$(mktemp -d)"

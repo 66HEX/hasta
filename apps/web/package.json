@@ -17,7 +17,7 @@
     "@mdx-js/react": "3.1.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "hasta": "0.0.0",
+    "hasta": "0.1.0",
     "nucleo-pixel": "1.5.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
