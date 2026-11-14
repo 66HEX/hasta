@@ -102,14 +102,13 @@ test('one debug overlay includes the header and keeps prediction active when dis
   await debug.press('Space');
   const overlay = page.locator('[data-hasta-debug]');
   await expect(overlay).toHaveCount(1);
-  await expect(overlay.locator('[data-hasta-bounds]')).toHaveCount(4);
+  await expect(overlay.locator('[data-hasta-bounds]')).toHaveCount(3);
   await expect(overlay.locator('[data-hasta-layer="panel"]')).toContainText(
-    '4 targets · 160 ms ahead',
+    '3 targets · 160 ms ahead',
   );
   await expect(overlay.locator('[data-hasta-target-label] tspan:first-child')).toHaveText([
     'Hasta',
     'Profile',
-    'Inbox',
     'Settings',
   ]);
 
@@ -117,9 +116,9 @@ test('one debug overlay includes the header and keeps prediction active when dis
   await page.getByRole('slider', { name: 'Target margin' }).press('End');
   await expect(overlay).toHaveCount(1);
   await expect(overlay.locator('[data-hasta-layer="panel"]')).toContainText(
-    '4 targets · 400 ms ahead',
+    '3 targets · 400 ms ahead',
   );
-  await expect(overlay.locator('[data-hasta-margin="40"]')).toHaveCount(4);
+  await expect(overlay.locator('[data-hasta-margin="40"]')).toHaveCount(3);
   await approachBrand(page);
   const card = page.getByRole('dialog', { name: 'Surprise from Doakes' });
   await expect(card).toBeVisible();

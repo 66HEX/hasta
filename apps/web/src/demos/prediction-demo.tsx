@@ -8,11 +8,14 @@ import { Surface } from '@/components/layout';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { PreviewDeck } from '@/demos/preview-deck';
+import type { PreviewName } from '@/demos/preview-deck';
 import { usePrediction } from '@/lib/prediction';
 
-const targets: readonly { name: string; icon: IconName }[] = [
+import './prediction-demo.css';
+
+const targets: readonly { name: PreviewName; icon: IconName }[] = [
   { name: 'Profile', icon: 'user' },
-  { name: 'Inbox', icon: 'mail' },
   { name: 'Settings', icon: 'settings' },
 ];
 
@@ -25,13 +28,25 @@ function DemoTarget({
   horizon,
   margin,
   onPredict,
+  onCancel,
+  onHover,
+  onFocus,
+  onSelect,
+  active,
+  selected,
 }: {
   controller: HastaController;
-  name: string;
+  name: PreviewName;
   icon: IconName;
   horizon: number;
   margin: number;
-  onPredict: (name: string, event: IntersectionEvent) => void;
+  onPredict: (name: PreviewName, event: IntersectionEvent) => void;
+  onCancel: (name: PreviewName, signal: AbortSignal) => void;
+  onHover: (name: PreviewName | null) => void;
+  onFocus: (name: PreviewName | null) => void;
+  onSelect: (name: PreviewName) => void;
+  active: boolean;
+  selected: boolean;
 }) {
   const [predicted, setPredicted] = useState(false);
   const [recent, setRecent] = useState(false);
@@ -49,7 +64,14 @@ function DemoTarget({
       setCount((value) => value + 1);
       feedbackTimer.current = setTimeout(() => setRecent(false), 120);
       onPredict(name, event);
-      event.signal.addEventListener('abort', () => setPredicted(false), { once: true });
+      event.signal.addEventListener(
+        'abort',
+        () => {
+          setPredicted(false);
+          onCancel(name, event.signal);
+        },
+        { once: true },
+      );
     },
   });
 
@@ -57,20 +79,40 @@ function DemoTarget({
   const targetRef = binding.ref;
 
   return (
-    <div className="flex w-16 flex-col items-center gap-3 sm:w-18 [&>span]:text-xs [&>span]:text-muted-foreground">
-      <div
-        ref={targetRef}
-        className="grid size-14 place-items-center rounded-xl border bg-card text-card-foreground shadow-xs transition-colors duration-200 ease-out data-[highlighted=true]:border-emerald-600/50 data-[highlighted=true]:bg-emerald-50 data-[highlighted=true]:text-emerald-800 data-[highlighted=true]:duration-0 motion-reduce:transition-none sm:size-16 dark:data-[highlighted=true]:bg-emerald-950 dark:data-[highlighted=true]:text-emerald-200"
-        data-predicted={predicted}
-        data-highlighted={predicted || recent}
-        data-prediction-count={count}
-        data-hasta-label={name}
-        data-demo-target={name}
-      >
-        <Icon name={icon} className="size-6" />
-      </div>
+    <button
+      type="button"
+      ref={targetRef}
+      className="preview-target"
+      aria-label={`Preview ${name}`}
+      aria-pressed={selected}
+      data-active={active}
+      data-predicted={predicted}
+      data-highlighted={predicted || recent}
+      data-prediction-count={count}
+      data-hasta-label={name}
+      data-demo-target={name}
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') {
+          onHover(name);
+        }
+      }}
+      onPointerLeave={() => onHover(null)}
+      onFocus={(event) => {
+        if (event.currentTarget.matches(':focus-visible')) {
+          onFocus(name);
+        }
+      }}
+      onBlur={() => onFocus(null)}
+      onClick={() => onSelect(name)}
+    >
+      <span className="preview-target-icon">
+        <Icon name={icon} />
+      </span>
       <span>{name}</span>
-    </div>
+      <span className="preview-target-mark" aria-hidden="true">
+        ↗
+      </span>
+    </button>
   );
 }
 
@@ -85,6 +127,15 @@ export function PredictionDemo({
   const [moving, setMoving] = useState(false);
   const { controller, horizon, setHorizon, margin, setMargin, debug, setDebug } = usePrediction();
   const [result, setResult] = useState<{ name: string; eta: number; count: number } | null>(null);
+
+  const [anticipated, setAnticipated] = useState<{ name: PreviewName; signal: AbortSignal } | null>(
+    null,
+  );
+
+  const [hovered, setHovered] = useState<PreviewName | null>(null);
+  const [focused, setFocused] = useState<PreviewName | null>(null);
+  const [selected, setSelected] = useState<PreviewName | null>(null);
+  const active = focused ?? hovered ?? anticipated?.name ?? selected;
 
   useEffect(() => {
     let idleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -157,7 +208,8 @@ export function PredictionDemo({
     };
   }, []);
 
-  const onPredict = useCallback((name: string, event: IntersectionEvent) => {
+  const onPredict = useCallback((name: PreviewName, event: IntersectionEvent) => {
+    setAnticipated({ name, signal: event.signal });
     setResult((current) => ({
       name,
       eta: Math.round(event.etaMs),
@@ -165,16 +217,24 @@ export function PredictionDemo({
     }));
   }, []);
 
+  const onCancel = useCallback((_name: PreviewName, signal: AbortSignal) => {
+    setAnticipated((current) => (current?.signal === signal ? null : current));
+  }, []);
+
   return (
     <figure data-demo="prediction">
       <Surface>
         <Card>
           <CardContent>
-            <div data-demo-stage="" className="relative h-76 overflow-hidden">
+            <div
+              data-demo-stage=""
+              className="prediction-stage"
+              data-active-view={active ?? 'none'}
+            >
               <div
                 data-demo-pointer-status=""
                 data-live={moving}
-                className="group/pointer-status pointer-events-none absolute top-0 left-0 flex items-center gap-2 type-display text-xs text-muted-foreground"
+                className="group/pointer-status pointer-events-none absolute top-0 left-0 z-10 flex items-center gap-2 type-display text-xs text-muted-foreground"
               >
                 <span
                   aria-hidden="true"
@@ -198,7 +258,11 @@ export function PredictionDemo({
                   </span>
                 </span>
               </div>
-              <div className="absolute top-24 left-1/2 flex -translate-x-1/2 gap-5 sm:gap-8">
+              <span className="preview-stage-label" aria-hidden="true">
+                LIVE PREVIEW
+              </span>
+              <PreviewDeck active={active} />
+              <fieldset className="preview-targets" aria-label="Preview a view">
                 {targets.map((target) => (
                   <DemoTarget
                     key={target.name}
@@ -207,9 +271,15 @@ export function PredictionDemo({
                     horizon={horizon}
                     margin={margin}
                     onPredict={onPredict}
+                    onCancel={onCancel}
+                    onHover={setHovered}
+                    onFocus={setFocused}
+                    onSelect={(name) => setSelected((current) => (current === name ? null : name))}
+                    active={active === target.name}
+                    selected={selected === target.name}
                   />
                 ))}
-              </div>
+              </fieldset>
             </div>
           </CardContent>
           <CardFooter>
@@ -269,7 +339,7 @@ export function PredictionDemo({
               </span>
             </>
           ) : (
-            <>Move your mouse toward a target.</>
+            <>Move toward a view. See it before you reach it.</>
           )}
         </output>
       </figcaption>

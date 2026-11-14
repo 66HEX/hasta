@@ -164,5 +164,5 @@ test('skip link moves into the article and Tab continues at its first control', 
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
   await page.keyboard.press(browserName === 'webkit' ? 'Alt+Tab' : 'Tab');
-  await expect(page.getByRole('slider', { name: 'Look ahead' }).first()).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Preview Profile' })).toBeFocused();
 });

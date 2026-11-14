@@ -21,7 +21,7 @@ async function configure(demo, horizon, margin) {
 test('moving inside the target reactivates it after each idle expiry', async ({ page }) => {
   await page.goto('/');
   const demo = page.locator('[data-demo="prediction"]');
-  const target = demo.locator('[data-demo-target="Inbox"]');
+  const target = demo.locator('[data-demo-target="Settings"]');
   await target.scrollIntoViewIfNeeded();
   const box = await target.boundingBox();
   const x = box.x + box.width / 2;
@@ -44,7 +44,7 @@ test('moving inside the target reactivates it after each idle expiry', async ({ 
 });
 
 for (const width of [390, 1440]) {
-  test(`fast live sweeps light all three targets at ${width}px`, async ({ page }) => {
+  test(`fast live sweeps light both targets at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('/');
     const demo = page.locator('[data-demo="prediction"]');
@@ -72,7 +72,7 @@ for (const width of [390, 1440]) {
             elements.map((element) => Number(element.dataset.predictionCount)),
           ),
         )
-        .toEqual([run + 1, run + 1, run + 1]);
+        .toEqual([run + 1, run + 1]);
       await expect
         .poll(() =>
           targets.evaluateAll((elements) =>
@@ -109,10 +109,10 @@ test('the demo stays idle without real mouse input and exposes only the library 
   const debug = demo.getByRole('switch', { name: 'Show the library debug overlay' });
   await debug.focus();
   await page.keyboard.press('Space');
-  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(4);
+  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(3);
   await expect(demo.locator('[data-demo-bounds]')).toHaveCount(0);
   await page.waitForTimeout(1100);
-  await expect(demo.locator('[data-prediction-count="0"]')).toHaveCount(3);
+  await expect(demo.locator('[data-prediction-count="0"]')).toHaveCount(2);
   expect(await page.evaluate(() => window.syntheticMoves)).toBe(0);
   await page.keyboard.press('Space');
   await expect(page.locator('[data-hasta-debug]')).toHaveCount(0);
@@ -129,7 +129,7 @@ for (const theme of ['light', 'dark']) {
     expect(await panel.evaluate((element) => getComputedStyle(element).backgroundColor)).toBe(
       await card.evaluate((element) => getComputedStyle(element).backgroundColor),
     );
-    await expect(panel).toHaveText('hastaIdle4 targets · 160 ms ahead');
+    await expect(panel).toHaveText('hastaIdle3 targets · 160 ms ahead');
     expect((await panel.boundingBox()).height).toBeLessThanOrEqual(70);
     await expect(panel.locator('.legend, .row, .note')).toHaveCount(0);
   });

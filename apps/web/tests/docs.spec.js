@@ -11,13 +11,13 @@ async function selectFramework(page, name) {
   await page.getByRole('option', { name, exact: true }).click();
 }
 
-async function approachInbox(page, demo) {
+async function approachSettings(page, demo) {
   await demo.scrollIntoViewIfNeeded();
-  const box = await demo.locator('[data-demo-stage]').boundingBox();
-  await page.mouse.move(box.x + box.width * 0.5, box.y + 260);
+  const box = await demo.locator('[data-demo-target="Settings"]').boundingBox();
+  await page.mouse.move(box.x + box.width * 0.5, box.y - 120);
 
-  for (let step = 0; step < 18; step++) {
-    await page.mouse.move(box.x + box.width * 0.5, box.y + 250 - step * 5);
+  for (let step = 0; step < 22; step++) {
+    await page.mouse.move(box.x + box.width * 0.5, box.y - 115 + step * 5);
     await page.waitForTimeout(16);
   }
 }
@@ -333,8 +333,10 @@ test('live input triggers the real engine and changing framework preserves the r
 }) => {
   await ready(page);
   const demo = page.locator('[data-demo="prediction"]');
-  await approachInbox(page, demo);
-  await expect(demo.locator('figcaption')).toContainText(/Inbox predicted \d+ ms before entry/u);
+  await approachSettings(page, demo);
+  await expect(demo.locator('figcaption')).toContainText(/Settings predicted \d+ ms before entry/u);
+  await page.mouse.move(0, 0);
+  await expect(demo.locator('[data-predicted="true"]')).toHaveCount(0);
   const result = await demo.locator('figcaption').textContent();
   await selectFramework(page, 'Vue');
   await expect(demo.locator('figcaption')).toHaveText(result);
@@ -343,16 +345,9 @@ test('live input triggers the real engine and changing framework preserves the r
 test('live mouse movement forecasts a target and departure cancels the match', async ({ page }) => {
   await ready(page);
   const demo = page.locator('[data-demo="prediction"]');
-  await demo.scrollIntoViewIfNeeded();
-  const box = await demo.locator('[data-demo-stage]').boundingBox();
-  await page.mouse.move(box.x + box.width * 0.5, box.y + 260);
+  await approachSettings(page, demo);
 
-  for (let step = 0; step < 18; step++) {
-    await page.mouse.move(box.x + box.width * 0.5, box.y + 250 - step * 5);
-    await page.waitForTimeout(16);
-  }
-
-  await expect(demo.locator('figcaption')).toContainText('Inbox predicted');
+  await expect(demo.locator('figcaption')).toContainText('Settings predicted');
   await page.mouse.move(0, 0);
   await expect(demo.locator('[data-predicted="true"]')).toHaveCount(0);
 });
@@ -363,8 +358,8 @@ test('the library debug overlay is the only inspection layer and can be disabled
   await ready(page);
   const demo = page.locator('[data-demo="prediction"]');
   await demo.getByRole('switch', { name: 'Show the library debug overlay' }).check();
-  await approachInbox(page, demo);
-  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(4);
+  await approachSettings(page, demo);
+  await expect(page.locator('[data-hasta-bounds]')).toHaveCount(3);
   await expect(demo.locator('[data-demo-bounds]')).toHaveCount(0);
   await expect(demo.getByRole('switch', { name: 'Inspect', exact: true })).toHaveCount(0);
 
@@ -453,7 +448,7 @@ test('shadcn sliders support keyboard tuning and expose updated values', async (
   await expect(margin).toHaveAttribute('aria-valuenow', '0');
   await margin.press('End');
   await expect(margin).toHaveAttribute('aria-valuenow', '40');
-  await approachInbox(page, demo);
+  await approachSettings(page, demo);
   await expect(demo.locator('figcaption')).toContainText('predicted');
 });
 
