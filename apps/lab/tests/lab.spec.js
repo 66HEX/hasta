@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+import { examplesFor } from '../src/features.ts';
 import { completeTask, downloadSession, openSession, resume, uploadSession } from './helpers.js';
 
 test('captures raw motion and Hasta, resumes and imports a checked backup', async ({ page }) => {
@@ -98,7 +99,7 @@ test('stops on failed saving and retains the attempt for backup and retry', asyn
   expect((await downloadSession(page)).session.trials).toHaveLength(1);
 });
 
-test('records a complete session with all five checkpoints and exports the recording', async ({
+test('records a complete session with all five checkpoints and exports training input', async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -140,6 +141,7 @@ test('records a complete session with all five checkpoints and exports the recor
 
     if (final) {
       expect(session.environment.automated).toBe(true);
+      expect(session.trials.flatMap(examplesFor).length).toBeGreaterThan(500);
       expect(session.trials.some((trial) => trial.callbacks.length > 0)).toBe(true);
       const artifacts = resolve('../../docs/artifacts');
       await mkdir(artifacts, { recursive: true });

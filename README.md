@@ -38,7 +38,7 @@ The documentation site lives in [`apps/web`](apps/web), and the library in [`pac
 
 The cursor data collector lives in [`apps/lab`](apps/lab). Run `npm run dev:lab` to open it at [localhost:5174](http://localhost:5174). Participants P01–P05 each complete two sessions of 12 practice tasks and 120 collection tasks, using their own mouse or touchpad. Each block has 18 target selections and six gate tasks, followed by a break and a verified compressed JSON backup. Recordings stay in IndexedDB until the participant downloads and sends them. The lab shares the documentation site's styles, fonts, and UI components.
 
-Run `npm run test:lab` for the collection browser checks. Build the static application with `npm run build:lab`.
+Run `npm run test:lab` for browser and data checks. Build once with `npm run build:lab` and host `apps/lab/dist` on a separate HTTPS origin for collection; keep the build unchanged throughout the study. Prepare received backups with `node apps/lab/scripts/prepare.mjs --out DATASET BACKUP...`. This validates integrity and progress, removes duplicate checkpoints, extracts causal features, and reports recording quality and the native Hasta baseline. The study protocol and coordinator instructions are in the intentionally untracked `docs/lab.md`.
 
 ## Deployment
 
