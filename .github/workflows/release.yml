@@ -65,6 +65,8 @@ jobs:
         run: node scripts/release/assert-unpublished.mjs "${{ steps.release.outputs.version }}"
 
       - name: Install dependencies from lockfile
+        env:
+          NUCLEO_LICENSE_KEY: ${{ secrets.NUCLEO_LICENSE_KEY }}
         run: npm ci
 
       - name: Audit high-severity dependencies

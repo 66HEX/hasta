@@ -9,9 +9,10 @@ const workflow = readFileSync(
 
 test('publishing requires a release event, OIDC, and the production environment', () => {
   assert.match(workflow, /on:\n  release:\n    types:\n      - published/u);
-  assert.doesNotMatch(
-    workflow,
-    /workflow_dispatch|pull_request|NPM_TOKEN|NODE_AUTH_TOKEN|secrets\./u,
+  assert.doesNotMatch(workflow, /workflow_dispatch|pull_request|NPM_TOKEN|NODE_AUTH_TOKEN/u);
+  assert.deepEqual(
+    [...workflow.matchAll(/secrets\.([A-Z_]+)/gu)].map((match) => match[1]),
+    ['NUCLEO_LICENSE_KEY'],
   );
   assert.match(workflow, /environment: npm-production/u);
   assert.match(workflow, /id-token: write/u);
