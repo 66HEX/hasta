@@ -2,7 +2,7 @@
 
 The current predictor adds adaptive velocity smoothing and bounded intersection release hysteresis. Run `node packages/hasta/benchmarks/stability/cursor-jitter.mjs` after building to compare endpoint jitter, repeated starts, acquisition lead, and maneuver response with the frozen `5cf01cf` predictor. The replay reports filter-only and filter-plus-hysteresis results separately across five cadences and noisy, quantized, and irregular input. These are synthetic diagnostics; the browser tests exercise the actual engine, including coalesced input and lifecycle cancellation.
 
-This directory preserves versioned numerical and callback controls. The studies below describe earlier implementations. The latest [CPU study](ITERATION3-RESULTS.md) measures faster updates with exact forecast and callback parity against `5cf01cf`. The preceding [numerical study](SPARSE-FILTER-RESULTS.md) compares that predictor with `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). Both keep the existing public API.
+This directory preserves versioned numerical and callback controls. The [adaptive predictor CPU comparison](#adaptive-predictor-cpu) uses the stabilized predictor at `d514639`. The earlier [CPU study](ITERATION3-RESULTS.md) measures faster updates with exact forecast and callback parity against `5cf01cf`. The preceding [numerical study](SPARSE-FILTER-RESULTS.md) compares that predictor with `0a503bbc60adfdece2ca42f06a67b0254966c93b`, following the [balanced cadence protocol](SPARSE-FILTER-PROTOCOL.md). These changes keep the existing public API.
 
 Historical general runners still default to the original predictor and subscription at `fa9ac8da5ca593b2cc541eb0007f6d0d190aab06`. The snapshots in `baseline-fa9ac8d/`, `baseline-0a503bb/`, and `baseline-5cf01cf/` have source and compiled-file integrity manifests. The runtime requires new pointer evidence before starting a speculative callback.
 
@@ -89,6 +89,50 @@ node packages/hasta/benchmarks/stability/perf.mjs --output /tmp/hasta-stability-
 ```
 
 This measures frozen/current `update` and `predict`, with three warmup rounds and nine measured rounds in rotating order. `--experiments` also measures the internal numerical snapshots and their uncertainty accessor. Times are microseconds per call from batch means, including immutable output creation. They do not measure individual-event tail latency or the full browser runtime.
+
+## Adaptive predictor CPU
+
+`adaptive-cpu.mjs` compares production with the frozen `d5146391a816121c2296ec9a3dcc85caaf70032b` predictor. The optimization shares residual length and direction between the two filter callbacks and reuses two adaptation buffers. Buffers are allocated when input starts; a checkpoint stays intact for same-timestamp corrections and arithmetic recovery. Projection validation uses scalar finite checks instead of allocating an array. Intersection queries with the same time and horizon reuse one private projection, invalidated by new input and resets. The predictor passes its copied, validated samples directly to the internal filter; the filter's standalone `update` retains validation. Filter coefficients, maneuver thresholds, prediction horizons, and release hysteresis are unchanged.
+
+Build and finish other tests before collecting CPU measurements on an idle machine. Each output must be a new file:
+
+```sh
+npm run build --workspace=@66hex/hasta
+node packages/hasta/benchmarks/stability/adaptive-parity.mjs --output /tmp/hasta-adaptive-parity.json
+node packages/hasta/benchmarks/stability/adaptive-cpu.mjs --output /tmp/hasta-adaptive-cpu-1.json
+node packages/hasta/benchmarks/stability/adaptive-cpu.mjs --output /tmp/hasta-adaptive-cpu-2.json
+node packages/hasta/benchmarks/stability/adaptive-frame-cpu.mjs --output /tmp/hasta-adaptive-frame-1.json
+node packages/hasta/benchmarks/stability/adaptive-frame-cpu.mjs --output /tmp/hasta-adaptive-frame-2.json
+```
+
+The timing runner uses three warmup rounds and nine measured rounds, rotates implementation order, and measures 1,048,576 calls per batch. It records all rounds and paired bootstrap 95% intervals for candidate/baseline time ratios. The primary target is at least 10% less CPU per intersection query for eight targets sharing a frame time and horizon, after 125 Hz input. Both clean input and periodic outliers must pass. Every group of eight starts with a projection cache miss; individual-query measurements always change the time to exercise cache misses. Guards cover 1, 4, 16.67, and 33 ms intervals, same-timestamp corrections, prediction, intersection, and construction. A ratio interval wholly above 1 flags a regression. Both fresh-process confirmations must pass the primary target. Inspect `primaryPasses` and every entry in `regressions`; the runner writes failed comparisons too. Performance flags are reviewed for repeatability, absolute cost, and frequency in the frame workload below. Small isolated CPU losses can be accepted when the combined workload improves; exact numerical parity and functional tests remain required.
+
+`adaptive-frame-cpu.mjs` measures two input updates, one immutable forecast, and 1, 4, 8, or 32 target queries per frame. Input arrives every 8 ms and includes periodic outliers. New input invalidates the projection before each frame. Target bounds and model construction are outside timing. This measures the combined prediction work; DOM bounds, spatial indexing, subscriptions, and rendering are excluded. It uses 131,072 frames per batch, three warmup rounds, nine measured rounds, and rotating implementation order.
+
+The parity runner compares exact Float64 query digests, availability, frame decisions, and endpoint errors across 2,424 synthetic traces. This covers 213,450 updates, 2,249 resets, 402,972 predictions, and 2,374,800 rectangle queries. Unit tests separately exercise configurable noise, decimation, measured anchoring, repeated replacements, arithmetic failures, subnormal values, expiry, and resets. Historical replay does not implement release hysteresis; browser tests cover the actual runtime. These measurements establish synthetic CPU cost and behavioral equivalence on the tested inputs, not whole-page latency or a performance guarantee for every engine.
+
+### Results, 2026-11-14
+
+Two fresh-process confirmations on Node 24.20.0, Darwin arm64 passed the eight-target CPU target. Individual updates at 8 ms were 10.9–12.6% faster for clean/outlier input and 13.8–14.9% faster for same-timestamp corrections. Batched intersection queries improved by 14.0–19.6% across all measured cadences and profiles.
+
+The combined core-frame workload also improved in both runs:
+
+| Targets | Run 1, before → after (µs/frame) | Run 1 reduction | Run 2, before → after (µs/frame) | Run 2 reduction |
+| ------- | -------------------------------- | --------------- | -------------------------------- | --------------- |
+| 1       | 0.4437 → 0.4047                  | 8.8%            | 0.4433 → 0.4053                  | 8.6%            |
+| 4       | 0.7066 → 0.6332                  | 10.4%           | 0.7297 → 0.6366                  | 12.8%           |
+| 8       | 1.0494 → 0.8810                  | 16.0%           | 1.1281 → 0.9314                  | 17.4%           |
+| 32      | 3.2386 → 2.5619                  | 20.9%           | 3.0750 → 2.4974                  | 18.8%           |
+
+The tradeoff is visible in isolated calls that always miss the projection cache. Across both runs, prediction point estimates ranged from a 3.7% slowdown to a 2.4% improvement; isolated intersections ranged from a 2.5% slowdown to a 5.0% improvement. Most intervals included no change. The only flagged slowdowns were prediction at 33 ms/clean in run 1 (0.38%) and 8 ms/clean in run 2 (0.57%), about 0.4 and 0.5 ns per call in these batch means. Construction had no flagged slowdown. The measured frame savings justify retaining this version; this is not a claim that every isolated operation is faster.
+
+Local raw artifacts under `docs/artifacts/adaptive-cpu/` are `accepted-run-1.json`, `accepted-run-2.json`, `frame-confirmation-1.json`, `frame-confirmation-2.json`, and `parity-v4.json`. Their source and compiled hashes match the selected implementation. The parity run had zero mismatches. These files are ignored experiment outputs; the commands above reproduce the measurements with new output paths.
+
+Later attempts to remove the small isolated-call cost were rejected when their intersection timings became less consistent. The retained implementation preserves exact numerical behavior, including turns, braking, and subnormal arithmetic. Runtime release hysteresis is unchanged.
+
+Validation passed `ci:quality`, 194 unit tests, 786 library browser tests across Chromium/Firefox/WebKit, and 102 framework-adapter tests. The broader website suite had one existing WebKit contrast failure in `apps/web/tests/horizontal-scroll.spec.js:193` (mobile code/table accessibility); the same failure was reproduced with the predictor restored to `d514639`. No website styles changed in this iteration.
+
+## Earlier CPU protocols
 
 The second numerical study freezes the previously accepted filter at `0a503bb`. Its
 [protocol](./SPARSE-FILTER-PROTOCOL.md) separates balanced cadence measurements from the old
