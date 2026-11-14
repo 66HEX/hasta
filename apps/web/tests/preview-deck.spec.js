@@ -97,6 +97,8 @@ test('stability waits for a continuous match and zero restores immediate callbac
 
   await page.mouse.move(x + 2, y);
   await page.clock.runFor(16);
+  await page.mouse.move(x + 3, y);
+  await page.clock.runFor(16);
   await page.mouse.move(0, 0);
   await page.clock.runFor(160);
   await expect(target).toHaveAttribute('data-prediction-count', '1');
