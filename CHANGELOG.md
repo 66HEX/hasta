@@ -7,6 +7,25 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-14
+
+### Added
+
+- Solid 1.9 support through `@66hex/hasta/solid`, with reactive options, controller switching, automatic target cleanup, SSR, and hydration.
+- Solid documentation and examples, with browser, lifecycle, type, and packaged-consumer tests.
+- Reproducible cursor-stability and CPU benchmarks covering noisy motion, maneuvers, and shared target queries.
+
+### Changed
+
+- Active speculative intersection callbacks can retain their signal through near-boundary prediction misses for up to 32 ms, using an additional 6 px release margin and direction and speed checks. Confirmed contact departure, expired input, target removal, and pause or disconnection still cancel immediately. Custom predicates still cancel on their first false result.
+- Reduced repeated predictor work by reusing adaptation buffers, validated samples, and projections shared by queries with the same time and horizon.
+- The documentation header now reads the library version from its package manifest.
+
+### Fixed
+
+- Reduced velocity and trajectory jitter during steady pointer movement while preserving responsiveness to turns, braking, and reversals.
+- Extended publication verification retries to allow npm package and provenance metadata to propagate after publishing.
+
 ## [0.2.0] - 2026-11-14
 
 ### Added
@@ -35,6 +54,7 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Cancelable prediction callbacks, stability and cooldown settings, and debug visualization.
 - Documentation site, interactive demo, and a pointer-trace collection app.
 
-[unreleased]: https://github.com/66HEX/hasta/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/66HEX/hasta/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/66HEX/hasta/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/66HEX/hasta/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/66HEX/hasta/tree/v0.1.0
