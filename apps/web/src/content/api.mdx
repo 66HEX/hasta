@@ -31,14 +31,22 @@ The controller argument can also be a getter, such as `useHastaTarget(() => prop
 
 ### Controller options
 
-| Option           | Default          | Meaning                                     |
-| ---------------- | ---------------- | ------------------------------------------- |
-| `horizonMs`      | `120`            | Forecast length for custom predicates       |
-| `maxSampleAgeMs` | `100`            | Maximum age of the latest mouse sample      |
-| `bounds`         | `'frame'`        | Measure during active frames; the only mode |
-| `debug`          | `false`          | Boolean or [overlay options](#debugging)    |
-| `onError`        | Console reporter | Receives callback failures                  |
-| `document`       | Current document | Browser document to track                   |
+| Option           | Default          | Meaning                                                   |
+| ---------------- | ---------------- | --------------------------------------------------------- |
+| `horizonMs`      | `120`            | Forecast length for custom predicates                     |
+| `maxSampleAgeMs` | `100`            | Maximum age of the latest mouse sample                    |
+| `bounds`         | `'cached'`       | Reuse clean bounds; `'frame'` measures every active frame |
+| `debug`          | `false`          | Boolean or [overlay options](#debugging)                  |
+| `onError`        | Console reporter | Receives callback failures                                |
+| `document`       | Current document | Browser document to track                                 |
+
+### Geometry cache
+
+Version 0.4.0 defaults to cached geometry. Version 0.3.0 used per-frame measurement. Set `bounds: 'frame'` to retain that policy when upgrading.
+
+DOM mutations, resize and scroll events, resource loading, and animations invalidate cached bounds. Mutation records are checked before prediction, including inside tracked shadow roots. A cached snapshot's `measuredAt` remains the time it was actually measured.
+
+After CSSOM edits such as `stylesheet.insertRule()`, replacing `adoptedStyleSheets`, or other changes outside those signals, call `hasta.invalidate()` to refresh all targets on the next frame. Use `target.invalidate()` only when the affected scope is known to be that target. Script-driven form state changes without events and changes inside unobserved shadow trees may also require explicit invalidation. For automatic native measurements on every active frame, use `bounds: 'frame'`.
 
 ### Controller methods
 
@@ -46,6 +54,7 @@ The controller argument can also be a getter, such as `useHastaTarget(() => prop
 | ---------------------------- | ------------------------------------------------------- |
 | `connect()` / `disconnect()` | Start / release the engine; preserve bindings           |
 | `updateOptions(options)`     | Replace configuration; omitted fields reset to defaults |
+| `invalidate()`               | Refresh all tracked geometry on the next frame          |
 | `target(options)`            | Create a reusable binding                               |
 | `pause()` / `resume()`       | Suspend / resume prediction                             |
 | `setDebug(options)`          | Enable, disable, or configure the overlay               |
@@ -69,7 +78,7 @@ Pass these to `controller.target()` or your framework's target helper.
 
 `horizonMs`, `maxSampleAgeMs`, and `withinMs` must be finite and positive. `marginPx`, `stableForMs`, and `cooldownMs` must be finite and nonnegative.
 
-New forecast callbacks require a new measurement timestamp, for both intersection conditions and custom predicates. Animation frames, same-time corrections, and cooldown expiry alone cannot start or restart them. With `includeCurrent`, confirmed contact can complete `stableForMs` while the pointer remains still.
+New forecast callbacks require a new pointer-sample timestamp, for both intersection conditions and custom predicates. Animation frames, same-time corrections, and cooldown expiry alone cannot start or restart them. With `includeCurrent`, confirmed contact can complete `stableForMs` while the pointer remains still.
 
 Intersection rules use bounded release hysteresis: an active speculative match can survive a near miss for up to 32 ms within an extra 6 px margin. A turn or substantial slowdown ends retention sooner. The extra margin never starts a callback, and `stableForMs` still controls activation only. Custom predicates retain their immediate cancellation behavior.
 
@@ -95,7 +104,7 @@ Intersection rules use bounded release hysteresis: an active speculative match c
 | `predictedAt`, `evaluatedAt` | Entry timestamp and evaluation timestamp                        |
 | `signal`                     | `AbortSignal` tied to this match                                |
 
-A custom predicate receives `PredictionContext` and still runs on every evaluated frame. Geometry or external-state changes can cancel a match, but starting its callback also requires a new measurement. Its callback receives `PredictionEvent`: `intersection` can be `null`, and top-level `etaMs` / `predictedAt` are absent.
+A custom predicate receives `PredictionContext` and still runs on every evaluated frame. Geometry or external-state changes can cancel a match, but starting its callback also requires a new pointer sample. Its callback receives `PredictionEvent`: `intersection` can be `null`, and top-level `etaMs` / `predictedAt` are absent.
 
 ### Debugging
 

@@ -148,21 +148,10 @@ test('an error handler destroying the instance stops the remaining geometry read
   expect(result).toEqual({ reads: 0, frames: 0 });
 });
 
-test('unchanged bounds keep a fresh timestamp without rewriting the spatial index', async ({
-  page,
-}) => {
+test('unchanged bounds keep a fresh timestamp and preserve earlier snapshots', async ({ page }) => {
   const result = await page.evaluate(async () => {
-    const { LinearSpatialIndex } = await import('/dist/core/index.js');
-    const originalSet = LinearSpatialIndex.prototype.set;
-    let writes = 0;
-    LinearSpatialIndex.prototype.set = function (...args) {
-      writes++;
-
-      return originalSet.apply(this, args);
-    };
-
     const h = window.harness;
-    const engine = h.createHasta();
+    const engine = h.createHasta({ bounds: 'frame' });
 
     try {
       const element = h.element();
@@ -173,26 +162,23 @@ test('unchanged bounds keep a fresh timestamp without rewriting the spatial inde
       h.pointer(1020, 20);
       h.frame();
       h.frame(1030);
-      const unchanged = { writes, measuredAt: target.getBounds().measuredAt };
+      const unchanged = { measuredAt: target.getBounds().measuredAt };
       element.style.left = '200px';
       h.frame(1040);
 
       return {
         unchanged,
-        movedWrites: writes,
         currentX: target.getBounds().rect.minX,
         originalX: original.rect.minX,
         originalTime: original.measuredAt,
       };
     } finally {
       engine.destroy();
-      LinearSpatialIndex.prototype.set = originalSet;
     }
   });
 
   expect(result).toEqual({
-    unchanged: { writes: 1, measuredAt: 1030 },
-    movedWrites: 2,
+    unchanged: { measuredAt: 1030 },
     currentX: 200,
     originalX: 100,
     originalTime: 1000,

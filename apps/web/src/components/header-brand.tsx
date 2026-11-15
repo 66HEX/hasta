@@ -146,7 +146,9 @@ export function HeaderBrand() {
           <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
           <h1>hasta</h1>
         </a>
-        <Badge className="hidden sm:block" variant="secondary">{hastaVersion}</Badge>
+        <Badge className="hidden sm:block" variant="secondary">
+          {hastaVersion}
+        </Badge>
       </div>
       <Popover.Portal>
         <Popover.Positioner

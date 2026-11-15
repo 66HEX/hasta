@@ -11,8 +11,8 @@ export function normalizeHastaOptions(options: HastaOptions): NormalizedHastaOpt
     throw new TypeError('Options must be an object.');
   }
 
-  if (options.bounds !== undefined && options.bounds !== 'frame') {
-    throw new TypeError('Only frame bounds tracking is supported.');
+  if (options.bounds !== undefined && options.bounds !== 'frame' && options.bounds !== 'cached') {
+    throw new TypeError('bounds must be cached or frame.');
   }
 
   if (options.onError !== undefined && typeof options.onError !== 'function') {
@@ -22,7 +22,7 @@ export function normalizeHastaOptions(options: HastaOptions): NormalizedHastaOpt
   const normalized: NormalizedHastaOptions = {
     horizonMs: positive(options.horizonMs ?? 120, 'horizonMs'),
     maxSampleAgeMs: positive(options.maxSampleAgeMs ?? 100, 'maxSampleAgeMs'),
-    bounds: 'frame',
+    bounds: options.bounds ?? 'cached',
     // oxlint-disable-next-line typescript/prefer-nullish-coalescing -- Null is invalid input and must reach validation
     debug: debugConfiguration(options.debug === undefined ? false : options.debug),
   };

@@ -40,12 +40,15 @@ export class Subscription<T extends object> {
   #lastFired = -Infinity;
   #controller: AbortController | null = null;
   #pending: symbol | null = null;
+  readonly #onEvaluationStateChange: ((active: boolean) => void) | undefined;
+  #reportedEvaluationState = false;
 
   constructor(
     callback: (event: T & { readonly signal: AbortSignal }) => void | Promise<void>,
     options: SubscriptionOptions,
     reportError: (cause: unknown) => void | Promise<void>,
     onSettled?: () => void,
+    onEvaluationStateChange?: (active: boolean) => void,
   ) {
     if (typeof callback !== 'function' || typeof reportError !== 'function') {
       throw new TypeError('Callback and error handler must be functions.');
@@ -58,10 +61,42 @@ export class Subscription<T extends object> {
     this.#reportError = reportError;
     this.#once = normalized.once;
     this.#onSettled = onSettled;
+    this.#onEvaluationStateChange = onEvaluationStateChange;
   }
 
   get latched(): boolean {
     return this.#latched;
+  }
+
+  get needsEvaluation(): boolean {
+    return (
+      this.#latched ||
+      this.#stableSince !== null ||
+      this.#pending !== null ||
+      this.#controller !== null
+    );
+  }
+
+  get exhausted(): boolean {
+    return this.#once && this.#fired && !this.needsEvaluation;
+  }
+
+  /** The engine already validated this evidence when its broad-phase query missed */
+  recordMiss(evidenceTime: number): void {
+    this.#lastEvidenceTime = evidenceTime;
+  }
+
+  #publishEvaluationState(): void {
+    if (this.#onEvaluationStateChange === undefined) {
+      return;
+    }
+
+    const active = this.needsEvaluation;
+
+    if (active !== this.#reportedEvaluationState) {
+      this.#reportedEvaluationState = active;
+      this.#onEvaluationStateChange(active);
+    }
   }
 
   getDebugState() {
@@ -127,6 +162,7 @@ export class Subscription<T extends object> {
 
     if (this.#stableSince === null || observationTime < this.#stableSince) {
       this.#stableSince = observationTime;
+      this.#publishEvaluationState();
     }
 
     if (
@@ -201,6 +237,7 @@ export class Subscription<T extends object> {
     this.#stableSince = null;
     const controller = this.#controller;
     this.#controller = null;
+    this.#publishEvaluationState();
     controller?.abort();
   }
 

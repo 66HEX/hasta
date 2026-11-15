@@ -7,6 +7,25 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
+### Added
+
+- Cached geometry tracking with automatic invalidation for DOM changes, resize, scrolling, and animations, including tracked shadow roots.
+- `hasta.invalidate()` and `controller.invalidate()` to refresh all target bounds after changes such as CSSOM edits. `target.invalidate()` refreshes one target.
+- Regression tests for geometry caching, spatial queries, active rules, and shared prediction misses.
+- GitHub repository link in the documentation header.
+
+### Changed
+
+- Geometry is cached by default. Set `bounds: 'frame'` to retain the per-frame measurement policy of 0.3.0. Cached bounds preserve their actual `measuredAt` timestamp.
+- Reduced runtime work with a spatial grid, reused target and rule snapshots, and shared miss bookkeeping while preserving callback stability and cancellation behavior.
+- Demo controls use colored inset shadows for hover, focus, and prediction highlights.
+
+### Fixed
+
+- Limited documentation tests to essential behavior: framework selection, copying, navigation, preferences, demo callbacks, and social metadata. Removed visual and contrast checks; library coverage is unchanged.
+
 ## [0.3.0] - 2026-11-14
 
 ### Added
@@ -57,7 +76,8 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Cancelable prediction callbacks, stability and cooldown settings, and debug visualization.
 - Documentation site, interactive demo, and a pointer-trace collection app.
 
-[unreleased]: https://github.com/66HEX/hasta/compare/v0.3.0...HEAD
+[unreleased]: https://github.com/66HEX/hasta/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/66HEX/hasta/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/66HEX/hasta/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/66HEX/hasta/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/66HEX/hasta/tree/v0.1.0

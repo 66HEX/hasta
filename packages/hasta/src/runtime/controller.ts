@@ -41,6 +41,7 @@ export interface TargetBinding {
 }
 
 export interface HastaController {
+  invalidate(): void;
   connect(): void;
   disconnect(): void;
   updateOptions(options: HastaOptions): void;
@@ -249,6 +250,7 @@ export function createHastaController(input: HastaOptions = {}): HastaController
   }
 
   return Object.freeze({
+    invalidate: () => engine?.invalidate(),
     connect,
     disconnect,
     updateOptions(options: HastaOptions) {
@@ -256,6 +258,7 @@ export function createHastaController(input: HastaOptions = {}): HastaController
       const next = normalizeHastaOptions(options);
 
       const restart =
+        next.bounds !== current.bounds ||
         next.document !== current.document ||
         next.horizonMs !== current.horizonMs ||
         next.maxSampleAgeMs !== current.maxSampleAgeMs;

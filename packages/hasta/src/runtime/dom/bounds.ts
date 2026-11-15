@@ -1,12 +1,22 @@
+import type { Rect } from '../../core/types.js';
 import type { BoundsSnapshot } from '../types.js';
+
+export interface MeasuredBounds extends Rect {
+  measuredAt: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
 
 export function measureBounds(
   element: HTMLElement,
   document: Document,
   now: number,
-): BoundsSnapshot | null {
+  output: MeasuredBounds,
+): boolean {
   if (!element.isConnected || element.ownerDocument !== document) {
-    return null;
+    return false;
   }
 
   const box = element.getBoundingClientRect();
@@ -24,11 +34,29 @@ export function measureBounds(
     left >= right ||
     top >= bottom
   ) {
-    return null;
+    return false;
   }
 
+  output.measuredAt = now;
+  output.minX = left;
+  output.minY = top;
+  output.maxX = right;
+  output.maxY = bottom;
+
+  return true;
+}
+
+/**
+ * Freeze only when geometry escapes through a callback, getBounds or debug output
+ */
+export function snapshotBounds(bounds: MeasuredBounds): BoundsSnapshot {
   return Object.freeze({
-    measuredAt: now,
-    rect: Object.freeze({ minX: left, minY: top, maxX: right, maxY: bottom }),
+    measuredAt: bounds.measuredAt,
+    rect: Object.freeze({
+      minX: bounds.minX,
+      minY: bounds.minY,
+      maxX: bounds.maxX,
+      maxY: bounds.maxY,
+    }),
   });
 }

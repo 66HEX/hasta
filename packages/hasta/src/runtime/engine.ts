@@ -1,11 +1,13 @@
 import { firstSegmentRectIntersection } from '../core/geometry.js';
-import { LinearSpatialIndex } from '../core/linear-spatial-index.js';
 import type { KalmanPrediction } from '../core/prediction/kalman-predictor.js';
 import { KalmanPredictor } from '../core/prediction/kalman-predictor.js';
 import type { PointerSample, Prediction, Rect } from '../core/types.js';
 import { createDebugOverlay } from './debug/overlay.js';
 import type { DebugOptions, DebugSnapshot, DebugRule } from './debug/types.js';
-import { measureBounds } from './dom/bounds.js';
+import { measureBounds, snapshotBounds } from './dom/bounds.js';
+import type { MeasuredBounds } from './dom/bounds.js';
+import { GeometryCache, GEOMETRY_EVENTS } from './dom/geometry-cache.js';
+import { GridIndex } from './dom/grid-index.js';
 import { ObservedPath } from './input/observed-path.js';
 import { listenToPointer } from './input/pointer-input.js';
 import {
@@ -32,6 +34,9 @@ type IntersectionContext = Omit<IntersectionEvent, 'signal'>;
 
 type Rule = {
   id: number;
+  active: boolean;
+  scannable: boolean;
+  missVersion: number;
   debug: Pick<DebugRule, 'matches' | 'eligible' | 'intersection'> | null;
 } & (
   | {
@@ -51,8 +56,30 @@ interface TargetRecord {
   id: number;
   element: HTMLElement;
   handle: TrackedTarget;
-  bounds: BoundsSnapshot | null;
+  bounds: MeasuredBounds | null;
+  snapshot: BoundsSnapshot | null;
   rules: Set<Rule>;
+  ruleList: readonly Rule[] | null;
+  tracked: boolean;
+  activeRules: number;
+  scannableRules: number;
+  predicates: number;
+  missVersion: number;
+  missEvidence: number | null;
+}
+
+function snapshotRules(target: TargetRecord): readonly Rule[] {
+  return (target.ruleList ??= [...target.rules]);
+}
+
+function getBoundsSnapshot(target: TargetRecord): BoundsSnapshot | null {
+  if (target.bounds === null) {
+    return null;
+  }
+
+  target.snapshot ??= snapshotBounds(target.bounds);
+
+  return target.snapshot;
 }
 
 function expand(rect: Rect, margin: number): Rect {
@@ -114,19 +141,31 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   const predictor = new KalmanPredictor({ maxSampleAgeMs });
   const observedPath = new ObservedPath(maxSampleAgeMs);
   const targets = new Map<HTMLElement, TargetRecord>();
-  const index = new LinearSpatialIndex<number>();
+  let targetList: readonly TargetRecord[] | null = null;
+  const snapshotTargets = () => (targetList ??= [...targets.values()]);
+  let selectionVersion = 0;
+  let scannableRuleCount = 0;
+  let activeRuleCount = 0;
+  let predicateRuleCount = 0;
+  let missVersion = 0;
+  let allMissVersion = 0;
+  let allMissEvidence: number | null = null;
   const scrollRoots = new Set<ShadowRoot>();
   const removers: (() => void)[] = [];
   let nextId = 0;
   let frame: number | null = null;
   let samples: PointerSample[] = [];
   let evaluatingFrame = false;
+  let frameHidden = document.hidden;
   let pendingInput = false;
   let latestSample: PointerSample | null = null;
   let currentRuleCount = 0;
   let destroyed = false;
   let paused = false;
   let generation = 0;
+  let ruleExtentsDirty = true;
+  let maxHorizon = horizonMs;
+  let maxMargin = 0;
   let nextRuleId = 0;
   let debugOptions: DebugOptions | null = null;
   let debugOverlay: ReturnType<typeof createDebugOverlay> | null = null;
@@ -135,6 +174,25 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   let debugPointer: PointerSample | null = null;
   let debugForecast: Prediction | null = null;
   let debugCandidates = new Set<number>();
+
+  // A shared miss is consumed lazily, in order with target-local misses
+  function applyMiss(target: TargetRecord, rule: Rule): void {
+    const shared = allMissVersion > target.missVersion;
+    const version = shared ? allMissVersion : target.missVersion;
+    const evidence = shared ? allMissEvidence : target.missEvidence;
+
+    if (version > rule.missVersion && evidence !== null) {
+      rule.subscription.recordMiss(evidence);
+      rule.missVersion = version;
+    }
+  }
+
+  function recordMiss(target: TargetRecord | undefined, evidenceTime: number): void {
+    if (target?.tracked === true) {
+      target.missEvidence = evidenceTime;
+      target.missVersion = ++missVersion;
+    }
+  }
 
   function publishDebug(): void {
     if (destroyed || debugOptions === null) {
@@ -171,7 +229,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       horizonMs: last?.offsetMs ?? horizonMs,
       maxSampleAgeMs,
       targets: Object.freeze(
-        [...targets.values()].map((target) =>
+        snapshotTargets().map((target) =>
           Object.freeze({
             id: target.id,
             label: (
@@ -179,11 +237,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               target.element.id ||
               `${target.element.tagName.toLowerCase()} ${target.id}`
             ).slice(0, 80),
-            rect: target.bounds?.rect ?? null,
+            rect: getBoundsSnapshot(target)?.rect ?? null,
             measuredAt: target.bounds?.measuredAt ?? null,
             candidate: forecast !== null && debugCandidates.has(target.id),
             rules: Object.freeze(
-              [...target.rules].map((rule) =>
+              snapshotRules(target).map((rule) =>
                 Object.freeze({
                   id: rule.id,
                   kind:
@@ -243,7 +301,8 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     requestFrame();
   }
 
-  const isRunning = () => !destroyed && !paused && !document.hidden;
+  const isRunning = () =>
+    !destroyed && !paused && !(evaluatingFrame ? frameHidden : document.hidden);
 
   const requestFrame = () => {
     if (isRunning() && targets.size > 0 && frame === null) {
@@ -251,14 +310,26 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
   };
 
+  const geometryCache =
+    options.bounds === 'cached' ? new GeometryCache(document, requestFrame) : null;
+
+  const spatial = geometryCache === null ? null : new GridIndex();
+
+  const invalidateGeometry = () => {
+    geometryCache?.invalidate();
+    requestFrame();
+  };
+
   const invalidateRules = (observation?: { evaluatedAt: number; timeStamp: number }) => {
     const epoch = generation;
 
-    for (const target of [...targets.values()]) {
-      for (const rule of [...target.rules]) {
+    for (const target of snapshotTargets()) {
+      for (const rule of snapshotRules(target)) {
         if (epoch !== generation) {
           return;
         }
+
+        applyMiss(target, rule);
 
         if (observation === undefined) {
           rule.subscription.invalidate();
@@ -277,6 +348,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
   const resetInput = () => {
     generation++;
+    geometryCache?.invalidate();
     predictor.reset();
     samples = [];
     pendingInput = false;
@@ -305,19 +377,33 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   };
 
   const resizeObserver =
-    typeof window.ResizeObserver === 'function' ? new window.ResizeObserver(requestFrame) : null;
+    typeof window.ResizeObserver === 'function'
+      ? new window.ResizeObserver(invalidateGeometry)
+      : null;
 
   const listen = (target: EventTarget, type: string, listener: EventListener) => {
     target.addEventListener(type, listener, { capture: true, passive: true });
     removers.push(() => target.removeEventListener(type, listener, true));
   };
 
-  listen(document, 'scroll', requestFrame);
-  listen(window, 'resize', requestFrame);
+  listen(document, 'visibilitychange', () => {
+    frameHidden = document.hidden;
+  });
+  listen(document, 'scroll', invalidateGeometry);
+  listen(window, 'resize', invalidateGeometry);
 
   if (window.visualViewport) {
-    listen(window.visualViewport, 'scroll', requestFrame);
-    listen(window.visualViewport, 'resize', requestFrame);
+    listen(window.visualViewport, 'scroll', invalidateGeometry);
+    listen(window.visualViewport, 'resize', invalidateGeometry);
+  }
+
+  if (geometryCache !== null) {
+    for (const type of GEOMETRY_EVENTS) {
+      listen(document, type, invalidateGeometry);
+    }
+
+    listen(document.fonts, 'loadingdone', invalidateGeometry);
+    listen(document.fonts, 'loadingerror', invalidateGeometry);
   }
 
   removers.push(
@@ -396,26 +482,35 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   );
 
   function refreshBounds(now: number, epoch: number): boolean {
-    const roots = new Set<ShadowRoot>();
+    const dirtyTargets = geometryCache?.consume() ?? null;
 
-    for (const target of [...targets.values()]) {
+    if (dirtyTargets?.size === 0) {
+      return true;
+    }
+
+    const roots = new Set<ShadowRoot>(dirtyTargets === null ? [] : scrollRoots);
+    // A nested frame must not overwrite this frame's measurement scratch
+    const measurement: MeasuredBounds = { measuredAt: now, minX: 0, minY: 0, maxX: 0, maxY: 0 };
+
+    for (const target of snapshotTargets()) {
       if (!isRunning() || epoch !== generation) {
         return false;
       }
 
-      if (targets.get(target.element) !== target) {
+      if (!target.tracked || (dirtyTargets !== null && !dirtyTargets.has(target.id))) {
         continue;
       }
 
-      const previous = target.bounds?.rect;
-      let bounds: BoundsSnapshot | null = null;
+      let measured = false;
 
       try {
-        bounds = measureBounds(target.element, document, now);
+        measured = measureBounds(target.element, document, now, measurement);
       } catch (error) {
         if (epoch === generation) {
           target.bounds = null;
-          index.delete(target.id);
+          target.snapshot = null;
+          spatial?.delete(target.id);
+          geometryCache?.invalidate();
         }
 
         reportError(error);
@@ -425,26 +520,36 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         return false;
       }
 
-      if (targets.get(target.element) !== target) {
+      if (!target.tracked) {
         continue;
       }
 
-      target.bounds = bounds;
+      const previous = target.bounds;
 
-      if (bounds) {
-        const rect = bounds.rect;
+      const changed =
+        previous === null ||
+        previous.minX !== measurement.minX ||
+        previous.minY !== measurement.minY ||
+        previous.maxX !== measurement.maxX ||
+        previous.maxY !== measurement.maxY;
 
-        if (
-          !previous ||
-          previous.minX !== rect.minX ||
-          previous.minY !== rect.minY ||
-          previous.maxX !== rect.maxX ||
-          previous.maxY !== rect.maxY
-        ) {
-          index.set(target.id, rect);
-        }
+      if (measured) {
+        const bounds = (target.bounds ??= { ...measurement });
+        bounds.measuredAt = measurement.measuredAt;
+        bounds.minX = measurement.minX;
+        bounds.minY = measurement.minY;
+        bounds.maxX = measurement.maxX;
+        bounds.maxY = measurement.maxY;
       } else {
-        index.delete(target.id);
+        target.bounds = null;
+      }
+
+      target.snapshot = null;
+
+      if (target.bounds === null) {
+        spatial?.delete(target.id);
+      } else if (changed) {
+        spatial?.set(target.id, target.bounds);
       }
 
       let node: Node = target.element;
@@ -461,16 +566,18 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
     }
 
+    geometryCache?.observeRoots(roots);
+
     for (const root of scrollRoots) {
       if (!roots.has(root)) {
-        root.removeEventListener('scroll', requestFrame, true);
+        root.removeEventListener('scroll', invalidateGeometry, true);
         scrollRoots.delete(root);
       }
     }
 
     for (const root of roots) {
       if (!scrollRoots.has(root)) {
-        root.addEventListener('scroll', requestFrame, { capture: true, passive: true });
+        root.addEventListener('scroll', invalidateGeometry, { capture: true, passive: true });
         scrollRoots.add(root);
       }
     }
@@ -500,6 +607,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
   function evaluateFrame(): void {
     frame = null;
+    frameHidden = document.hidden;
 
     if (!isRunning() || targets.size === 0) {
       return;
@@ -525,16 +633,27 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       return;
     }
 
-    let maxHorizon = horizonMs;
-    let maxMargin = 0;
+    if (scannableRuleCount === 0 && activeRuleCount === 0 && debugOptions === null) {
+      requestFrame();
 
-    for (const target of targets.values()) {
-      for (const rule of target.rules) {
-        if (rule.kind === 'intersection') {
-          maxHorizon = Math.max(maxHorizon, rule.condition.withinMs);
-          maxMargin = Math.max(maxMargin, rule.condition.marginPx);
+      return;
+    }
+
+    // Registration changes invalidate these limits, pointer frames do not
+    if (ruleExtentsDirty) {
+      maxHorizon = horizonMs;
+      maxMargin = 0;
+
+      for (const target of targets.values()) {
+        for (const rule of target.rules) {
+          if (rule.kind === 'intersection') {
+            maxHorizon = Math.max(maxHorizon, rule.condition.withinMs);
+            maxMargin = Math.max(maxMargin, rule.condition.marginPx);
+          }
         }
       }
+
+      ruleExtentsDirty = false;
     }
 
     const forecasts = new Map<number, KalmanPrediction | null>();
@@ -619,26 +738,112 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     const conservativeQuery = expand(query, rounding);
 
     // Overflowing a conservative query must never discard a real candidate
-    const candidates = Object.values(conservativeQuery).every((value) => Number.isFinite(value))
-      ? new Set(index.query(conservativeQuery))
-      : new Set([...targets.values()].map((target) => target.id));
+    const finiteQuery = Object.values(conservativeQuery).every((value) => Number.isFinite(value));
+
+    const candidates =
+      spatial?.query(
+        finiteQuery
+          ? conservativeQuery
+          : { minX: -Infinity, minY: -Infinity, maxX: Infinity, maxY: Infinity },
+      ) ?? new Set<number>();
+
+    // No user code can run between this check and committing the shared miss
+    if (
+      spatial !== null &&
+      candidates.size === 0 &&
+      activeRuleCount === 0 &&
+      predicateRuleCount === 0 &&
+      debugOptions === null
+    ) {
+      allMissEvidence = pointer.timeStamp;
+      allMissVersion = ++missVersion;
+      requestFrame();
+
+      return;
+    }
+
+    const frameTargets = snapshotTargets();
+    let selected: number[] = [];
+
+    for (let position = 0; position < frameTargets.length; position++) {
+      const target = frameTargets[position];
+
+      if (target === undefined) {
+        continue;
+      }
+
+      const bounds = target.bounds;
+
+      if (
+        spatial === null &&
+        (!finiteQuery ||
+          (bounds !== null &&
+            conservativeQuery.minX <= bounds.maxX &&
+            conservativeQuery.maxX >= bounds.minX &&
+            conservativeQuery.minY <= bounds.maxY &&
+            conservativeQuery.maxY >= bounds.minY))
+      ) {
+        candidates.add(target.id);
+      }
+
+      if (
+        debugOptions !== null ||
+        target.predicates > 0 ||
+        target.activeRules > 0 ||
+        (target.scannableRules > 0 && candidates.has(target.id))
+      ) {
+        selected.push(position);
+      }
+    }
 
     if (debugOptions !== null) {
       debugCandidates = new Set(candidates);
     }
 
     const queue: (() => void)[] = [];
+    // Commit cold misses in registration order, including across reentrant frames
+    let cursor = 0;
+    const version = selectionVersion;
+    let scanningRemainder = false;
 
-    for (const target of [...targets.values()]) {
+    for (let work = 0; work < selected.length; work++) {
+      if (!isRunning() || epoch !== generation) {
+        return;
+      }
+
+      const position = selected[work];
+
+      if (position === undefined) {
+        continue;
+      }
+
+      for (; cursor < position; cursor++) {
+        recordMiss(frameTargets[cursor], pointer.timeStamp);
+      }
+
+      const target = frameTargets[position];
+
+      if (target === undefined) {
+        continue;
+      }
+
+      cursor = position + 1;
       let intersections: Map<number, Map<number, PredictionContext['intersection']>> | null = null;
       let contacts: Map<number, PredictionContext['intersection']> | null = null;
 
-      for (const rule of [...target.rules]) {
+      for (const rule of snapshotRules(target)) {
         if (!isRunning() || epoch !== generation) {
           return;
         }
 
-        if (targets.get(target.element) !== target || !target.rules.has(rule)) {
+        if (!target.tracked || !rule.active) {
+          continue;
+        }
+
+        applyMiss(target, rule);
+
+        if (debugOptions === null && !rule.scannable && !rule.subscription.needsEvaluation) {
+          rule.subscription.recordMiss(pointer.timeStamp);
           continue;
         }
 
@@ -674,7 +879,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         try {
-          const rect = target.bounds.rect;
+          const rect = target.bounds;
           const margin = rule.kind === 'intersection' ? rule.condition.marginPx : 0;
           intersections ??= new Map();
           let byHorizon = intersections.get(margin);
@@ -772,7 +977,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
           const context: PredictionContext = Object.freeze({
             element: target.element,
-            ...target.bounds,
+            ...(target.snapshot ??= snapshotBounds(target.bounds)),
             evaluatedAt: now,
             forecast,
             intersection,
@@ -823,7 +1028,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               return;
             }
 
-            if (targets.get(target.element) !== target || !target.rules.has(rule)) {
+            if (!target.tracked || !rule.active) {
               continue;
             }
 
@@ -849,6 +1054,26 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           return;
         }
       }
+
+      // A predicate or abort listener can activate a later target
+      if (!scanningRemainder && version !== selectionVersion) {
+        scanningRemainder = true;
+        selected = [];
+
+        for (let remaining = cursor; remaining < frameTargets.length; remaining++) {
+          selected.push(remaining);
+        }
+
+        work = -1;
+      }
+    }
+
+    if (!isRunning() || epoch !== generation) {
+      return;
+    }
+
+    for (; cursor < frameTargets.length; cursor++) {
+      recordMiss(frameTargets[cursor], pointer.timeStamp);
     }
 
     for (const callback of queue) {
@@ -867,6 +1092,23 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     if (!target.rules.delete(rule)) {
       return;
     }
+
+    rule.active = false;
+
+    if (rule.scannable) {
+      target.scannableRules--;
+      scannableRuleCount--;
+    }
+
+    target.ruleList = null;
+    selectionVersion++;
+
+    if (rule.kind === 'predicate') {
+      target.predicates--;
+      predicateRuleCount--;
+    }
+
+    ruleExtentsDirty = true;
 
     if (rule.kind === 'intersection' && rule.condition.includeCurrent) {
       currentRuleCount--;
@@ -894,7 +1136,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       return existing.handle;
     }
 
-    const active = () => targets.get(element) === record;
+    const active = () => record.tracked;
     function when(
       condition: IntersectsCondition,
       callback: (event: IntersectionEvent) => void | Promise<void>,
@@ -918,9 +1160,30 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
       let rule: Rule;
 
+      const evaluationStateChanged = (needsEvaluation: boolean) => {
+        record.activeRules += needsEvaluation ? 1 : -1;
+        activeRuleCount += needsEvaluation ? 1 : -1;
+
+        if (
+          rule.active &&
+          rule.scannable &&
+          rule.kind === 'intersection' &&
+          rule.subscription.exhausted
+        ) {
+          rule.scannable = false;
+          record.scannableRules--;
+          scannableRuleCount--;
+        }
+
+        selectionVersion++;
+      };
+
       if (typeof condition === 'function') {
         rule = {
           id: nextRuleId++,
+          active: true,
+          scannable: true,
+          missVersion: Math.max(record.missVersion, allMissVersion),
           debug: null,
           kind: 'predicate',
           condition,
@@ -931,11 +1194,15 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             subscriptionOptions,
             reportError,
             publishDebug,
+            evaluationStateChanged,
           ),
         };
       } else {
         rule = {
           id: nextRuleId++,
+          active: true,
+          scannable: true,
+          missVersion: Math.max(record.missVersion, allMissVersion),
           debug: null,
           kind: 'intersection',
           hysteresis: new IntersectionHysteresis(),
@@ -945,11 +1212,23 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             subscriptionOptions,
             reportError,
             publishDebug,
+            evaluationStateChanged,
           ),
         };
       }
 
       record.rules.add(rule);
+      record.scannableRules++;
+      scannableRuleCount++;
+      record.ruleList = null;
+
+      if (rule.kind === 'predicate') {
+        record.predicates++;
+        predicateRuleCount++;
+      }
+
+      selectionVersion++;
+      ruleExtentsDirty = true;
 
       if (rule.kind === 'intersection' && rule.condition.includeCurrent) {
         if (currentRuleCount === 0 && latestSample !== null) {
@@ -970,10 +1249,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     const handle: TrackedTarget = Object.freeze({
       getBounds: () =>
         active() && element.isConnected && element.ownerDocument === document
-          ? record.bounds
+          ? getBoundsSnapshot(record)
           : null,
       invalidate: () => {
         if (active()) {
+          geometryCache?.invalidateTarget(record.id);
           requestFrame();
         }
       },
@@ -983,10 +1263,15 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           return;
         }
 
+        record.tracked = false;
         targets.delete(element);
-        index.delete(record.id);
+        spatial?.delete(record.id);
+        geometryCache?.invalidate();
+        targetList = null;
+        selectionVersion++;
         resizeObserver?.unobserve(element);
         record.bounds = null;
+        record.snapshot = null;
 
         for (const rule of [...record.rules]) {
           removeRule(record, rule);
@@ -995,10 +1280,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         record.rules.clear();
 
         if (targets.size === 0) {
+          geometryCache?.observeRoots(new Set());
           resetInput();
 
           for (const root of scrollRoots) {
-            root.removeEventListener('scroll', requestFrame, true);
+            root.removeEventListener('scroll', invalidateGeometry, true);
           }
 
           scrollRoots.clear();
@@ -1010,10 +1296,27 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       },
     });
 
-    const record: TargetRecord = { id: nextId++, element, handle, bounds: null, rules: new Set() };
+    const record: TargetRecord = {
+      id: nextId++,
+      element,
+      handle,
+      bounds: null,
+      snapshot: null,
+      rules: new Set(),
+      ruleList: null,
+      tracked: true,
+      activeRules: 0,
+      scannableRules: 0,
+      predicates: 0,
+      missVersion: 0,
+      missEvidence: null,
+    };
+
     targets.set(element, record);
+    targetList = null;
+    selectionVersion++;
     resizeObserver?.observe(element);
-    requestFrame();
+    invalidateGeometry();
 
     return record.handle;
   }
@@ -1021,6 +1324,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   setDebug(initialDebug);
 
   return Object.freeze({
+    invalidate: invalidateGeometry,
     track,
     setDebug,
     getDebugSnapshot: () => debugSnapshot,
@@ -1061,18 +1365,17 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
 
       resizeObserver?.disconnect();
+      geometryCache?.destroy();
 
       for (const root of scrollRoots) {
-        root.removeEventListener('scroll', requestFrame, true);
+        root.removeEventListener('scroll', invalidateGeometry, true);
       }
 
       scrollRoots.clear();
 
-      for (const target of [...targets.values()]) {
+      for (const target of snapshotTargets()) {
         target.handle.untrack();
       }
-
-      index.clear();
     },
   });
 }

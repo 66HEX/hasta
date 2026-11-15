@@ -3,15 +3,19 @@ import { createServer } from 'node:http';
 import { resolve, sep } from 'node:path';
 
 const root = resolve(import.meta.dirname, '../..');
+const distRoot = resolve(process.env.HASTA_TEST_DIST ?? resolve(root, 'dist'));
 
 createServer(async (request, response) => {
   const pathname = new URL(request.url, 'http://127.0.0.1').pathname;
   const relative = pathname === '/' ? 'tests/browser/fixture.html' : pathname.slice(1);
-  const path = resolve(root, relative);
+
+  const path = pathname.startsWith('/dist/')
+    ? resolve(distRoot, pathname.slice('/dist/'.length))
+    : resolve(root, relative);
 
   if (
     !(
-      path.startsWith(`${root}${sep}dist${sep}`) ||
+      path.startsWith(`${distRoot}${sep}`) ||
       path === resolve(root, 'tests/browser/fixture.html') ||
       path === resolve(root, 'tests/browser/fixture.js')
     )

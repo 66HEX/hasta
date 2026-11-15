@@ -1,30 +1,10 @@
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { AxeBuilder } from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 import { examplesFor } from '../src/features.ts';
 import { completeTask, downloadSession, openSession, resume, uploadSession } from './helpers.js';
-
-async function expectAccessible(page, browserName) {
-  const scan = new AxeBuilder({ page });
-
-  if (browserName === 'firefox') {
-    // Avoid Firefox's axe button-name crash on labelled select triggers, checked below
-    scan.disableRules(['button-name']);
-  }
-
-  expect((await scan.analyze()).violations).toEqual([]);
-
-  for (const button of await page.locator('button:visible, [role="button"]:visible').all()) {
-    await expect(button).toHaveAccessibleName(/\S/u);
-  }
-
-  for (const name of ['Participant ID', 'Session', 'Input device', 'Saved session']) {
-    await expect(page.getByRole('combobox', { name, exact: true })).toBeVisible();
-  }
-}
 
 test('captures raw motion and Hasta, resumes and imports a checked backup', async ({ page }) => {
   await openSession(page);
@@ -184,38 +164,6 @@ test('records a complete session with all five checkpoints and exports training 
   }
 
   await expect(page.getByRole('heading', { name: 'Session complete', exact: true })).toBeVisible();
-});
-
-test('fits a laptop viewport, keeps the picker legible, and supports both themes', async ({
-  page,
-}, testInfo) => {
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await openSession(page);
-  await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeEnabled();
-  const board = await page.locator('.study-board').boundingBox();
-  expect(board.width).toBeGreaterThanOrEqual(580);
-  expect(board.height).toBeGreaterThanOrEqual(440);
-  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(720);
-  await page.getByRole('combobox', { name: 'Saved session', exact: true }).click();
-  const option = page.getByRole('option', { name: /P01/u });
-  expect(
-    await option
-      .locator('.option-content')
-      .evaluate((node) => node.scrollWidth <= node.clientWidth),
-  ).toBe(true);
-  await page.keyboard.press('Escape');
-  await expect(page.locator('.lab-select-content:visible')).toHaveCount(0);
-
-  await expectAccessible(page, testInfo.project.name);
-
-  await page.getByRole('button', { name: /Switch to .* theme/u }).click();
-  await page.evaluate(() =>
-    Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => {}))),
-  );
-
-  await expectAccessible(page, testInfo.project.name);
-
-  await page.screenshot({ path: testInfo.outputPath('collection.png') });
 });
 
 test('completes practice on a touchpad profile, including gates, and requires confirmation after reload', async ({

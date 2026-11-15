@@ -6,7 +6,7 @@ export interface HastaOptions {
   readonly document?: Document;
   readonly horizonMs?: number;
   readonly maxSampleAgeMs?: number;
-  readonly bounds?: 'frame';
+  readonly bounds?: 'cached' | 'frame';
   readonly onError?: (cause: unknown) => void | Promise<void>;
   readonly debug?: boolean | DebugOptions;
 }
@@ -64,6 +64,7 @@ export interface TrackedTarget {
 }
 
 export interface Hasta {
+  invalidate(): void;
   track(element: HTMLElement): TrackedTarget;
   setDebug(options: boolean | DebugOptions): void;
   getDebugSnapshot(): DebugSnapshot | null;
