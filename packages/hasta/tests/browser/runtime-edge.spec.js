@@ -384,6 +384,31 @@ test('an abort listener can pause and resume without leaking the previous evalua
   expect(result).toEqual({ afterReset: ['first'], calls: ['first'], frames: 0 });
 });
 
+test('huge marginPx does not overflow rectangle expansion or break active subscriptions', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const errors = [];
+    const calls = [];
+    const engine = h.createHasta({ onError: (error) => errors.push(error.message) });
+    engine
+      .track(h.element({ x: 100, width: 20 }))
+      .when(
+        { type: 'intersects', withinMs: 120, marginPx: Number.MAX_VALUE, includeCurrent: true },
+        (event) => calls.push(event.etaMs),
+      );
+    h.pointer(1000, 0);
+    h.pointer(1020, 20);
+    h.frame();
+    engine.destroy();
+
+    return { errors, calls };
+  });
+
+  expect(result).toEqual({ errors: [], calls: [0] });
+});
+
 test('idle input reset does not schedule and cancel a spurious animation frame', async ({
   page,
 }) => {
@@ -419,4 +444,40 @@ test('idle input reset does not schedule and cancel a spurious animation frame',
   });
 
   expect(result).toEqual({ rafCalls: 0, pending: 0 });
+});
+
+test('missing document.fonts and getAnimations do not break cached geometry tracking', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const originalFonts = Object.getOwnPropertyDescriptor(Document.prototype, 'fonts');
+    const originalGetAnimations = Document.prototype.getAnimations;
+    Object.defineProperty(document, 'fonts', { configurable: true, get: () => null });
+    document.getAnimations = null;
+
+    try {
+      const engine = h.createHasta({ bounds: 'cached' });
+      const calls = [];
+      engine
+        .track(h.element({ x: 100, width: 20 }))
+        .when({ type: 'intersects', withinMs: 120 }, (event) => calls.push(event.etaMs));
+      h.pointer(1000, 0);
+      h.pointer(1020, 20);
+      h.frame();
+      engine.destroy();
+
+      return { calls, pending: h.pendingFrames() };
+    } finally {
+      delete document.fonts;
+
+      if (originalFonts) {
+        Object.defineProperty(Document.prototype, 'fonts', originalFonts);
+      }
+
+      document.getAnimations = originalGetAnimations;
+    }
+  });
+
+  expect(result).toEqual({ calls: [80], pending: 0 });
 });

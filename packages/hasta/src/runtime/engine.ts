@@ -82,12 +82,16 @@ function getBoundsSnapshot(target: TargetRecord): BoundsSnapshot | null {
   return target.snapshot;
 }
 
+function finiteBound(value: number, fallback: number): number {
+  return Number.isFinite(value) ? value : fallback;
+}
+
 function expand(rect: Rect, margin: number): Rect {
   return {
-    minX: rect.minX - margin,
-    minY: rect.minY - margin,
-    maxX: rect.maxX + margin,
-    maxY: rect.maxY + margin,
+    minX: finiteBound(rect.minX - margin, -Number.MAX_VALUE),
+    minY: finiteBound(rect.minY - margin, -Number.MAX_VALUE),
+    maxX: finiteBound(rect.maxX + margin, Number.MAX_VALUE),
+    maxY: finiteBound(rect.maxY + margin, Number.MAX_VALUE),
   };
 }
 
@@ -386,6 +390,16 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     removers.push(() => target.removeEventListener(type, listener, true));
   };
 
+  const listenOptional = (
+    target: EventTarget | null | undefined,
+    type: string,
+    listener: EventListener,
+  ) => {
+    if (target !== undefined && target !== null) {
+      listen(target, type, listener);
+    }
+  };
+
   listen(document, 'visibilitychange', () => {
     frameHidden = document.hidden;
   });
@@ -402,8 +416,8 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       listen(document, type, invalidateGeometry);
     }
 
-    listen(document.fonts, 'loadingdone', invalidateGeometry);
-    listen(document.fonts, 'loadingerror', invalidateGeometry);
+    listenOptional(document.fonts, 'loadingdone', invalidateGeometry);
+    listenOptional(document.fonts, 'loadingerror', invalidateGeometry);
   }
 
   removers.push(

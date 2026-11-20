@@ -107,10 +107,10 @@ export class GeometryCache {
       }
     }
 
-    const current = new Set(this.#document.getAnimations());
+    const current = new Set(this.#document.getAnimations?.() ?? []);
 
     for (const root of this.#roots.keys()) {
-      for (const animation of root.getAnimations()) {
+      for (const animation of root.getAnimations?.() ?? []) {
         current.add(animation);
       }
     }
