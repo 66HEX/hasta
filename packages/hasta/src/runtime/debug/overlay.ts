@@ -226,7 +226,7 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
   heading.append(brand, status);
   panel.append(heading, summary);
   shadow.append(style, svg, panel);
-  document.documentElement.append(host);
+  document.documentElement?.append(host);
 
   function box(rect: Rect, attributes: Record<string, string | number>): SVGRectElement {
     return node('rect', {
