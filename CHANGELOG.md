@@ -7,6 +7,20 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
+### Fixed
+
+- Guarded `IntersectionHysteresis.retain()` against zero prior or current speed so stationary forecasts reset cleanly without `NaN` arithmetic.
+- Preserved `rule.debug` eligibility metadata in `getDebugSnapshot()` while an intersection rule is held by release hysteresis.
+- Saturated `expand()` bounds to finite limits so huge `marginPx` values cannot overflow rectangle coordinates or abort active subscriptions.
+- Separated dirty-marking (`markDirty()`) from frame scheduling (`invalidate()`) in `GeometryCache` so idle input resets no longer schedule and immediately cancel a redundant `requestAnimationFrame`.
+- Guarded optional `document.fonts` and `getAnimations()` calls so restricted or partial DOM environments do not throw during initialization or frame evaluation.
+
+### Added
+
+- Unit and browser regression tests covering zero-speed hysteresis retention, debug eligibility during retention, huge `marginPx` saturation, idle reset frame scheduling, and missing `document.fonts` / `getAnimations()` APIs.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added
@@ -76,7 +90,8 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Cancelable prediction callbacks, stability and cooldown settings, and debug visualization.
 - Documentation site, interactive demo, and a pointer-trace collection app.
 
-[unreleased]: https://github.com/66HEX/hasta/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/66HEX/hasta/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/66HEX/hasta/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/66HEX/hasta/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/66HEX/hasta/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/66HEX/hasta/compare/v0.1.0...v0.2.0
