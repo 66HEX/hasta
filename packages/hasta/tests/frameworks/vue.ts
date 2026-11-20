@@ -237,7 +237,7 @@ const fixture = {
     const errors: string[] = [];
 
     for (const value of [
-      document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+      document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math'),
       // SAFETY: Deliberately incomplete Vue instance tests rejection by the DOM ref boundary
       { $el: document.querySelector('[data-testid="vue-target"]') } as ComponentPublicInstance,
     ]) {

@@ -17,6 +17,7 @@ import type {
   IntersectsCondition,
   PredictionCondition,
   PredictionEvent,
+  TrackedElement,
   TrackedTarget,
 } from './types.js';
 
@@ -33,7 +34,7 @@ export interface PredictionTargetOptions extends SubscriptionOptions {
 export type TargetOptions = IntersectionTargetOptions | PredictionTargetOptions;
 
 export interface TargetBinding {
-  ref(this: void, element: HTMLElement | null): void;
+  ref(this: void, element: TrackedElement | null): void;
   update(options: TargetOptions): void;
   getBounds(): BoundsSnapshot | null;
   invalidate(): void;
@@ -58,7 +59,7 @@ export interface HastaController {
 type TargetConfiguration = TargetOptions & Required<SubscriptionOptions>;
 
 type BindingState = {
-  element: HTMLElement | null;
+  element: TrackedElement | null;
   options: TargetConfiguration;
   target: TrackedTarget | null;
   unsubscribe: (() => void) | null;
@@ -98,8 +99,16 @@ function sameRule(a: TargetConfiguration, b: TargetConfiguration): boolean {
   return (
     a.when.withinMs === b.when.withinMs &&
     a.when.marginPx === b.when.marginPx &&
-    a.when.includeCurrent === b.when.includeCurrent
+    a.when.includeCurrent === b.when.includeCurrent &&
+    a.when.minSpeedPxPerMs === b.when.minSpeedPxPerMs
   );
+}
+
+function samePointerTypes(
+  a: Configuration['pointerTypes'],
+  b: Configuration['pointerTypes'],
+): boolean {
+  return a.length === b.length && a.every((type, index) => type === b[index]);
 }
 
 function sameDebug(a: Configuration['debug'], b: Configuration['debug']): boolean {
@@ -122,7 +131,7 @@ export function createHastaController(input: HastaOptions = {}): HastaController
   let paused = false;
   let connectionRevision = 0;
   const bindings = new Set<BindingState>();
-  const targets = new Map<HTMLElement, { handle: TrackedTarget; users: number }>();
+  const targets = new Map<TrackedElement, { handle: TrackedTarget; users: number }>();
 
   function assertActive(): void {
     if (destroyed) {
@@ -261,7 +270,8 @@ export function createHastaController(input: HastaOptions = {}): HastaController
         next.bounds !== current.bounds ||
         next.document !== current.document ||
         next.horizonMs !== current.horizonMs ||
-        next.maxSampleAgeMs !== current.maxSampleAgeMs;
+        next.maxSampleAgeMs !== current.maxSampleAgeMs ||
+        !samePointerTypes(next.pointerTypes, current.pointerTypes);
 
       const debugChanged = !sameDebug(next.debug, current.debug);
       const connected = engine !== null;
@@ -279,7 +289,8 @@ export function createHastaController(input: HastaOptions = {}): HastaController
 
           if (
             element !== null &&
-            (element.ownerDocument !== document || !(element instanceof window.HTMLElement))
+            (element.ownerDocument !== document ||
+              !(element instanceof window.HTMLElement || element instanceof window.SVGElement))
           ) {
             throw new TypeError('Target belongs to a different document.');
           }
@@ -314,7 +325,7 @@ export function createHastaController(input: HastaOptions = {}): HastaController
       let attachmentRevision = 0;
 
       return Object.freeze({
-        ref(element: HTMLElement | null) {
+        ref(element: TrackedElement | null) {
           if (disposed || destroyed) {
             if (element !== null) {
               throw new Error('Cannot attach a destroyed target binding.');
@@ -330,8 +341,11 @@ export function createHastaController(input: HastaOptions = {}): HastaController
           if (element !== null) {
             const view = element.ownerDocument?.defaultView;
 
-            if (!view || !(element instanceof view.HTMLElement)) {
-              throw new TypeError('Target refs require an HTMLElement or null.');
+            if (
+              !view ||
+              !(element instanceof view.HTMLElement || element instanceof view.SVGElement)
+            ) {
+              throw new TypeError('Target refs require an HTMLElement, SVGElement, or null.');
             }
 
             const document = current.document ?? globalThis.document;

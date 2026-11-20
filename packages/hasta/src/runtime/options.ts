@@ -1,10 +1,33 @@
 import type { DebugOptions } from './debug/types.js';
-import type { HastaOptions, IntersectsCondition } from './types.js';
+import type { HastaOptions, IntersectsCondition, PointerInputType } from './types.js';
 
 export type NormalizedHastaOptions = Required<
-  Pick<HastaOptions, 'horizonMs' | 'maxSampleAgeMs' | 'bounds' | 'debug'>
+  Pick<HastaOptions, 'horizonMs' | 'maxSampleAgeMs' | 'bounds' | 'pointerTypes' | 'debug'>
 > &
   Pick<HastaOptions, 'document' | 'onError'>;
+
+function normalizePointerTypes(value: HastaOptions['pointerTypes']): readonly PointerInputType[] {
+  if (value === undefined) {
+    return Object.freeze(['mouse'] as const);
+  }
+
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new TypeError('pointerTypes must be a non-empty array of mouse or pen.');
+  }
+
+  const unique = new Set<PointerInputType>();
+  const items: readonly unknown[] = value;
+
+  for (const item of items) {
+    if (item !== 'mouse' && item !== 'pen') {
+      throw new TypeError('pointerTypes entries must be mouse or pen.');
+    }
+
+    unique.add(item);
+  }
+
+  return Object.freeze((['mouse', 'pen'] as const).filter((item) => unique.has(item)));
+}
 
 export function normalizeHastaOptions(options: HastaOptions): NormalizedHastaOptions {
   if (options === null || typeof options !== 'object') {
@@ -23,6 +46,7 @@ export function normalizeHastaOptions(options: HastaOptions): NormalizedHastaOpt
     horizonMs: positive(options.horizonMs ?? 120, 'horizonMs'),
     maxSampleAgeMs: positive(options.maxSampleAgeMs ?? 100, 'maxSampleAgeMs'),
     bounds: options.bounds ?? 'cached',
+    pointerTypes: normalizePointerTypes(options.pointerTypes),
     // oxlint-disable-next-line typescript/prefer-nullish-coalescing -- Null is invalid input and must reach validation
     debug: debugConfiguration(options.debug === undefined ? false : options.debug),
   };
@@ -56,11 +80,18 @@ export function normalizeIntersectsCondition(
     throw new TypeError('includeCurrent must be a boolean.');
   }
 
+  const minSpeedPxPerMs = condition.minSpeedPxPerMs ?? 0;
+
+  if (!Number.isFinite(minSpeedPxPerMs) || minSpeedPxPerMs < 0) {
+    throw new RangeError('minSpeedPxPerMs must be finite and nonnegative.');
+  }
+
   return Object.freeze({
     type: 'intersects',
     withinMs: condition.withinMs,
     marginPx,
     includeCurrent: condition.includeCurrent ?? false,
+    minSpeedPxPerMs,
   });
 }
 

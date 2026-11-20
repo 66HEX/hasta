@@ -396,7 +396,7 @@ test('Solid reactive engine options toggle debug, restart prediction, and preser
   expect(result.expired).toBe(true);
 });
 
-test('Solid rejects ownerless helpers, SVG refs, and invalid options while retaining the live rule', async ({
+test('Solid rejects ownerless helpers, MathML refs, and invalid options while retaining the live rule', async ({
   page,
 }) => {
   const result = await page.evaluate(() => {

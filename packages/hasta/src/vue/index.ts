@@ -17,7 +17,7 @@ import type {
   IntersectionTargetOptions,
   PredictionTargetOptions,
 } from '../runtime/controller.js';
-import type { HastaOptions } from '../runtime/types.js';
+import type { HastaOptions, TrackedElement } from '../runtime/types.js';
 
 export type * from '../runtime/public-types.js';
 
@@ -61,7 +61,7 @@ export function useHastaTarget(
 ): VueTargetBinding {
   requireSetup('useHastaTarget');
   const binding = controller.target(toValue(options));
-  let node: HTMLElement | null = null;
+  let node: TrackedElement | null = null;
   let deactivated = false;
   watchEffect(() => binding.update(toValue(options)), { flush: 'post' });
   onDeactivated(() => {
@@ -80,22 +80,25 @@ export function useHastaTarget(
   return Object.freeze({
     ...binding,
     ref(element: Element | ComponentPublicInstance | null): void {
-      if (element !== null) {
-        const constructor =
-          'ownerDocument' in element ? element.ownerDocument?.defaultView?.HTMLElement : undefined;
+      let targetElement: TrackedElement | null = null;
 
-        if (!constructor || !(element instanceof constructor)) {
+      if (element !== null) {
+        const view = 'ownerDocument' in element ? element.ownerDocument?.defaultView : undefined;
+
+        if (!view || !(element instanceof view.HTMLElement || element instanceof view.SVGElement)) {
           throw new TypeError(
-            'Hasta target refs require an HTMLElement, not a Vue component instance.',
+            'Hasta target refs require an HTMLElement or SVGElement, not a Vue component instance.',
           );
         }
+
+        targetElement = element;
       }
 
       if (!deactivated) {
-        binding.ref(element);
+        binding.ref(targetElement);
       }
 
-      node = element;
+      node = targetElement;
     },
   });
 }

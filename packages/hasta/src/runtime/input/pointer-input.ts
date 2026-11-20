@@ -1,4 +1,5 @@
 import type { PointerSample } from '../../core/types.js';
+import type { PointerInputType } from '../types.js';
 
 export function listenToPointer(
   document: Document,
@@ -6,6 +7,7 @@ export function listenToPointer(
   reset: () => void,
   wake: () => void,
   accepts: (value: PointerSample) => boolean,
+  pointerTypes: readonly PointerInputType[] = ['mouse'],
 ): () => void {
   const window = document.defaultView;
 
@@ -13,6 +15,7 @@ export function listenToPointer(
     throw new Error('Pointer input requires an active browser window.');
   }
 
+  const allowedTypes = new Set<string>(pointerTypes);
   let pointerId: number | null = null;
   const removers: (() => void)[] = [];
 
@@ -38,7 +41,7 @@ export function listenToPointer(
   };
 
   listenDocument('pointermove', (event) => {
-    if (event.pointerType !== 'mouse') {
+    if (!allowedTypes.has(event.pointerType)) {
       return;
     }
 
@@ -91,7 +94,10 @@ export function listenToPointer(
   });
 
   const resetMouse = (event: PointerEvent) => {
-    if (event.pointerType === 'mouse' && (pointerId === null || event.pointerId === pointerId)) {
+    if (
+      allowedTypes.has(event.pointerType) &&
+      (pointerId === null || event.pointerId === pointerId)
+    ) {
       clear();
     }
   };

@@ -220,7 +220,7 @@ test('Vue reactive engine options toggle debug and preserve mounted target refs'
   await expect(page.locator('[data-hasta-debug]')).toHaveCount(1);
 });
 
-test('Vue rejects component or SVG refs and use outside setup without disturbing the live target', async ({
+test('Vue rejects component or MathML refs and use outside setup without disturbing the live target', async ({
   page,
 }) => {
   const result = await page.evaluate(() => {

@@ -11,7 +11,7 @@ import type {
   IntersectionTargetOptions,
   PredictionTargetOptions,
 } from '../runtime/controller.js';
-import type { HastaOptions } from '../runtime/types.js';
+import type { HastaOptions, TrackedElement } from '../runtime/types.js';
 
 export type * from '../runtime/public-types.js';
 
@@ -29,7 +29,7 @@ export function useHasta(options: HastaOptions = {}): HastaController {
 
 export type HastaActionOptions = TargetOptions & { readonly hasta: HastaController };
 
-function bind(node: HTMLElement, options: HastaActionOptions): TargetBinding {
+function bind(node: TrackedElement, options: HastaActionOptions): TargetBinding {
   const binding = options.hasta.target(options);
 
   try {
@@ -42,7 +42,7 @@ function bind(node: HTMLElement, options: HastaActionOptions): TargetBinding {
   }
 }
 
-export const hastaTarget: Action<HTMLElement, HastaActionOptions> = (node, options) => {
+export const hastaTarget: Action<TrackedElement, HastaActionOptions> = (node, options) => {
   let hasta = options.hasta;
   let binding = bind(node, options);
   let destroyed = false;
@@ -78,14 +78,14 @@ function isPredictionTarget(options: TargetOptions): options is PredictionTarget
 
 export function attachHastaTarget(
   options: () => IntersectionTargetOptions & { readonly hasta: HastaController },
-): Attachment<HTMLElement>;
+): Attachment<TrackedElement>;
 export function attachHastaTarget(
   options: () => PredictionTargetOptions & { readonly hasta: HastaController },
-): Attachment<HTMLElement>;
+): Attachment<TrackedElement>;
 export function attachHastaTarget(
   options: () => NoInfer<HastaActionOptions>,
-): Attachment<HTMLElement>;
-export function attachHastaTarget(options: () => HastaActionOptions): Attachment<HTMLElement> {
+): Attachment<TrackedElement>;
+export function attachHastaTarget(options: () => HastaActionOptions): Attachment<TrackedElement> {
   return fromAction(hastaTarget, () => {
     // Read option fields inside the attachment effect so in-place state changes are observed
     const value = { ...options() };

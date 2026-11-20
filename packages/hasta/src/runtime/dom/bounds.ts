@@ -1,5 +1,5 @@
 import type { Rect } from '../../core/types.js';
-import type { BoundsSnapshot } from '../types.js';
+import type { BoundsSnapshot, TrackedElement } from '../types.js';
 
 export interface MeasuredBounds extends Rect {
   measuredAt: number;
@@ -10,7 +10,7 @@ export interface MeasuredBounds extends Rect {
 }
 
 export function measureBounds(
-  element: HTMLElement,
+  element: TrackedElement,
   document: Document,
   now: number,
   output: MeasuredBounds,

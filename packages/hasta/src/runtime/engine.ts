@@ -17,7 +17,7 @@ import {
 } from './options.js';
 import { IntersectionHysteresis, RELEASE_MARGIN_PX } from './triggers/intersection-hysteresis.js';
 import { Subscription } from './triggers/subscription.js';
-import type { SubscriptionOptions } from './triggers/subscription.js';
+import type { SubscriptionAbortReason, SubscriptionOptions } from './triggers/subscription.js';
 import type {
   BoundsSnapshot,
   Hasta,
@@ -27,6 +27,7 @@ import type {
   PredictionCondition,
   PredictionContext,
   PredictionEvent,
+  TrackedElement,
   TrackedTarget,
 } from './types.js';
 
@@ -54,7 +55,7 @@ type Rule = {
 
 interface TargetRecord {
   id: number;
-  element: HTMLElement;
+  element: TrackedElement;
   handle: TrackedTarget;
   bounds: MeasuredBounds | null;
   snapshot: BoundsSnapshot | null;
@@ -128,7 +129,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   }
 
   const window = view;
-  const { horizonMs, maxSampleAgeMs, debug: initialDebug } = options;
+  const { horizonMs, maxSampleAgeMs, pointerTypes, debug: initialDebug } = options;
 
   const reportError = (cause: unknown) => {
     try {
@@ -144,7 +145,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
   const predictor = new KalmanPredictor({ maxSampleAgeMs });
   const observedPath = new ObservedPath(maxSampleAgeMs);
-  const targets = new Map<HTMLElement, TargetRecord>();
+  const targets = new Map<TrackedElement, TargetRecord>();
   let targetList: readonly TargetRecord[] | null = null;
   const snapshotTargets = () => (targetList ??= [...targets.values()]);
   let selectionVersion = 0;
@@ -324,7 +325,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     requestFrame();
   };
 
-  const invalidateRules = (observation?: { evaluatedAt: number; timeStamp: number }) => {
+  const invalidateRules = (
+    observation?: { evaluatedAt: number; timeStamp: number },
+    reason: SubscriptionAbortReason = 'miss',
+  ) => {
     const epoch = generation;
 
     for (const target of snapshotTargets()) {
@@ -336,7 +340,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         applyMiss(target, rule);
 
         if (observation === undefined) {
-          rule.subscription.invalidate();
+          rule.subscription.invalidate(reason);
         } else {
           rule.subscription.evaluate(
             false,
@@ -350,7 +354,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
   };
 
-  const resetInput = () => {
+  const resetInput = (reason: SubscriptionAbortReason = 'expired') => {
     generation++;
     geometryCache?.markDirty();
     predictor.reset();
@@ -376,7 +380,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     }
 
     frame = null;
-    invalidateRules();
+    invalidateRules(undefined, reason);
     publishDebug();
   };
 
@@ -479,7 +483,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
         return true;
       },
-      resetInput,
+      () => resetInput(document.hidden ? 'hidden' : 'expired'),
       requestFrame,
       (sample) => {
         const now = window.performance.now();
@@ -492,6 +496,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           (latestSample === null || sample.timeStamp >= latestSample.timeStamp)
         );
       },
+      pointerTypes,
     ),
   );
 
@@ -962,6 +967,22 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             observedContact = true;
           }
 
+          if (
+            rule.kind === 'intersection' &&
+            rule.condition.minSpeedPxPerMs > 0 &&
+            intersection !== null &&
+            !observedContact
+          ) {
+            const [startPoint, endPoint] = forecast.points;
+
+            const speed =
+              Math.hypot(endPoint.x - startPoint.x, endPoint.y - startPoint.y) / endPoint.offsetMs;
+
+            if (speed < rule.condition.minSpeedPxPerMs) {
+              intersection = null;
+            }
+          }
+
           if (rule.kind === 'intersection' && intersection === null) {
             const retained =
               rule.subscription.latched &&
@@ -1062,6 +1083,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         } catch (error) {
           if (epoch === generation) {
             rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
+            rule.subscription.invalidate('error');
           }
 
           reportError(error);
@@ -1105,7 +1127,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     requestFrame();
   }
 
-  function removeRule(target: TargetRecord, rule: Rule): void {
+  function removeRule(
+    target: TargetRecord,
+    rule: Rule,
+    reason: SubscriptionAbortReason = 'disposed',
+  ): void {
     if (!target.rules.delete(rule)) {
       return;
     }
@@ -1135,16 +1161,21 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
     }
 
-    rule.subscription.dispose();
+    rule.subscription.dispose(reason);
   }
 
-  function track(element: HTMLElement): TrackedTarget {
+  function track(element: TrackedElement): TrackedTarget {
     if (destroyed) {
       throw new Error('Cannot track elements after destroy().');
     }
 
-    if (!(element instanceof window.HTMLElement) || element.ownerDocument !== document) {
-      throw new TypeError('track() requires an HTMLElement from this instance’s document.');
+    const isSupportedElement =
+      element instanceof window.HTMLElement || element instanceof window.SVGElement;
+
+    if (!isSupportedElement || element.ownerDocument !== document) {
+      throw new TypeError(
+        'track() requires an HTMLElement or SVGElement from this instance’s document.',
+      );
     }
 
     const existing = targets.get(element);
@@ -1291,7 +1322,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         record.snapshot = null;
 
         for (const rule of [...record.rules]) {
-          removeRule(record, rule);
+          removeRule(record, rule, 'untracked');
         }
 
         record.rules.clear();
@@ -1351,7 +1382,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
 
       paused = true;
-      resetInput();
+      resetInput('paused');
     },
     resume() {
       if (destroyed || !paused) {
@@ -1359,7 +1390,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       }
 
       paused = false;
-      resetInput();
+      resetInput('paused');
       requestFrame();
     },
     destroy() {
@@ -1375,7 +1406,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       debugPointer = null;
       debugForecast = null;
       debugCandidates.clear();
-      resetInput();
+      resetInput('destroyed');
 
       for (const remove of removers) {
         remove();

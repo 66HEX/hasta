@@ -4,7 +4,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { createHastaController } from '../runtime/controller.js';
 import type { HastaController, TargetBinding, TargetOptions } from '../runtime/controller.js';
-import type { HastaOptions, IntersectsCondition, PredictionCondition } from '../runtime/types.js';
+import type {
+  HastaOptions,
+  IntersectsCondition,
+  PredictionCondition,
+  TrackedElement,
+} from '../runtime/types.js';
 
 const useCommitEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
@@ -33,7 +38,7 @@ export function useHastaTarget(
 ): TargetBinding;
 export function useHastaTarget(controller: HastaController, options: TargetOptions): TargetBinding;
 export function useHastaTarget(controller: HastaController, options: TargetOptions): TargetBinding {
-  const node = useRef<HTMLElement | null>(null);
+  const node = useRef<TrackedElement | null>(null);
   // Configuration is committed below. Abandoned renders must not update live callbacks
   // oxlint-disable-next-line react-hooks/exhaustive-deps -- Options update after commit without recreating the binding
   const binding = useMemo(() => controller.target(options), [controller]);

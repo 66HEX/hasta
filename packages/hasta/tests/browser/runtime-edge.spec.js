@@ -481,3 +481,96 @@ test('missing document.fonts and getAnimations do not break cached geometry trac
 
   expect(result).toEqual({ calls: [80], pending: 0 });
 });
+
+test('tracks SVGElement targets and exposes AbortSignal cancellation reasons', async ({ page }) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const engine = h.createHasta({ debug: true });
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.dataset.hastaLabel = 'icon';
+    svg.style.position = 'fixed';
+    svg.style.left = '100px';
+    svg.style.top = '80px';
+    svg.style.width = '20px';
+    svg.style.height = '40px';
+    document.body.append(svg);
+
+    const signals = [];
+    const target = engine.track(svg);
+    target.when({ type: 'intersects', withinMs: 120 }, (event) => signals.push(event.signal));
+    h.pointer(1000, 0);
+    h.pointer(1020, 20);
+    h.frame();
+    const label = engine.getDebugSnapshot().targets[0].label;
+    engine.pause();
+    const pausedReason = signals[0].reason;
+    engine.resume();
+    h.pointer(1030, 0);
+    h.pointer(1050, 20);
+    h.frame();
+    target.untrack();
+    const untrackedReason = signals[1].reason;
+    engine.destroy();
+    svg.remove();
+
+    return { count: signals.length, label, pausedReason, untrackedReason };
+  });
+
+  expect(result).toEqual({
+    count: 2,
+    label: 'icon',
+    pausedReason: 'paused',
+    untrackedReason: 'untracked',
+  });
+});
+
+test('supports optional pen input and minSpeedPxPerMs threshold', async ({ page }) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const errors = [];
+
+    for (const bad of [
+      () => h.createHasta({ pointerTypes: [] }),
+      () => h.createHasta({ pointerTypes: ['touch'] }),
+      () =>
+        h
+          .createHasta()
+          .track(h.element())
+          .when({ type: 'intersects', withinMs: 120, minSpeedPxPerMs: -1 }, () => {}),
+    ]) {
+      try {
+        bad();
+      } catch (error) {
+        errors.push(error.name);
+      }
+    }
+
+    const engine = h.createHasta({ pointerTypes: ['mouse', 'pen'] });
+    const calls = [];
+    engine
+      .track(h.element({ x: 100, width: 20 }))
+      .when({ type: 'intersects', withinMs: 200, minSpeedPxPerMs: 0.5 }, (event) =>
+        calls.push(event.etaMs),
+      );
+
+    // Slow pen movement (0.1 px/ms) should be filtered by minSpeedPxPerMs: 0.5
+    h.pointer(1000, 80, 100, { pointerType: 'pen', pointerId: 7 });
+    h.pointer(1010, 81, 100, { pointerType: 'pen', pointerId: 7 });
+    h.frame();
+    const slowCount = calls.length;
+
+    // Fast pen movement (1 px/ms) should trigger prediction
+    h.pointer(1020, 90, 100, { pointerType: 'pen', pointerId: 7 });
+    h.pointer(1030, 100, 100, { pointerType: 'pen', pointerId: 7 });
+    h.frame();
+    engine.destroy();
+
+    return { errors, slowCount, totalCount: calls.length };
+  });
+
+  expect(result).toEqual({
+    errors: ['TypeError', 'TypeError', 'RangeError'],
+    slowCount: 0,
+    totalCount: 1,
+  });
+});

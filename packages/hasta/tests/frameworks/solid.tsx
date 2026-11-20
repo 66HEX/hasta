@@ -326,7 +326,7 @@ const harness = {
     });
     attempt(() => {
       // @ts-expect-error Intentionally invalid DOM type exercises runtime validation
-      binding?.ref(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
+      binding?.ref(document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math'));
     });
     attempt(() => binding?.update({ when: { type: 'intersects', withinMs: 0 }, onPredict() {} }));
     attempt(() => active?.().updateOptions({ horizonMs: 0 }));

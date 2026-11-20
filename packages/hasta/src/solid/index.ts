@@ -10,6 +10,7 @@ import type {
   IntersectsCondition,
   PredictionCondition,
   PredictionEvent,
+  TrackedElement,
 } from '../runtime/types.js';
 
 export type * from '../runtime/public-types.js';
@@ -106,7 +107,7 @@ export function useHastaTarget(
   requireOwner('useHastaTarget');
   let owner = untrack(() => read(controller));
   let binding = untrack(() => owner.target(targetOptions(options)));
-  let node: HTMLElement | null = null;
+  let node: TrackedElement | null = null;
   let disposed = false;
   let attachmentRevision = 0;
 
@@ -154,7 +155,7 @@ export function useHastaTarget(
   });
 
   return Object.freeze({
-    ref(element: HTMLElement | null) {
+    ref(element: TrackedElement | null) {
       if (disposed) {
         untrack(() => binding.ref(element));
 
@@ -173,8 +174,10 @@ export function useHastaTarget(
 
       try {
         if (deferred) {
-          if (!(element instanceof globalThis.HTMLElement)) {
-            throw new TypeError('Target refs require an HTMLElement or null.');
+          if (
+            !(element instanceof globalThis.HTMLElement || element instanceof globalThis.SVGElement)
+          ) {
+            throw new TypeError('Target refs require an HTMLElement, SVGElement, or null.');
           }
 
           onMount(() => {

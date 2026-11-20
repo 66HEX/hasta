@@ -2,11 +2,16 @@ import type { Point, Prediction, Rect } from '../core/types.js';
 import type { DebugOptions, DebugSnapshot } from './debug/types.js';
 import type { SubscriptionOptions } from './triggers/subscription.js';
 
+export type TrackedElement = HTMLElement | SVGElement;
+
+export type PointerInputType = 'mouse' | 'pen';
+
 export interface HastaOptions {
   readonly document?: Document;
   readonly horizonMs?: number;
   readonly maxSampleAgeMs?: number;
   readonly bounds?: 'cached' | 'frame';
+  readonly pointerTypes?: readonly PointerInputType[];
   readonly onError?: (cause: unknown) => void | Promise<void>;
   readonly debug?: boolean | DebugOptions;
 }
@@ -21,6 +26,7 @@ export interface IntersectsCondition {
   readonly withinMs: number;
   readonly marginPx?: number;
   readonly includeCurrent?: boolean;
+  readonly minSpeedPxPerMs?: number;
 }
 
 export interface Intersection {
@@ -29,7 +35,7 @@ export interface Intersection {
 }
 
 export interface PredictionContext extends BoundsSnapshot {
-  readonly element: HTMLElement;
+  readonly element: TrackedElement;
   readonly evaluatedAt: number;
   readonly forecast: Prediction;
   readonly intersection: Intersection | null;
@@ -65,7 +71,7 @@ export interface TrackedTarget {
 
 export interface Hasta {
   invalidate(): void;
-  track(element: HTMLElement): TrackedTarget;
+  track(element: TrackedElement): TrackedTarget;
   setDebug(options: boolean | DebugOptions): void;
   getDebugSnapshot(): DebugSnapshot | null;
   pause(): void;
