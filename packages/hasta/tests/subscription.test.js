@@ -535,3 +535,20 @@ test('contact dwell does not turn an old measurement into fresh forecast evidenc
   subscription.evaluate(true, 151, context, true, 151)?.();
   assert.equal(events.length, 2);
 });
+
+test('invalidation and disposal expose distinct AbortSignal reasons', () => {
+  const signals = [];
+  const subscription = new Subscription((event) => signals.push(event.signal), {}, noError);
+
+  subscription.evaluate(true, 100, context, true, 100)?.();
+  subscription.evaluate(false, 110, null, true, 110);
+  assert.equal(signals[0].reason, 'miss');
+
+  subscription.evaluate(true, 120, context, true, 120)?.();
+  subscription.invalidate('paused');
+  assert.equal(signals[1].reason, 'paused');
+
+  subscription.evaluate(true, 130, context, true, 130)?.();
+  subscription.dispose('untracked');
+  assert.equal(signals[2].reason, 'untracked');
+});

@@ -1,3 +1,13 @@
+export type SubscriptionAbortReason =
+  | 'miss'
+  | 'expired'
+  | 'hidden'
+  | 'paused'
+  | 'untracked'
+  | 'destroyed'
+  | 'disposed'
+  | 'error';
+
 export interface SubscriptionOptions {
   readonly once?: boolean;
   readonly stableForMs?: number;
@@ -231,19 +241,19 @@ export class Subscription<T extends object> {
     };
   }
 
-  invalidate(): void {
+  invalidate(reason: SubscriptionAbortReason = 'miss'): void {
     this.#pending = null;
     this.#latched = false;
     this.#stableSince = null;
     const controller = this.#controller;
     this.#controller = null;
     this.#publishEvaluationState();
-    controller?.abort();
+    controller?.abort(reason);
   }
 
-  dispose(): void {
+  dispose(reason: SubscriptionAbortReason = 'disposed'): void {
     this.#active = false;
-    this.invalidate();
+    this.invalidate(reason);
   }
 
   #handleError(cause: unknown): void {
