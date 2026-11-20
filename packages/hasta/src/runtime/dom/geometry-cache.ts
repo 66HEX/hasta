@@ -50,6 +50,10 @@ export class GeometryCache {
     });
   }
 
+  markDirty(): void {
+    this.#dirty = true;
+  }
+
   invalidate(): void {
     this.#dirty = true;
     this.#invalidate();

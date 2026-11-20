@@ -348,7 +348,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
   const resetInput = () => {
     generation++;
-    geometryCache?.invalidate();
+    geometryCache?.markDirty();
     predictor.reset();
     samples = [];
     pendingInput = false;

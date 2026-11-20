@@ -383,3 +383,40 @@ test('an abort listener can pause and resume without leaking the previous evalua
 
   expect(result).toEqual({ afterReset: ['first'], calls: ['first'], frames: 0 });
 });
+
+test('idle input reset does not schedule and cancel a spurious animation frame', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const h = window.harness;
+    const engine = h.createHasta({ bounds: 'cached' });
+    engine
+      .track(h.element({ x: 100, width: 20 }))
+      .when({ type: 'intersects', withinMs: 120 }, () => {});
+    h.frame();
+    h.pointer(1000, 0);
+    h.pointer(1020, 20);
+    h.frame();
+
+    const originalRaf = window.requestAnimationFrame;
+    let rafCalls = 0;
+    window.requestAnimationFrame = (callback) => {
+      rafCalls++;
+
+      return originalRaf.call(window, callback);
+    };
+
+    try {
+      h.frame(1200);
+    } finally {
+      window.requestAnimationFrame = originalRaf;
+    }
+
+    const pending = h.pendingFrames();
+    engine.destroy();
+
+    return { rafCalls, pending };
+  });
+
+  expect(result).toEqual({ rafCalls: 0, pending: 0 });
+});
