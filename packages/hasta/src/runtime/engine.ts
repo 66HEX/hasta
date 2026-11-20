@@ -895,6 +895,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         try {
           const rect = target.bounds;
           const margin = rule.kind === 'intersection' ? rule.condition.marginPx : 0;
+          const targetRect = margin === 0 ? rect : expand(rect, margin);
           intersections ??= new Map();
           let byHorizon = intersections.get(margin);
 
@@ -908,7 +909,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
           if (intersection === undefined) {
             const hit = candidates.has(target.id)
-              ? predictor.intersectRect(now, horizon, margin === 0 ? rect : expand(rect, margin))
+              ? predictor.intersectRect(now, horizon, targetRect)
               : null;
 
             intersection =
@@ -926,7 +927,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             let contact = contacts.get(margin);
 
             if (contact === undefined) {
-              contact = observedIntersection(observed, margin === 0 ? rect : expand(rect, margin));
+              contact = observedIntersection(observed, targetRect);
               contacts.set(margin, contact);
             }
 
@@ -938,13 +939,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             const age = now - pointer.timeStamp;
 
             const crossing =
-              age > 0
-                ? predictor.intersectRect(
-                    pointer.timeStamp,
-                    age,
-                    margin === 0 ? rect : expand(rect, margin),
-                  )
-                : null;
+              age > 0 ? predictor.intersectRect(pointer.timeStamp, age, targetRect) : null;
 
             if (crossing) {
               intersection = Object.freeze({ etaMs: 0, point: Object.freeze(crossing.point) });
@@ -955,10 +950,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           if (
             rule.kind === 'intersection' &&
             (rule.condition.includeCurrent || rule.subscription.latched) &&
-            pointer.x >= rect.minX - margin &&
-            pointer.x <= rect.maxX + margin &&
-            pointer.y >= rect.minY - margin &&
-            pointer.y <= rect.maxY + margin
+            pointer.x >= targetRect.minX &&
+            pointer.x <= targetRect.maxX &&
+            pointer.y >= targetRect.minY &&
+            pointer.y <= targetRect.maxY
           ) {
             intersection = Object.freeze({
               etaMs: 0,
