@@ -61,3 +61,15 @@ test('a long event burst preserves every fresh turn while expiring old movement'
   assert.deepEqual(points.at(-1), sample(10_000, 0));
   assert.ok(points.every((point, index) => point.x === (index % 2 ? 100 : 0)));
 });
+
+test('clipped segment endpoints remain finite when coordinate differences overflow', () => {
+  const path = new ObservedPath(100);
+  [
+    sample(0, -Number.MAX_VALUE, Number.MAX_VALUE),
+    sample(100, Number.MAX_VALUE, -Number.MAX_VALUE),
+  ].forEach((point) => path.push(point));
+  const points = path.take(150);
+  assert.equal(points.length, 2);
+  assert.ok(Number.isFinite(points[0].x) && Number.isFinite(points[0].y));
+  assert.equal(points[0].timeStamp, 50);
+});

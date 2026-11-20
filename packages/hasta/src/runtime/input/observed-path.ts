@@ -1,5 +1,13 @@
 import type { PointerSample } from '../../core/types.js';
 
+function interpolateAxis(start: number, end: number, fraction: number): number {
+  const delta = end - start;
+
+  return Number.isFinite(delta)
+    ? start + delta * fraction
+    : start * (1 - fraction) + end * fraction;
+}
+
 export class ObservedPath {
   private points: PointerSample[] = [];
   private head = 0;
@@ -48,8 +56,8 @@ export class ObservedPath {
     if (first && second && first.timeStamp < cutoff) {
       const fraction = (cutoff - first.timeStamp) / (second.timeStamp - first.timeStamp);
       points[0] = {
-        x: first.x + (second.x - first.x) * fraction,
-        y: first.y + (second.y - first.y) * fraction,
+        x: interpolateAxis(first.x, second.x, fraction),
+        y: interpolateAxis(first.y, second.y, fraction),
         timeStamp: cutoff,
       };
     }
