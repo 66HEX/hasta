@@ -42,6 +42,12 @@ export class IntersectionHysteresis {
     const priorSpeed = Math.hypot(previous.x, previous.y);
     const speed = Math.hypot(current.x, current.y);
 
+    if (priorSpeed === 0 || speed === 0) {
+      this.reset();
+
+      return false;
+    }
+
     const cosine =
       (current.x / speed) * (previous.x / priorSpeed) +
       (current.y / speed) * (previous.y / priorSpeed);

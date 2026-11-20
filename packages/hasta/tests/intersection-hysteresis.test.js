@@ -49,4 +49,5 @@ test('departing observed contact and a stationary match do not gain speculative 
   assert.equal(state.retain(0, forecast(), true), false);
   state.match(forecast(0), false);
   assert.equal(state.retain(1, forecast(), true), false);
+  assert.equal(state.retain(2, forecast(0), true), false);
 });
