@@ -7,6 +7,15 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-20
+
+### Added
+
+- Exposed descriptive cancellation reasons on `AbortSignal.reason` (`'miss'`, `'expired'`, `'hidden'`, `'paused'`, `'untracked'`, `'destroyed'`, `'disposed'`, `'error'`).
+- Added `SVGElement` target support across the core engine, controller, and React, Vue, Svelte, and Solid adapters (`TrackedElement = HTMLElement | SVGElement`).
+- Added `pointerTypes?: readonly ('mouse' | 'pen')[]` to `HastaOptions` (defaulting to `['mouse']`) to optionally track hover-capable pen input.
+- Added `minSpeedPxPerMs?: number` to `IntersectsCondition` to gate speculative intersection triggers on minimum forecast speed.
+
 ## [0.5.0] - 2026-11-20
 
 ### Fixed
@@ -91,7 +100,8 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Cancelable prediction callbacks, stability and cooldown settings, and debug visualization.
 - Documentation site, interactive demo, and a pointer-trace collection app.
 
-[unreleased]: https://github.com/66HEX/hasta/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/66HEX/hasta/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/66HEX/hasta/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/66HEX/hasta/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/66HEX/hasta/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/66HEX/hasta/compare/v0.2.0...v0.3.0
