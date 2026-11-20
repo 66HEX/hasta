@@ -16,10 +16,11 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 - Saturated `expand()` bounds to finite limits so huge `marginPx` values cannot overflow rectangle coordinates or abort active subscriptions.
 - Separated dirty-marking (`markDirty()`) from frame scheduling (`invalidate()`) in `GeometryCache` so idle input resets no longer schedule and immediately cancel a redundant `requestAnimationFrame`.
 - Guarded optional `document.fonts` and `getAnimations()` calls so restricted or partial DOM environments do not throw during initialization or frame evaluation.
+- Prevented `NaN` in `ObservedPath.take()` when clipping segments whose coordinate difference overflows.
 
 ### Added
 
-- Unit and browser regression tests covering zero-speed hysteresis retention, debug eligibility during retention, huge `marginPx` saturation, idle reset frame scheduling, and missing `document.fonts` / `getAnimations()` APIs.
+- Unit and browser regression tests covering zero-speed hysteresis retention, debug eligibility during retention, huge `marginPx` saturation, idle reset frame scheduling, missing `document.fonts` / `getAnimations()` APIs, and overflowing observed-path clipping.
 
 ## [0.4.0] - 2026-11-15
 
