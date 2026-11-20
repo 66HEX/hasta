@@ -963,6 +963,14 @@ export function createHasta(input: HastaOptions = {}): Hasta {
                   null,
               );
 
+            if (retained && debugOptions !== null) {
+              rule.debug = {
+                matches: false,
+                eligible: true,
+                intersection: null,
+              };
+            }
+
             if (retained) {
               continue;
             }

@@ -383,6 +383,7 @@ test('near-boundary misses retain one episode even outside the spatial query, th
   expect(result.retained).toBe(true);
   expect(result.debug.latched).toBe(true);
   expect(result.debug.matches).toBe(false);
+  expect(result.debug.eligible).toBe(true);
   expect(result.recovered).toBe(1);
   expect(result.expired).toBe(true);
   expect(result.calls).toBe(1);
