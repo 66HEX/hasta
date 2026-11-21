@@ -1,11 +1,18 @@
-<svg width="32px" height="32px" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+<svg width="32" height="32" viewBox="-24 -30 544 544" fill="none" xmlns="http://www.w3.org/2000/svg">
   <style>
+    :root {
+      color: #000;
+    }
     @media (prefers-color-scheme: dark) {
-      :root { color: white; }
+      :root {
+        color: #fff;
+      }
     }
   </style>
-  <g fill="none" class="nc-icon-wrapper">
-    <path d="M12 6V8H18V10H24V12H28V16H24L20 18V19H19L17 23V27H13V23H11V17H9V11H7V6H12Z" fill="currentColor"></path>
-    <path d="M12.0098 7H18.0098V9H24.0098V11H28.0098V13H30.0098V15H28.0098V17H22.0098V19H20.0098V21H18.0098V27H16.0098V29H14V27H12V23H10V17H8V11H6V5H12.0098V7ZM8.00977 11H10.0098V17H12.0098V23H14.0098V27H16V21H18V17H22V15H28V13H24V11H18V9H12V7H8.00977V11Z" fill="currentColor"></path>
-  </g>
+  <path
+    d="M173.401 0H322.002L495.403 370.732L398.283 484.134L315.754 460.096C271.309 447.151 224.094 447.151 179.649 460.096L97.1199 484.134L0 370.732L173.401 0ZM243.817 43.1452H251.586L416.3 395.303L410.323 402.282L315.754 374.738C271.309 361.792 224.094 361.792 179.649 374.738L85.0802 402.282L79.1034 395.303L243.817 43.1452Z"
+    fill-rule="evenodd"
+    clip-rule="evenodd"
+    fill="currentColor"
+  />
 </svg>

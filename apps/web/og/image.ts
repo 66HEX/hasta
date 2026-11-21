@@ -11,7 +11,9 @@ export const OG_HEIGHT = 630;
 export const ogInputs = {
   theme: new URL('../src/styles.css', import.meta.url),
   logo: new URL('../public/logo.svg', import.meta.url),
-  displayFont: new URL('../public/fonts/DepartureMono-Regular.woff2', import.meta.url),
+  displayFont: new URL(
+    import.meta.resolve('@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2'),
+  ),
   monoFont: new URL('../public/fonts/IoskeleyMono-Medium.woff2', import.meta.url),
 };
 
@@ -43,7 +45,7 @@ export async function createOgImage() {
     'div',
     {
       tw: 'relative flex h-full w-full overflow-hidden font-normal',
-      style: { fontFamily: 'Departure Mono', color: colors.cardForeground },
+      style: { fontFamily: 'Inter', color: colors.cardForeground },
     },
     el('img', {
       src: blueprint,
@@ -60,7 +62,7 @@ export async function createOgImage() {
       },
       el(
         'div',
-        { tw: 'flex flex-col text-5xl leading-tight uppercase' },
+        { tw: 'flex flex-col text-7xl' },
         el('div', {}, 'A little ahead'),
         el('div', {}, 'of the pointer.'),
       ),
@@ -87,7 +89,7 @@ export async function createOgImage() {
     height: OG_HEIGHT,
     format: 'png',
     fonts: [
-      { name: 'Departure Mono', data: displayFont, weight: 400, style: 'normal' },
+      { name: 'Inter', data: displayFont, weight: 400, style: 'normal' },
       { name: 'Ioskeley Mono', data: monoFont, weight: 500, style: 'normal' },
     ],
   });

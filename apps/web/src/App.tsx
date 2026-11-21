@@ -2,7 +2,6 @@ import { MDXProvider } from '@mdx-js/react';
 import { useEffect } from 'react';
 
 import { FrameworkSelect } from '@/components/framework-code';
-import { GitHubIcon } from '@/components/github-icon';
 import { HeaderBrand } from '@/components/header-brand';
 import { Icon } from '@/components/icon';
 import { mdxComponents } from '@/components/mdx';
@@ -77,7 +76,7 @@ function Document() {
                 aria-label="Hasta on GitHub"
                 className={buttonVariants({ variant: 'ghost', size: 'icon' })}
               >
-                <GitHubIcon />
+                <Icon name="github" />
               </a>
             </div>
           </header>
@@ -93,7 +92,7 @@ function Document() {
                 href="#main-content"
                 className="inline-flex items-center gap-2 type-display text-lg text-foreground"
               >
-                <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
+                <img src="/logo.svg" alt="" aria-hidden="true" className="h-4 w-auto dark:invert" />
                 hasta
               </a>
               <div className="flex min-w-0 items-center gap-2 text-sm">
