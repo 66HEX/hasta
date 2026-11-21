@@ -94,14 +94,14 @@ function DemoTarget({
       type="button"
       ref={targetRef}
       className={cn(
-        'relative flex h-12 min-w-0 cursor-pointer items-center justify-center gap-2 border border-border bg-card px-3 text-xs text-muted-foreground after:absolute after:-inset-x-px after:-bottom-px after:h-0.5 after:origin-left after:scale-x-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[active=true]:text-accent-foreground data-[active=true]:after:scale-x-100 motion-safe:transition-all motion-safe:duration-150 motion-safe:after:transition-all motion-safe:after:duration-150 sm:justify-start',
+        'relative flex h-12 min-w-0 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-card px-3 text-xs text-muted-foreground shadow-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[active=true]:text-accent-foreground data-[active=true]:after:scale-x-100 motion-safe:transition-all motion-safe:duration-150 motion-safe:after:transition-all motion-safe:after:duration-150 sm:justify-start',
         name === 'Profile'
-          ? 'after:bg-emerald-500 hover:border-emerald-500 hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] dark:hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
-          : 'after:bg-blue-500 hover:border-blue-500 hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] dark:hover:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]',
+          ? 'after:bg-emerald-500 hover:ring-1 hover:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] hover:ring-emerald-500 dark:hover:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
+          : 'after:bg-blue-500 hover:ring-1 hover:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] hover:ring-blue-500 dark:hover:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]',
         (active || predicted || recent) &&
           (name === 'Profile'
-            ? 'border-emerald-500 shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] dark:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
-            : 'border-blue-500 shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] dark:shadow-[inset_0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]'),
+            ? 'ring-1 inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_20%,transparent)] ring-emerald-500 dark:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-emerald-500)_50%,transparent)]'
+            : 'ring-1 inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_20%,transparent)] ring-blue-500 dark:inset-shadow-[0_0_30px_0_color-mix(in_oklab,var(--color-blue-500)_50%,transparent)]'),
       )}
       aria-label={`Preview ${name}`}
       aria-pressed={selected}
@@ -303,9 +303,9 @@ export function PredictionDemo({
   };
 
   return (
-    <figure data-demo="prediction">
+    <figure data-demo="prediction" className="relative">
       <Surface>
-        <Card>
+        <Card className="rounded-none shadow-none!">
           <CardContent>
             <div
               data-demo-stage=""
@@ -368,7 +368,7 @@ export function PredictionDemo({
             </div>
           </CardContent>
           {(controls || overlay) && (
-            <CardFooter>
+            <CardFooter className="rounded-none">
               <fieldset
                 data-demo-controls=""
                 className="m-0 grid w-full min-w-0 grid-cols-2 gap-6 border-0 p-0 text-xs"
@@ -495,18 +495,20 @@ export function PredictionDemo({
           )}
         </Card>
       </Surface>
-      <figcaption className="p-4 text-center text-xs leading-relaxed text-muted-foreground">
-        <output className="flex min-h-5 flex-wrap items-center justify-center gap-2">
+      <figcaption className="pointer-events-none absolute top-4 right-4 z-10 max-w-[calc(100%-6.5rem)] text-right text-xs leading-none text-muted-foreground">
+        <output className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
           {result ? (
             <>
-              <span className="size-1.5 rounded-full bg-primary" />
-              {result.name} predicted {result.eta} ms before entry
+              <span className="size-1.5 shrink-0 rounded-full bg-primary" />
+              <span>
+                {result.name} predicted {result.eta} ms before entry
+              </span>
               <span className="border-l pl-2 text-muted-foreground">
                 {result.count} {result.count === 1 ? 'callback' : 'callbacks'}
               </span>
             </>
           ) : (
-            <>Move toward a view. See it before you reach it.</>
+            <span>Move toward a view. See it before you reach it.</span>
           )}
         </output>
       </figcaption>

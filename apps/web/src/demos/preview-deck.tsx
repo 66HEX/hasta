@@ -8,7 +8,7 @@ export type PreviewName = 'Profile' | 'Settings';
 function ProfilePreview() {
   return (
     <div className="flex flex-wrap items-center gap-3 px-3 py-4">
-      <div className="grid size-10 shrink-0 place-items-center border border-border bg-muted">
+      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted shadow-xs">
         <Icon name="user" className="size-5" />
       </div>
       <div>
@@ -18,7 +18,7 @@ function ProfilePreview() {
       <div className="flex w-full justify-between pt-2 text-xs text-muted-foreground">
         <span>12 projects</span>
         <span className="flex items-center gap-1">
-          Available <i className="size-1 bg-primary" />
+          Available <i className="size-1.5 rounded-full bg-primary" />
         </span>
       </div>
     </div>
@@ -27,7 +27,7 @@ function ProfilePreview() {
 
 function PreviewToggle() {
   return (
-    <i className="relative block h-3 w-6 shrink-0 border border-border bg-muted after:absolute after:top-px after:left-px after:size-2 after:bg-muted-foreground group-data-[active=true]/preview-card:after:translate-x-3 group-data-[active=true]/preview-card:after:bg-primary motion-safe:after:transition motion-safe:after:duration-150 motion-safe:after:ease-out" />
+    <i className="relative block h-3.5 w-6 shrink-0 rounded-full bg-muted p-px shadow-2xs after:absolute after:top-0.5 after:left-0.5 after:size-2.5 after:rounded-full after:bg-muted-foreground after:shadow-xs group-data-[active=true]/preview-card:after:translate-x-2.5 group-data-[active=true]/preview-card:after:bg-primary motion-safe:after:transition motion-safe:after:duration-150 motion-safe:after:ease-out" />
   );
 }
 
@@ -72,22 +72,22 @@ function PreviewCard({
     >
       <div
         className={cn(
-          'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden border border-border bg-card text-card-foreground shadow-sm data-[active=true]:translate-x-0 data-[active=true]:translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-lg data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
+          'group/preview-card relative h-48 origin-bottom translate-y-2 overflow-hidden rounded-xl bg-card text-card-foreground shadow-md data-[active=true]:translate-x-0 data-[active=true]:translate-y-2 data-[active=true]:rotate-0 data-[active=true]:shadow-xl data-[muted=true]:translate-y-6 data-[muted=true]:scale-90 data-[muted=true]:opacity-35 motion-safe:transition motion-safe:duration-300 motion-safe:ease-out',
           profile
-            ? '-translate-x-6 -rotate-6 data-[active=true]:border-emerald-500 data-[muted=true]:-translate-x-10 data-[muted=true]:blur-xs sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16'
-            : 'translate-x-6 rotate-6 data-[active=true]:border-blue-500 data-[muted=true]:translate-x-10 data-[muted=true]:blur-xs sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16',
+            ? '-translate-x-6 -rotate-6 data-[active=true]:ring-1 data-[active=true]:ring-emerald-500 data-[muted=true]:-translate-x-10 data-[muted=true]:blur-xs sm:-translate-x-10 sm:-rotate-12 sm:data-[muted=true]:-translate-x-16'
+            : 'translate-x-6 rotate-6 data-[active=true]:ring-1 data-[active=true]:ring-blue-500 data-[muted=true]:translate-x-10 data-[muted=true]:blur-xs sm:translate-x-10 sm:rotate-12 sm:data-[muted=true]:translate-x-16',
         )}
         data-view={name}
         data-active={active === name}
         data-muted={active !== null && active !== name}
       >
-        <div className="flex h-8 items-center gap-2 border-b border-border bg-muted px-3 text-xs group-data-[active=true]/preview-card:bg-accent group-data-[active=true]/preview-card:text-accent-foreground motion-safe:transition-colors motion-safe:duration-150">
+        <div className="relative flex h-8 items-center gap-2 overflow-hidden rounded-t-[inherit] border-b border-border bg-muted px-3 text-xs group-data-[active=true]/preview-card:bg-accent group-data-[active=true]/preview-card:text-accent-foreground after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:-bottom-px after:rounded-t-[inherit] after:shadow-[0px_0px_0px_1px_color-mix(in_oklab,var(--shadow-light)_5.1%,transparent)_inset,0px_1px_0px_0px_color-mix(in_oklab,var(--shadow-light)_8.16%,transparent)_inset] motion-safe:transition-colors motion-safe:duration-150">
           <Icon name={profile ? 'user' : 'settings'} className="size-3" />
           <span>{name}</span>
           <span className="ml-auto text-muted-foreground">{profile ? '01' : '02'}</span>
         </div>
         {children}
-        <div className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-between border-t border-dashed border-border px-3 text-xs tracking-wide text-muted-foreground">
+        <div className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-between border-t border-dashed border-border px-3 text-[10px] tracking-wide text-muted-foreground">
           <span>{profile ? 'YOUR SPACE' : 'MAKE IT YOURS'}</span>
           <Icon
             name="check"

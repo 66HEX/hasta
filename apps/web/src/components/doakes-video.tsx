@@ -41,7 +41,7 @@ export function DoakesVideo({
       src="/media/doakes-surprise.mp4"
       poster="/media/doakes-surprise.jpg"
       aria-label="Doakes says: Surprise, motherfucker."
-      className="aspect-video w-full bg-black"
+      className="aspect-video w-full rounded-md bg-black"
       playsInline
       preload="auto"
       disablePictureInPicture

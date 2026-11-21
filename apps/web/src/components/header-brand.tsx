@@ -8,13 +8,11 @@ import { usePrediction } from '@/lib/prediction';
 import { version as hastaVersion } from '../../../../packages/hasta/package.json';
 import { Badge } from './ui/badge';
 
-const replayCooldownMs = 10_000;
-
 export function HeaderBrand() {
   const { controller, horizon, margin } = usePrediction();
   const anchor = useRef<HTMLAnchorElement>(null);
   const popup = useRef<HTMLDivElement>(null);
-  const nextPredictionAt = useRef(0);
+  const hasOpened = useRef(false);
   const playbackBlocked = useRef(false);
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
@@ -22,7 +20,6 @@ export function HeaderBrand() {
   const popupId = useId();
 
   const close = useCallback(() => {
-    nextPredictionAt.current = performance.now() + replayCooldownMs;
     setOpen(false);
   }, []);
 
@@ -36,8 +33,8 @@ export function HeaderBrand() {
     onPredict() {
       if (
         open ||
+        hasOpened.current ||
         playbackBlocked.current ||
-        performance.now() < nextPredictionAt.current ||
         window.matchMedia('(prefers-reduced-motion: reduce)').matches
       ) {
         return;
@@ -137,13 +134,17 @@ export function HeaderBrand() {
                 return;
               }
 
+              if (hasOpened.current) {
+                return;
+              }
+
               setReady(false);
               setKeyboard(true);
               setOpen(true);
             }
           }}
         >
-          <img src="/logo.svg" alt="" aria-hidden="true" className="h-6 w-auto dark:invert" />
+          <img src="/logo.svg" alt="" aria-hidden="true" className="h-4 w-auto dark:invert" />
           <h1>hasta</h1>
         </a>
         <Badge className="hidden sm:block" variant="secondary">
@@ -167,7 +168,7 @@ export function HeaderBrand() {
             data-ready={ready}
             initialFocus={false}
             finalFocus={keyboard ? anchor : false}
-            className="relative w-80 max-w-[calc(100vw-3rem)] origin-top-left -rotate-4 bg-popover p-1.5 text-popover-foreground shadow-xl ring-1 ring-black/10 data-ending-style:translate-y-1 data-ending-style:opacity-0 data-starting-style:translate-y-1 data-starting-style:rotate-0 data-starting-style:opacity-0 data-[ready=false]:invisible data-[ready=false]:rotate-0 data-[ready=false]:opacity-0 motion-safe:transition-[opacity,transform,translate,rotate] motion-safe:duration-150 motion-safe:ease-out motion-reduce:rotate-0 motion-reduce:data-ending-style:translate-y-0 motion-reduce:data-starting-style:translate-y-0 dark:ring-white/10"
+            className="relative w-80 max-w-[calc(100vw-3rem)] origin-top-left -rotate-4 rounded-xl bg-popover p-1.5 text-popover-foreground shadow-xl data-ending-style:translate-y-1 data-ending-style:opacity-0 data-starting-style:translate-y-1 data-starting-style:rotate-0 data-starting-style:opacity-0 data-[ready=false]:invisible data-[ready=false]:rotate-0 data-[ready=false]:opacity-0 motion-safe:transition-[opacity,transform,translate,rotate] motion-safe:duration-150 motion-safe:ease-out motion-reduce:rotate-0 motion-reduce:data-ending-style:translate-y-0 motion-reduce:data-starting-style:translate-y-0"
           >
             <DoakesVideo
               active={open}
@@ -176,7 +177,7 @@ export function HeaderBrand() {
                   return;
                 }
 
-                nextPredictionAt.current = performance.now() + replayCooldownMs;
+                hasOpened.current = true;
                 setReady(true);
               }}
               onBlocked={blockPlayback}
