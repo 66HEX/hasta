@@ -7,9 +7,31 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Added
+
+- Unit, browser, and framework regression tests covering every fix below.
+
 ### Changed
 
 - Updated `@66hex/hasta/solid` and its `solid-js` peer dependency (`>=2.0 <3`) for Solid 2.0 (`onSettled`, split `createEffect`, and `runWithOwner`-deferred ref cleanup).
+- Replacing only a predicate function through a controller target binding (`binding.update()`) now schedules a re-evaluation only while pointer input is active and no longer invalidates the target's cached geometry.
+- Improved Kalman predictor performance by caching the shared projection for multiple horizons at the same timestamp and precomputing the measurement standard deviation.
+- Improved `GridIndex` performance with packed numeric cell keys instead of string keys and queries that run without temporary arrays.
+- Reduced per-frame allocations in the frame loop: there is no `Map` of forecasts for a single horizon, no `Object.values().every()`, no temporary query rectangles, no intersection caches for targets with a single rule, and no ShadowRoot set for pure light DOM. Intersection events are now built and frozen only when a callback actually fires (`Subscription.prepare()` / `commit()`).
+- With `bounds: 'cached'` and no active rules, frames now evaluate only the targets returned by the spatial query instead of scanning every registered target.
+- The debug overlay now compares cache keys structurally instead of using `JSON.stringify`, reuses a persistent `motion` layer, and only updates SVG/DOM attributes when their values change.
+- `GeometryCache.consume()` and `observeRoots()` now skip allocations when there are no animations or shadow roots.
+
+### Fixed
+
+- A predicate that throws now aborts the active callback with `AbortSignal.reason === 'error'` instead of `'miss'`.
+- `createHasta([])` and subscription options passed as `null`, arrays, or primitives now throw a `TypeError` instead of being silently accepted or failing later.
+- A pointer switch rejected by the sample filter (unsupported `pointerType`, stale timestamp) no longer leaves the engine bound to the rejected `pointerId`.
+- Synchronous nested frames (for example, a predicate dispatching input and flushing a frame) now track nesting depth, so the inner frame no longer flushes queued samples into the predictor while the outer frame is still evaluating.
+- `untrack()` no longer invalidates all cached geometry (with `bounds: 'cached'`, the remaining targets are not re-measured), and scroll listeners on shadow roots that are no longer used are removed.
+- Exhausted `once` intersection rules no longer widen the frame's maximum horizon and margin, and release hysteresis is reset when a target loses its bounds or forecast.
+- The debug overlay no longer rewrites `data-hasta-status` on every frame; previously this triggered `MutationObserver` and invalidated cached geometry while debugging.
+- React refs roll back `node.current` when the binding rejects an element. Vue refs throw a clean `TypeError` for `undefined` and primitive values. Solid no longer attaches a replacement binding early while a deferred attach is pending.
 
 ## [0.6.0] - 2026-11-20
 
