@@ -19,6 +19,8 @@ export const GEOMETRY_EVENTS = [
   'animationcancel',
 ] as const;
 
+const EMPTY_TARGETS = new Set<number>();
+
 /** Tracks layout invalidation without treating observer rectangles as current measurements */
 export class GeometryCache {
   readonly #document: Document;
@@ -65,6 +67,10 @@ export class GeometryCache {
   }
 
   observeRoots(roots: ReadonlySet<ShadowRoot>): void {
+    if (roots.size === 0 && this.#roots.size === 0) {
+      return;
+    }
+
     for (const [root, observer] of this.#roots) {
       if (!roots.has(root)) {
         observer.disconnect();
@@ -95,7 +101,7 @@ export class GeometryCache {
     }
   }
 
-  consume(): Set<number> | null {
+  consume(): ReadonlySet<number> | null {
     // Synchronous mutations must be visible before observer callbacks run
     if (this.#observer.takeRecords().length > 0) {
       this.#dirty = true;
@@ -107,35 +113,57 @@ export class GeometryCache {
       }
     }
 
-    const current = new Set(this.#document.getAnimations?.() ?? []);
+    const docAnimations = this.#document.getAnimations?.();
+    const docAnimationCount = docAnimations?.length ?? 0;
 
-    for (const root of this.#roots.keys()) {
-      for (const animation of root.getAnimations?.() ?? []) {
-        current.add(animation);
+    if (docAnimationCount > 0 || this.#roots.size > 0 || this.#animations.size > 0) {
+      const current = new Set<Animation>(docAnimations);
+
+      for (const root of this.#roots.keys()) {
+        const rootAnimations = root.getAnimations?.();
+
+        if (rootAnimations !== undefined) {
+          for (const animation of rootAnimations) {
+            current.add(animation);
+          }
+        }
+      }
+
+      for (const animation of this.#animations.keys()) {
+        if (!current.has(animation)) {
+          this.#dirty = true;
+          this.#animations.delete(animation);
+        }
+      }
+
+      for (const animation of current) {
+        if (
+          animation.playState === 'running' ||
+          !this.#animations.has(animation) ||
+          this.#animations.get(animation) !== animation.currentTime
+        ) {
+          this.#dirty = true;
+        }
+
+        this.#animations.set(animation, animation.currentTime);
       }
     }
 
-    for (const animation of this.#animations.keys()) {
-      if (!current.has(animation)) {
-        this.#dirty = true;
-        this.#animations.delete(animation);
-      }
-    }
-
-    for (const animation of current) {
-      if (
-        animation.playState === 'running' ||
-        !this.#animations.has(animation) ||
-        this.#animations.get(animation) !== animation.currentTime
-      ) {
-        this.#dirty = true;
+    if (this.#dirty) {
+      if (this.#targets.size > 0) {
+        this.#targets.clear();
       }
 
-      this.#animations.set(animation, animation.currentTime);
+      this.#dirty = false;
+
+      return null;
     }
 
-    const targets = this.#dirty ? null : this.#targets;
-    this.#dirty = false;
+    if (this.#targets.size === 0) {
+      return EMPTY_TARGETS;
+    }
+
+    const targets = this.#targets;
     this.#targets = new Set();
 
     return targets;
