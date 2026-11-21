@@ -6,8 +6,14 @@ import { gunzipSync } from 'node:zlib';
 
 import { checksum } from '../src/checksum.ts';
 import { importSession } from '../src/data.ts';
-import { examplesFor, FEATURE_VERSION } from '../src/features.ts';
-import { counts, participants } from '../src/protocol.ts';
+import { examplesFor, FEATURE_VERSION, replayFramesFor } from '../src/features.ts';
+import { counts, participants, PROTOCOL } from '../src/protocol.ts';
+
+const cutoffOf = (trial) =>
+  trial.selected === null
+    ? trial.duration
+    : (trial.events.find((event) => event.type === 'enter' && event.target === trial.selected)
+        ?.at ?? trial.duration);
 
 const baseline = (trials) => {
   let correct = 0;
@@ -16,12 +22,7 @@ const baseline = (trials) => {
   const leadMs = [];
 
   for (const trial of trials) {
-    const cutoff =
-      trial.selected === null
-        ? trial.duration
-        : (trial.events.find((event) => event.type === 'enter' && event.target === trial.selected)
-            ?.at ?? trial.duration);
-
+    const cutoff = cutoffOf(trial);
     const callback = trial.callbacks.find((item) => item.at < cutoff);
 
     if (!callback) {
@@ -80,7 +81,7 @@ for (const file of positionals) {
 
   const session = await importSession(json);
 
-  if (session.protocolVersion !== 3 || !session.collection) {
+  if (session.protocolVersion !== 4 || !session.collection) {
     throw new Error(`Earlier protocol: ${file}`);
   }
 
@@ -152,6 +153,7 @@ for (const session of sessions.filter((item) => item.nextIndex > 0)) {
 
 const reports = [];
 const examples = [];
+const replays = [];
 
 for (const session of sessions) {
   const main = session.trials.filter((trial) => trial.plan.phase === 'main');
@@ -173,9 +175,42 @@ for (const session of sessions) {
         device: session.device,
         trialId: trial.id,
         attempt: trial.context.attempt,
+        layout: trial.plan.layout,
+        mode: trial.plan.mode,
+        noneVariant: trial.plan.noneVariant ?? null,
+        startKind: trial.plan.startKind ?? null,
         ...row,
       });
     }
+
+    const cutoff = cutoffOf(trial);
+
+    const selectedIndex =
+      trial.selected === null
+        ? trial.targets.length
+        : trial.targets.findIndex((target) => target.id === trial.selected);
+
+    replays.push({
+      participant: session.participant,
+      session: session.collection.number,
+      device: session.device,
+      trialId: trial.id,
+      attempt: trial.context.attempt,
+      count: trial.targets.length,
+      layout: trial.plan.layout,
+      mode: trial.plan.mode,
+      noneVariant: trial.plan.noneVariant ?? null,
+      startKind: trial.plan.startKind ?? null,
+      selectedIndex,
+      cutoff,
+      duration: trial.duration,
+      baselineCallbacks: trial.callbacks.map((cb) => ({
+        targetIndex: trial.targets.findIndex((target) => target.id === cb.target),
+        at: cb.at,
+        etaMs: cb.etaMs,
+      })),
+      frames: replayFramesFor(trial),
+    });
   }
 
   reports.push({
@@ -203,6 +238,18 @@ for (const session of sessions) {
         .length,
       none: usable.filter((trial) => trial.plan.count === count && trial.selected === null).length,
     })),
+    layouts: ['grid', 'navbar', 'sidebar', 'cards', 'cluster'].map((layout) => ({
+      layout,
+      usable: usable.filter((trial) => trial.plan.layout === layout).length,
+    })),
+    startKinds: ['far', 'medium', 'near'].map((startKind) => ({
+      startKind,
+      usable: usable.filter((trial) => trial.plan.startKind === startKind).length,
+    })),
+    modes: ['select', 'free', 'none'].map((mode) => ({
+      mode,
+      usable: usable.filter((trial) => trial.plan.mode === mode).length,
+    })),
     baselineEligible: baseline(usable),
     baselineEligibleFirstAttempts: baseline(firstAttempt.filter((trial) => trial.quality.eligible)),
     unresolvedFirstAttempts: firstAttempt.filter((trial) =>
@@ -228,9 +275,11 @@ if (values['require-complete'] && missing.length > 0) {
   throw new Error(`Incomplete study: ${missing.join(', ')}`);
 }
 
+const presentParticipants = [...new Set(reports.map((item) => item.participant))].toSorted();
+
 const report = {
   featureVersion: FEATURE_VERSION,
-  protocol: 'hasta-intent-5p-v3',
+  protocol: PROTOCOL,
   build: sessions[0].provenance,
   automated: sessions.some((item) => item.environment.automated),
   sources,
@@ -238,11 +287,12 @@ const report = {
   missing,
   exampleCount: examples.length,
   trialCount: new Set(examples.map((item) => item.trialId)).size,
+  replayCount: replays.length,
   baselinePolicy:
     'First callback delivered before first hover of the selected target, or before the end for none. All callbacks remain in the raw backups.',
-  folds: participants.map((test) => ({
+  folds: presentParticipants.map((test) => ({
     test,
-    train: participants.filter((id) => id !== test),
+    train: presentParticipants.filter((id) => id !== test),
     validation: 'Choose inner held-out participants from train; never tune on test.',
   })),
 };
@@ -255,13 +305,25 @@ await writeFile(
   { flag: 'wx' },
 );
 
+await writeFile(
+  join(values.out, 'replay.jsonl'),
+  replays.map((item) => JSON.stringify(item)).join('\n') + '\n',
+  { flag: 'wx' },
+);
+
 await writeFile(join(values.out, 'manifest.json'), JSON.stringify(report, null, 2) + '\n', {
   flag: 'wx',
 });
 
 console.log(
   JSON.stringify(
-    { sessions: reports.length, examples: examples.length, missing, output: resolve(values.out) },
+    {
+      sessions: reports.length,
+      examples: examples.length,
+      replays: replays.length,
+      missing: missing.length,
+      output: resolve(values.out),
+    },
     null,
     2,
   ),
