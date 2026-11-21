@@ -30,7 +30,7 @@ function normalizePointerTypes(value: HastaOptions['pointerTypes']): readonly Po
 }
 
 export function normalizeHastaOptions(options: HastaOptions): NormalizedHastaOptions {
-  if (options === null || typeof options !== 'object') {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
     throw new TypeError('Options must be an object.');
   }
 

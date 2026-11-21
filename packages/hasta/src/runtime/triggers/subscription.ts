@@ -17,6 +17,10 @@ export interface SubscriptionOptions {
 export function normalizeSubscriptionOptions(
   options: SubscriptionOptions,
 ): Required<SubscriptionOptions> {
+  if (options === null || typeof options !== 'object' || Array.isArray(options)) {
+    throw new TypeError('Subscription options must be an object.');
+  }
+
   if (options.once !== undefined && typeof options.once !== 'boolean') {
     throw new TypeError('once must be a boolean.');
   }
@@ -24,10 +28,13 @@ export function normalizeSubscriptionOptions(
   const stableForMs = options.stableForMs ?? 0;
   const cooldownMs = options.cooldownMs ?? 0;
 
-  for (const duration of [stableForMs, cooldownMs]) {
-    if (!Number.isFinite(duration) || duration < 0) {
-      throw new RangeError('Subscription durations must be finite and nonnegative.');
-    }
+  if (
+    !Number.isFinite(stableForMs) ||
+    stableForMs < 0 ||
+    !Number.isFinite(cooldownMs) ||
+    cooldownMs < 0
+  ) {
+    throw new RangeError('Subscription durations must be finite and nonnegative.');
   }
 
   return { once: options.once ?? false, stableForMs, cooldownMs };
@@ -129,8 +136,25 @@ export class Subscription<T extends object> {
     evidenceTime?: number,
     observedContact = false,
   ): (() => void) | null {
-    if (!this.#active) {
+    if (
+      !this.prepare(matches && context !== null, now, canStart, evidenceTime, observedContact) ||
+      context === null
+    ) {
       return null;
+    }
+
+    return this.commit(context, now);
+  }
+
+  prepare(
+    matches: boolean,
+    now: number,
+    canStart = true,
+    evidenceTime?: number,
+    observedContact = false,
+  ): boolean {
+    if (!this.#active) {
+      return false;
     }
 
     if (!Number.isFinite(now)) {
@@ -150,24 +174,24 @@ export class Subscription<T extends object> {
       this.#lastEvidenceTime = evidenceTime;
     }
 
-    if (!matches || context === null) {
+    if (!matches) {
       this.invalidate();
 
-      return null;
+      return false;
     }
 
     if (this.#latched) {
-      return null;
+      return false;
     }
 
     if (!canStart) {
       this.invalidate();
 
-      return null;
+      return false;
     }
 
     if (!corroborated) {
-      return null;
+      return false;
     }
 
     if (this.#stableSince === null || observationTime < this.#stableSince) {
@@ -175,16 +199,16 @@ export class Subscription<T extends object> {
       this.#publishEvaluationState();
     }
 
-    if (
+    return !(
       this.#pending !== null ||
       this.#running ||
       (this.#once && this.#fired) ||
       observationTime - this.#stableSince < this.#stableForMs ||
       now - this.#lastFired < this.#cooldownMs
-    ) {
-      return null;
-    }
+    );
+  }
 
+  commit(context: T, now: number): () => void {
     const pending = Symbol('pending subscription');
     this.#pending = pending;
     const snapshot = { ...context };
@@ -204,7 +228,9 @@ export class Subscription<T extends object> {
       this.#controller = controller;
 
       try {
-        const result = this.#callback(Object.freeze({ ...snapshot, signal: controller.signal }));
+        const result = this.#callback(
+          Object.freeze(Object.assign(snapshot, { signal: controller.signal })),
+        );
 
         const then =
           result !== null &&
