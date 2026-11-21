@@ -47,8 +47,18 @@ export function useHastaTarget(controller: HastaController, options: TargetOptio
     () => ({
       ...binding,
       ref(element) {
+        const previous = node.current;
         node.current = element;
-        binding.ref(element);
+
+        try {
+          binding.ref(element);
+        } catch (error) {
+          if (node.current === element) {
+            node.current = previous;
+          }
+
+          throw error;
+        }
       },
     }),
     [binding],

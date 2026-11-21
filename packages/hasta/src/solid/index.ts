@@ -147,7 +147,9 @@ export function useHastaTarget(
       const replacement = nextOwner.target(nextOptions);
 
       try {
-        replacement.ref(node);
+        if (pendingAttach === null) {
+          replacement.ref(node);
+        }
       } catch (error) {
         replacement.destroy();
         throw error;
@@ -174,7 +176,7 @@ export function useHastaTarget(
       const version = ++attachmentRevision;
 
       const elementOwner = getOwner();
-      const deferred = element !== null && element.ownerDocument?.defaultView === null;
+      const deferred = element !== null && element?.ownerDocument?.defaultView === null;
 
       node = element;
 

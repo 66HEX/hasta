@@ -83,7 +83,10 @@ export function useHastaTarget(
       let targetElement: TrackedElement | null = null;
 
       if (element !== null) {
-        const view = 'ownerDocument' in element ? element.ownerDocument?.defaultView : undefined;
+        const view =
+          Object(element) === element && 'ownerDocument' in element
+            ? element.ownerDocument?.defaultView
+            : undefined;
 
         if (!view || !(element instanceof view.HTMLElement || element instanceof view.SVGElement)) {
           throw new TypeError(
