@@ -13,7 +13,7 @@ export function ScrollCard({ className, ...props }: ComponentProps<typeof Card>)
     <Surface>
       <Card
         className={cn(
-          'gap-0 py-0 transition-shadow has-[[data-scrollable]:focus-visible]:ring-3 has-[[data-scrollable]:focus-visible]:ring-ring/50 has-[[data-scrollable]:focus-visible]:outline-1',
+          'gap-0 rounded-none py-0 shadow-none! transition-shadow has-[[data-scrollable]:focus-visible]:ring-3 has-[[data-scrollable]:focus-visible]:ring-ring/50 has-[[data-scrollable]:focus-visible]:outline-1',
           className,
         )}
         {...props}
