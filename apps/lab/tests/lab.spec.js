@@ -11,7 +11,7 @@ test('captures raw motion and Hasta, resumes and imports a checked backup', asyn
   await completeTask(page);
   const { session } = await downloadSession(page);
   const trial = session.trials[0];
-  expect(session.protocolVersion).toBe(3);
+  expect(session.protocolVersion).toBe(4);
   expect(session.collection.warmupNext).toBe(1);
   expect(trial.quality.eligible).toBe(true);
   expect(trial.samples.length).toBeGreaterThan(10);

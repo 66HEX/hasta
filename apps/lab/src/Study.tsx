@@ -110,12 +110,18 @@ export function Study({
     }
   }
 
+  const requiresGate = plan.mode === 'none' && plan.noneVariant !== 'away';
+
   let instruction =
     plan.mode === 'select'
       ? `Click Start, then select target ${intended}.`
-      : 'Click Start, pass through Gate, then click Finish. Do not select a target.';
+      : plan.mode === 'free'
+        ? 'Click Start, then select any target you like.'
+        : requiresGate
+          ? 'Click Start, pass through Gate, then click Finish. Do not select a target.'
+          : 'Click Start, move naturally without clicking a target, then click Finish.';
 
-  if (gatePassed) {
+  if (requiresGate && gatePassed) {
     instruction = 'Gate crossed. Click Finish without selecting a target.';
   }
 
@@ -149,6 +155,9 @@ export function Study({
           data-intended={plan.intended ?? 'none'}
           data-active={active}
           data-approach={plan.approach}
+          data-layout={plan.layout}
+          data-start-kind={plan.startKind ?? ''}
+          data-none-variant={plan.noneVariant ?? ''}
         >
           {enoughSpace ? (
             <>
@@ -184,24 +193,26 @@ export function Study({
               ))}
               {plan.mode === 'none' && (
                 <>
-                  <div
-                    data-gate
-                    data-passed={gatePassed}
-                    className="passage-gate"
-                    aria-label={gatePassed ? 'Gate crossed' : 'Pass through this gate'}
-                    style={{
-                      left: scene.gate.minX,
-                      top: scene.gate.minY,
-                      width: scene.gate.maxX - scene.gate.minX,
-                      height: scene.gate.maxY - scene.gate.minY,
-                    }}
-                  >
-                    <span>{gatePassed ? '✓' : 'Gate'}</span>
-                  </div>
+                  {requiresGate && (
+                    <div
+                      data-gate
+                      data-passed={gatePassed}
+                      className="passage-gate"
+                      aria-label={gatePassed ? 'Gate crossed' : 'Pass through this gate'}
+                      style={{
+                        left: scene.gate.minX,
+                        top: scene.gate.minY,
+                        width: scene.gate.maxX - scene.gate.minX,
+                        height: scene.gate.maxY - scene.gate.minY,
+                      }}
+                    >
+                      <span>{gatePassed ? '✓' : 'Gate'}</span>
+                    </div>
+                  )}
                   <button
                     type="button"
                     className="finish-zone"
-                    disabled={!active || !gatePassed}
+                    disabled={!active || (requiresGate && !gatePassed)}
                     style={{ left: scene.finish.x, top: scene.finish.y }}
                     onClick={(event) => {
                       if (event.detail === 0) {

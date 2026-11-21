@@ -2,7 +2,16 @@
 import type { Point, Rect } from '@66hex/hasta/core';
 
 import { checksum } from './checksum.ts';
-import { collectionPlan, participants, recordCompletion, studySeed } from './protocol.ts';
+import {
+  collectionPlan,
+  legacyCollectionPlanV3,
+  legacyParticipantsV3,
+  participants,
+  PROTOCOL,
+  recordCompletion,
+  STUDY_ID,
+  studySeed,
+} from './protocol.ts';
 import { assessTrial } from './quality.ts';
 import type {
   Callback,
@@ -113,8 +122,16 @@ function plan(value: unknown): Plan {
     index: integer(source.index, 0, 119),
     seed: integer(source.seed, 0, 1e12),
     count,
-    mode: choice(source.mode, ['select', 'none']),
-    layout: choice(source.layout, ['grid', 'scatter', 'rows']),
+    mode: choice(source.mode, ['select', 'free', 'none']),
+    layout: choice(source.layout, [
+      'grid',
+      'scatter',
+      'rows',
+      'navbar',
+      'sidebar',
+      'cards',
+      'cluster',
+    ]),
     intended: nullable(source.intended),
   };
 
@@ -122,6 +139,14 @@ function plan(value: unknown): Plan {
     result.phase = choice(source.phase, ['warmup', 'main']);
     result.approach = choice(source.approach, ['left', 'right', 'top', 'bottom']);
     result.passage = choice(source.passage, ['through', 'above', 'below']);
+  }
+
+  if (source.noneVariant !== undefined) {
+    result.noneVariant = choice(source.noneVariant, ['gate', 'away']);
+  }
+
+  if (source.startKind !== undefined) {
+    result.startKind = choice(source.startKind, ['far', 'medium', 'near']);
   }
 
   return result;
@@ -344,7 +369,7 @@ function collection(value: unknown): Collection {
   }
 
   return {
-    studyId: choice(source.studyId, ['intent-5p-v1']),
+    studyId: choice(source.studyId, ['intent-5p-v1', 'intent-lib-v1']),
     recordingId: text(source.recordingId, 80),
     number: sessionNumber,
     phase: choice(source.phase, ['instructions', 'warmup', 'main']),
@@ -381,18 +406,26 @@ export function readSession(value: unknown): Session {
   const trials = array(source.trials, trial, 1000);
   const protocolVersion = source.protocolVersion ?? 1;
 
-  if (protocolVersion !== 1 && protocolVersion !== 2 && protocolVersion !== 3) {
+  if (
+    protocolVersion !== 1 &&
+    protocolVersion !== 2 &&
+    protocolVersion !== 3 &&
+    protocolVersion !== 4
+  ) {
     throw new Error('This recording protocol is not supported.');
   }
 
   if (
     protocolVersion >= 2 &&
-    trials.some(
-      (item) =>
-        (item.plan.mode === 'none') !== (item.gate !== null) ||
-        (item.outcome === 'none' && item.gatePassedAt === null) ||
-        (item.gate === null && item.gatePassedAt !== null),
-    )
+    trials.some((item) => {
+      const requiresGate = item.plan.mode === 'none' && item.plan.noneVariant !== 'away';
+
+      return (
+        requiresGate !== (item.gate !== null) ||
+        (item.outcome === 'none' && requiresGate && item.gatePassedAt === null) ||
+        (item.gate === null && item.gatePassedAt !== null)
+      );
+    })
   ) {
     throw new Error('The trial does not match the gate protocol.');
   }
@@ -437,17 +470,22 @@ export function readSession(value: unknown): Session {
     result.provenance.collectorHash = text(provenance.collectorHash, 100);
   }
 
-  if (protocolVersion === 3) {
+  if (protocolVersion === 3 || protocolVersion === 4) {
+    const isV4 = protocolVersion === 4;
+    const allowedParticipants = isV4 ? participants : legacyParticipantsV3;
+    const expectedStudyId = isV4 ? STUDY_ID : 'intent-5p-v1';
+    const planFn = isV4 ? collectionPlan : legacyCollectionPlanV3;
     result.environment.automated = boolean(environment.automated);
     result.collection = collection(source.collection);
 
     if (
-      !participants.includes(result.participant) ||
+      !allowedParticipants.includes(result.participant) ||
+      result.collection.studyId !== expectedStudyId ||
       total !== 120 ||
       result.provenance.collectorHash === undefined ||
       result.seed !== studySeed(result.participant, result.collection.number)
     ) {
-      throw new Error('The session does not match the five-person study.');
+      throw new Error('The session does not match the study protocol.');
     }
 
     let checked: Session = {
@@ -456,6 +494,20 @@ export function readSession(value: unknown): Session {
       trials: [],
       collection: { ...result.collection, warmupNext: 0 },
     };
+
+    const planKeys = isV4
+      ? ([
+          'seed',
+          'count',
+          'mode',
+          'layout',
+          'intended',
+          'approach',
+          'passage',
+          'noneVariant',
+          'startKind',
+        ] as const)
+      : (['seed', 'count', 'mode', 'layout', 'intended', 'approach', 'passage'] as const);
 
     for (const item of trials) {
       const phase = item.plan.phase;
@@ -472,7 +524,7 @@ export function readSession(value: unknown): Session {
       }
 
       const expectedIndex = phase === 'warmup' ? checked.collection?.warmupNext : checked.nextIndex;
-      const expectedPlan = collectionPlan(result.seed, item.plan.index, phase);
+      const expectedPlan = planFn(result.seed, item.plan.index, phase);
 
       const expectedAttempt =
         checked.trials.filter(
@@ -482,9 +534,7 @@ export function readSession(value: unknown): Session {
       if (
         item.plan.index !== expectedIndex ||
         item.context.attempt !== expectedAttempt ||
-        (['seed', 'count', 'mode', 'layout', 'intended', 'approach', 'passage'] as const).some(
-          (key) => item.plan[key] !== expectedPlan[key],
-        )
+        planKeys.some((key) => item.plan[key] !== expectedPlan[key])
       ) {
         throw new Error('The trial order or plan is invalid.');
       }
@@ -529,16 +579,19 @@ export async function importSession(contents: string): Promise<Session> {
   const source = object(input);
 
   if (source.schemaVersion === 2) {
+    const protocol = text(source.protocol);
+
     if (
-      source.protocol !== 'hasta-intent-5p-v3' ||
+      (protocol !== PROTOCOL && protocol !== 'hasta-intent-5p-v3') ||
       text(source.sha256, 64) !== (await checksum(JSON.stringify(source.session)))
     ) {
       throw new Error('The backup checksum does not match. Choose an unchanged backup.');
     }
 
     const session = readSession(source.session);
+    const expectedVersion = protocol === PROTOCOL ? 4 : 3;
 
-    if (session.protocolVersion !== 3) {
+    if (session.protocolVersion !== expectedVersion) {
       throw new Error('The backup protocol does not match.');
     }
 

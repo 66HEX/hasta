@@ -33,7 +33,11 @@ export function assessTrial(trial: Trial): Quality {
   }
 
   const resolved = trial.outcome === 'selected' || trial.outcome === 'none';
-  const matches = trial.selected === trial.plan.intended;
+
+  const matches =
+    trial.plan.mode === 'free'
+      ? trial.outcome === 'selected' && trial.selected !== null
+      : trial.selected === trial.plan.intended;
 
   if (!resolved) {
     flags.push(trial.outcome);

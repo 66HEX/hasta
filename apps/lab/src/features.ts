@@ -2,7 +2,7 @@ import type { Point, Rect } from '@66hex/hasta/core';
 
 import type { Sample, Trial } from './types.ts';
 
-export const FEATURE_VERSION = 'cursor-24-12-v1';
+export const FEATURE_VERSION = 'cursor-24-12-v2';
 
 function distance(point: Point, rect: Rect) {
   return Math.hypot(
@@ -109,9 +109,13 @@ export function featuresAt(trial: Trial, at: number) {
   const straightness = path === 0 ? 0 : displacement / path;
   const coverage = Math.min(1, (last.timeStamp - first.timeStamp) / 160);
 
-  const candidate = trial.targets.map(({ rect }) => {
+  const distances = trial.targets.map(({ rect }) => distance(last, rect));
+  const minDist = Math.min(...distances);
+
+  const candidate = trial.targets.map(({ rect }, targetIndex) => {
     const dx = (rect.minX + rect.maxX) / 2 - last.x;
     const dy = (rect.minY + rect.maxY) / 2 - last.y;
+    const dist = distances[targetIndex] ?? distance(last, rect);
     const length = Math.hypot(dx, dy);
     const relation = angle(v32, { x: dx, y: dy });
 
@@ -137,10 +141,10 @@ export function featuresAt(trial: Trial, at: number) {
     return [
       dx,
       dy,
-      distance(last, rect),
+      dist,
       rect.maxX - rect.minX,
       rect.maxY - rect.minY,
-      distance(last, rect) === 0 ? 1 : 0,
+      dist - minDist,
       v32.x,
       v32.y,
       speed,
@@ -225,4 +229,23 @@ export function examplesFor(trial: Trial) {
   }
 
   return examples.map((example) => Object.assign(example, { weight: 1 / examples.length }));
+}
+
+export function replayFramesFor(trial: Trial) {
+  const frames = [];
+
+  for (const at of trial.ticks) {
+    const features = featuresAt(trial, at);
+
+    if (features) {
+      frames.push({
+        at,
+        candidate: features.candidate,
+        none: features.none,
+        inside: features.candidate.map((values) => (values[2] ?? 1) === 0),
+      });
+    }
+  }
+
+  return frames;
 }

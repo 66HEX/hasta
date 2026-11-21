@@ -79,7 +79,9 @@ export function recordTrial(
   const now = () => performance.now() - startTime;
 
   function finish(outcome: Outcome, selected: string | null = null, reason: string | null = null) {
-    if (stopped || (outcome === 'none' && trial.gatePassedAt === null)) {
+    const requiresGate = plan.mode === 'none' && plan.noneVariant !== 'away';
+
+    if (stopped || (outcome === 'none' && requiresGate && trial.gatePassedAt === null)) {
       return;
     }
 

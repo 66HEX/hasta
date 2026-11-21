@@ -6,16 +6,20 @@ export interface Provenance {
   collectorHash?: string;
 }
 
+export type LayoutKind = 'grid' | 'scatter' | 'rows' | 'navbar' | 'sidebar' | 'cards' | 'cluster';
+
 export interface Plan {
   index: number;
   seed: number;
   count: number;
-  mode: 'select' | 'none';
-  layout: 'grid' | 'scatter' | 'rows';
+  mode: 'select' | 'free' | 'none';
+  layout: LayoutKind;
   intended: string | null;
   phase?: 'warmup' | 'main';
   approach?: 'left' | 'right' | 'top' | 'bottom';
   passage?: 'through' | 'above' | 'below';
+  noneVariant?: 'gate' | 'away';
+  startKind?: 'far' | 'medium' | 'near';
 }
 
 export interface Target {
@@ -97,7 +101,7 @@ export interface Trial {
 }
 
 export interface Collection {
-  studyId: 'intent-5p-v1';
+  studyId: 'intent-5p-v1' | 'intent-lib-v1';
   recordingId: string;
   number: 1 | 2;
   phase: 'instructions' | 'warmup' | 'main';
@@ -109,7 +113,7 @@ export interface Collection {
 
 export interface Session {
   id: string;
-  protocolVersion: 1 | 2 | 3;
+  protocolVersion: 1 | 2 | 3 | 4;
   collection?: Collection;
   createdAt: string;
   participant: string;

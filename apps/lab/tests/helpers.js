@@ -23,7 +23,7 @@ export async function uploadSession(page, session) {
     name: 'session.json',
     mimeType: 'application/json',
     buffer: Buffer.from(
-      JSON.stringify({ schemaVersion: 2, protocol: 'hasta-intent-5p-v3', sha256, session }),
+      JSON.stringify({ schemaVersion: 2, protocol: 'hasta-intent-lib-v4', sha256, session }),
     ),
   });
   await expect
@@ -69,27 +69,33 @@ export async function completeTask(page) {
   const startButton = page.getByRole('button', { name: 'Start', exact: true });
   await expect(startButton).toBeEnabled();
   const start = await center(startButton);
-  const intended = await page.locator('.study-board').getAttribute('data-intended');
-
-  const destination = await center(
-    page.locator(intended === 'none' ? '[data-gate]' : `[data-target="${intended}"]`),
-  );
+  const board = page.locator('.study-board');
+  const mode = await board.getAttribute('data-mode');
+  const intended = await board.getAttribute('data-intended');
+  const noneVariant = await board.getAttribute('data-none-variant');
 
   await page.mouse.click(start.x, start.y);
 
-  if (intended === 'none') {
-    await expect(page.getByRole('button', { name: 'Finish', exact: true })).toBeDisabled();
-  }
-
-  await moveTo(page, start, destination);
-
-  if (intended === 'none') {
+  if (mode === 'none') {
     const finish = page.getByRole('button', { name: 'Finish', exact: true });
+    let from = start;
+
+    if (noneVariant === 'away') {
+      await expect(page.locator('[data-gate]')).toHaveCount(0);
+    } else {
+      await expect(finish).toBeDisabled();
+      from = await center(page.locator('[data-gate]'));
+      await moveTo(page, start, from);
+    }
+
     await expect(finish).toBeEnabled();
     const end = await center(finish);
-    await moveTo(page, destination, end);
+    await moveTo(page, from, end);
     await page.mouse.click(end.x, end.y);
   } else {
+    const targetId = mode === 'free' ? '0' : intended;
+    const destination = await center(page.locator(`[data-target="${targetId}"]`));
+    await moveTo(page, start, destination);
     await page.mouse.click(destination.x, destination.y);
   }
 

@@ -60,13 +60,20 @@ export async function makeBackup(session: Session): Promise<Backup> {
   const sha256 = await checksum(payload);
 
   const contents =
-    session.protocolVersion === 3
+    session.protocolVersion === 4
       ? JSON.stringify({ schemaVersion: 2, protocol: PROTOCOL, sha256, session: validated })
-      : JSON.stringify({
-          schemaVersion: 1,
-          protocol: `hasta-intent-pilot-v${session.protocolVersion}`,
-          session: validated,
-        });
+      : session.protocolVersion === 3
+        ? JSON.stringify({
+            schemaVersion: 2,
+            protocol: 'hasta-intent-5p-v3',
+            sha256,
+            session: validated,
+          })
+        : JSON.stringify({
+            schemaVersion: 1,
+            protocol: `hasta-intent-pilot-v${session.protocolVersion}`,
+            session: validated,
+          });
 
   const plain = new Blob([contents], { type: 'application/json' });
 

@@ -15,7 +15,14 @@ import {
   recoverTrial,
   saveSession,
 } from './data';
-import { compatible, counts, participants, recordCompletion, studySeed } from './protocol';
+import {
+  compatible,
+  counts,
+  participants,
+  recordCompletion,
+  STUDY_ID,
+  studySeed,
+} from './protocol';
 import { downloadBackup, makeBackup, readBackup } from './transfer';
 import type { Backup } from './transfer';
 import type { Session, Trial } from './types';
@@ -226,7 +233,7 @@ function Laboratory() {
 
     const session: Session = {
       id: recordingId,
-      protocolVersion: 3,
+      protocolVersion: 4,
       // oxlint-disable-next-line react/purity -- Session creation runs only from setup and restart button handlers
       createdAt: new Date().toISOString(),
       participant: id,
@@ -246,7 +253,7 @@ function Laboratory() {
       baseline: { horizonMs: 160, stableForMs: 30, maxSampleAgeMs: 100, once: true },
       trials: [],
       collection: {
-        studyId: 'intent-5p-v1',
+        studyId: STUDY_ID,
         recordingId,
         number: sessionNumber,
         phase: 'instructions',

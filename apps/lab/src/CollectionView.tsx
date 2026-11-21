@@ -49,11 +49,12 @@ export function CollectionView({
         </h2>
         <ol>
           <li>
-            Read the target letter before clicking Start. Move naturally, then click that target.
+            Read the instruction before clicking Start. Move naturally and click either the
+            requested target or, on free-choice tasks, any target you like.
           </li>
           <li>
-            For a gate task, pass through the marked Gate and click Finish without selecting a
-            target.
+            For no-selection tasks, click Finish without selecting a target (passing through Gate
+            first when a Gate is shown).
           </li>
           <li>
             Use the same {session.device === 'mouse' ? 'mouse' : 'touchpad'}, computer, and pointer
