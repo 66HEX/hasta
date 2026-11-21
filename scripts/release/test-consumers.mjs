@@ -132,6 +132,7 @@ try {
     );
 
     peers['react-dom'] = peers.react;
+    peers['@solidjs/web'] = peers['solid-js'];
     smoke(directory, {
       [PACKAGE_NAME]: spec,
       ...peers,
