@@ -24,6 +24,12 @@ interface TargetView {
   contact: DebugRule | null;
 }
 
+function rectsEqual(a: Rect, b: Rect): boolean {
+  return (
+    a === b || (a.minX === b.minX && a.minY === b.minY && a.maxX === b.maxX && a.maxY === b.maxY)
+  );
+}
+
 function targetView(target: DebugTarget, forecast: boolean): TargetView | null {
   const rect = target.rect;
 
@@ -52,12 +58,10 @@ function targetView(target: DebugTarget, forecast: boolean): TargetView | null {
 
     if (
       rule.marginPx > margin &&
-      [
-        rect.minX - rule.marginPx,
-        rect.minY - rule.marginPx,
-        rect.maxX + rule.marginPx,
-        rect.maxY + rule.marginPx,
-      ].every((value) => Number.isFinite(value))
+      Number.isFinite(rect.minX - rule.marginPx) &&
+      Number.isFinite(rect.minY - rule.marginPx) &&
+      Number.isFinite(rect.maxX + rule.marginPx) &&
+      Number.isFinite(rect.maxY + rule.marginPx)
     ) {
       margin = rule.marginPx;
     }
@@ -81,6 +85,12 @@ function targetView(target: DebugTarget, forecast: boolean): TargetView | null {
 function setText(element: Element, value: string): void {
   if (element.textContent !== value) {
     element.textContent = value;
+  }
+}
+
+function setAttr(element: Element, name: string, value: string): void {
+  if (element.getAttribute(name) !== value) {
+    element.setAttribute(name, value);
   }
 }
 
@@ -126,6 +136,34 @@ export interface DebugOverlay {
   destroy(): void;
 }
 
+interface CachedTarget {
+  rect: Rect;
+  margin: number;
+  active: boolean;
+  candidate: boolean;
+  contactId: number | null;
+  pointX: number | null;
+  pointY: number | null;
+  width: number;
+  height: number;
+  group: SVGGElement;
+}
+
+interface LabelsCacheEntry {
+  id: number;
+  label: string;
+  rect: Rect;
+  margin: number;
+}
+
+interface LabelsCache {
+  shown: boolean;
+  width: number;
+  height: number;
+  panel: boolean;
+  items: LabelsCacheEntry[];
+}
+
 export function createDebugOverlay(document: Document, initialOptions: DebugOptions): DebugOverlay {
   const view = document.defaultView;
 
@@ -137,8 +175,12 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
   let options = { ...initialOptions };
   let latest: DebugSnapshot | null = null;
   let destroyed = false;
-  let labelsKey = '';
-  const targetCache = new Map<number, { key: string; group: SVGGElement }>();
+  let labelsCache: LabelsCache | null = null;
+  const targetCache = new Map<number, CachedTarget>();
+  let lastWidth = -1;
+  let lastHeight = -1;
+  let lastStatus = '';
+  let lastPanelHidden: boolean | null = null;
   const host = document.createElement('div');
   host.dataset.hastaDebug = '';
   host.setAttribute('aria-hidden', 'true');
@@ -208,6 +250,41 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     'aria-hidden': 'true',
     focusable: 'false',
     'data-hasta-layer': 'geometry',
+  });
+
+  const motion = node('g', { 'data-hasta-layer': 'motion' });
+
+  const samplesLine = node('polyline', {
+    fill: 'none',
+    stroke: MUTED,
+    'stroke-width': 1,
+    'stroke-opacity': 0.25,
+  });
+
+  const sampleDots: SVGCircleElement[] = [];
+
+  const pointerDot = node('circle', {
+    r: 4,
+    fill: INK,
+    stroke: SURFACE,
+    'stroke-width': 2,
+    'data-hasta-pointer': '',
+  });
+
+  const trajectoryLine = node('polyline', {
+    fill: 'none',
+    stroke: ACCENT,
+    'stroke-width': 1.5,
+    'stroke-dasharray': '4 4',
+    'data-hasta-trajectory': '',
+  });
+
+  const endpointDot = node('circle', {
+    r: 4,
+    fill: SURFACE,
+    stroke: ACCENT,
+    'stroke-width': 1.5,
+    'data-hasta-endpoint': '',
   });
 
   const labels = node('g', { 'data-hasta-layer': 'labels' });
@@ -302,22 +379,63 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     return group;
   }
 
+  function labelsUnchanged(
+    shown: boolean,
+    width: number,
+    height: number,
+    panelEnabled: boolean,
+    items: readonly TargetView[],
+  ): boolean {
+    if (
+      labelsCache === null ||
+      labelsCache.shown !== shown ||
+      labelsCache.width !== width ||
+      labelsCache.height !== height ||
+      labelsCache.panel !== panelEnabled ||
+      labelsCache.items.length !== items.length
+    ) {
+      return false;
+    }
+
+    for (let index = 0; index < items.length; index++) {
+      const prev = labelsCache.items[index];
+      const next = items[index];
+
+      if (
+        prev === undefined ||
+        next === undefined ||
+        prev.id !== next.target.id ||
+        prev.label !== next.target.label ||
+        prev.margin !== next.margin ||
+        !rectsEqual(prev.rect, next.rect)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   function drawLabels(items: readonly TargetView[], width: number, height: number): void {
     const shown = debugOptionEnabled(options, 'labels') && debugOptionEnabled(options, 'bounds');
+    const panelEnabled = debugOptionEnabled(options, 'panel');
 
-    const key = JSON.stringify([
-      shown,
-      width,
-      height,
-      debugOptionEnabled(options, 'panel'),
-      items.map((item) => [item.target.id, item.target.label, item.rect, item.expanded]),
-    ]);
-
-    if (key === labelsKey) {
+    if (labelsUnchanged(shown, width, height, panelEnabled, items)) {
       return;
     }
 
-    labelsKey = key;
+    labelsCache = {
+      shown,
+      width,
+      height,
+      panel: panelEnabled,
+      items: items.map((item) => ({
+        id: item.target.id,
+        label: item.target.label,
+        rect: item.rect,
+        margin: item.margin,
+      })),
+    };
     labels.replaceChildren();
 
     if (!shown || width < 80 || height < 56) {
@@ -327,7 +445,7 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     const obstacles = items.map((item) => item.expanded);
     const placed: Rect[] = [];
 
-    if (debugOptionEnabled(options, 'panel')) {
+    if (panelEnabled) {
       placed.push({
         minX: Math.max(0, width - 264),
         minY: Math.max(0, height - 96),
@@ -339,11 +457,11 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     let attempts = 0;
 
     for (const { target, rect, expanded } of items) {
-      if (
-        !visible(rect, width, height) ||
-        labels.childElementCount >= MAX_LABELS ||
-        attempts >= MAX_LABELS * 2
-      ) {
+      if (labels.childElementCount >= MAX_LABELS || attempts >= MAX_LABELS * 2) {
+        break;
+      }
+
+      if (!visible(rect, width, height)) {
         continue;
       }
 
@@ -413,77 +531,81 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     }
   }
 
-  function drawMotion(snapshot: DebugSnapshot): SVGGElement {
-    const group = node('g', { 'data-hasta-layer': 'motion' });
+  function updateMotion(snapshot: DebugSnapshot): SVGGElement {
+    const children: Element[] = [];
+    const showSamples = debugOptionEnabled(options, 'samples');
+    const showTrajectory = debugOptionEnabled(options, 'trajectory');
 
-    if (debugOptionEnabled(options, 'samples')) {
-      const samples = snapshot.samples.slice(-16);
+    if (showSamples) {
+      const start = Math.max(0, snapshot.samples.length - 16);
+      const count = snapshot.samples.length - start;
 
-      if (samples.length > 1) {
-        group.append(
-          node('polyline', {
-            points: samples.map((point) => `${point.x},${point.y}`).join(' '),
-            fill: 'none',
-            stroke: MUTED,
-            'stroke-width': 1,
-            'stroke-opacity': 0.25,
-            'data-hasta-samples': samples.length,
-          }),
-        );
+      if (count > 1) {
+        let polylinePoints = '';
+
+        for (let index = start; index < snapshot.samples.length; index++) {
+          const sample = snapshot.samples[index];
+
+          if (sample !== undefined) {
+            polylinePoints +=
+              index === start ? `${sample.x},${sample.y}` : ` ${sample.x},${sample.y}`;
+          }
+        }
+
+        setAttr(samplesLine, 'points', polylinePoints);
+        setAttr(samplesLine, 'data-hasta-samples', String(count));
+        children.push(samplesLine);
       }
 
-      for (const sample of samples) {
-        group.append(
-          node('circle', { cx: sample.x, cy: sample.y, r: 2, fill: MUTED, 'fill-opacity': 0.4 }),
-        );
+      for (let slot = 0; slot < count; slot++) {
+        const sample = snapshot.samples[start + slot];
+
+        if (sample === undefined) {
+          continue;
+        }
+
+        let dot = sampleDots[slot];
+
+        if (dot === undefined) {
+          dot = node('circle', { r: 2, fill: MUTED, 'fill-opacity': 0.4 });
+          sampleDots[slot] = dot;
+        }
+
+        setAttr(dot, 'cx', String(sample.x));
+        setAttr(dot, 'cy', String(sample.y));
+        children.push(dot);
       }
     }
 
-    if (
-      snapshot.pointer &&
-      (debugOptionEnabled(options, 'samples') || debugOptionEnabled(options, 'trajectory'))
-    ) {
-      group.append(
-        node('circle', {
-          cx: snapshot.pointer.x,
-          cy: snapshot.pointer.y,
-          r: 4,
-          fill: INK,
-          stroke: SURFACE,
-          'stroke-width': 2,
-          'data-hasta-pointer': '',
-        }),
-      );
+    if (snapshot.pointer && (showSamples || showTrajectory)) {
+      setAttr(pointerDot, 'cx', String(snapshot.pointer.x));
+      setAttr(pointerDot, 'cy', String(snapshot.pointer.y));
+      children.push(pointerDot);
     }
 
     const points = snapshot.forecast?.points;
     const last = points?.at(-1);
 
-    if (debugOptionEnabled(options, 'trajectory') && points && last) {
-      group.append(
-        node('polyline', {
-          points: points.map((point) => `${point.x},${point.y}`).join(' '),
-          fill: 'none',
-          stroke: ACCENT,
-          'stroke-width': 1.5,
-          'stroke-dasharray': '4 4',
-          'data-hasta-trajectory': '',
-        }),
-      );
-      group.append(
-        node('circle', {
-          cx: last.x,
-          cy: last.y,
-          r: 4,
-          fill: SURFACE,
-          stroke: ACCENT,
-          'stroke-width': 1.5,
-          'data-hasta-endpoint': '',
-        }),
-      );
+    if (showTrajectory && points && last) {
+      let trajectoryPoints = '';
+
+      for (let index = 0; index < points.length; index++) {
+        const point = points[index];
+
+        if (point !== undefined) {
+          trajectoryPoints += index === 0 ? `${point.x},${point.y}` : ` ${point.x},${point.y}`;
+        }
+      }
+
+      setAttr(trajectoryLine, 'points', trajectoryPoints);
+      setAttr(endpointDot, 'cx', String(last.x));
+      setAttr(endpointDot, 'cy', String(last.y));
+      children.push(trajectoryLine, endpointDot);
     }
 
-    return group;
+    reconcile(motion, children);
+
+    return motion;
   }
 
   function render(snapshot: DebugSnapshot): void {
@@ -494,12 +616,28 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     latest = snapshot;
     const width = window.innerWidth;
     const height = window.innerHeight;
-    svg.setAttribute('width', String(width));
-    svg.setAttribute('height', String(height));
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    host.dataset.hastaStatus = snapshot.status;
-    panel.hidden = !debugOptionEnabled(options, 'panel');
-    status.dataset.hastaStatus = snapshot.status;
+
+    if (width !== lastWidth || height !== lastHeight) {
+      lastWidth = width;
+      lastHeight = height;
+      svg.setAttribute('width', String(width));
+      svg.setAttribute('height', String(height));
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    }
+
+    if (snapshot.status !== lastStatus) {
+      lastStatus = snapshot.status;
+      host.dataset.hastaStatus = snapshot.status;
+      status.dataset.hastaStatus = snapshot.status;
+    }
+
+    const panelHidden = !debugOptionEnabled(options, 'panel');
+
+    if (panelHidden !== lastPanelHidden) {
+      lastPanelHidden = panelHidden;
+      panel.hidden = panelHidden;
+    }
+
     setText(
       status,
       snapshot.status === 'warming-up' || snapshot.status === 'pending'
@@ -532,22 +670,35 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
       items.push(item);
       live.add(target.id);
 
-      const key = JSON.stringify([
-        item.rect,
-        item.expanded,
-        item.margin,
-        item.active,
-        target.candidate,
-        item.contact?.id,
-        point,
-        width,
-        height,
-      ]);
-
+      const contactId = item.contact?.id ?? null;
+      const pointX = point?.x ?? null;
+      const pointY = point?.y ?? null;
       let cached = targetCache.get(target.id);
 
-      if (cached?.key !== key) {
-        cached = { key, group: drawTarget(item, width, height) };
+      if (
+        cached === undefined ||
+        cached.margin !== item.margin ||
+        cached.active !== item.active ||
+        cached.candidate !== target.candidate ||
+        cached.contactId !== contactId ||
+        cached.pointX !== pointX ||
+        cached.pointY !== pointY ||
+        cached.width !== width ||
+        cached.height !== height ||
+        !rectsEqual(cached.rect, item.rect)
+      ) {
+        cached = {
+          rect: item.rect,
+          margin: item.margin,
+          active: item.active,
+          candidate: target.candidate,
+          contactId,
+          pointX,
+          pointY,
+          width,
+          height,
+          group: drawTarget(item, width, height),
+        };
         targetCache.set(target.id, cached);
       }
 
@@ -561,7 +712,7 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     }
 
     drawLabels(items, width, height);
-    children.push(drawMotion(snapshot), labels);
+    children.push(updateMotion(snapshot), labels);
     reconcile(svg, children);
   }
 
@@ -574,7 +725,7 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
 
       options = { ...value };
       targetCache.clear();
-      labelsKey = '';
+      labelsCache = null;
 
       if (latest) {
         render(latest);
@@ -588,7 +739,8 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
       destroyed = true;
       latest = null;
       targetCache.clear();
-      labelsKey = '';
+      labelsCache = null;
+      motion.replaceChildren();
       svg.replaceChildren();
       panel.replaceChildren();
       host.remove();

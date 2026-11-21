@@ -62,7 +62,7 @@ test('lazy public snapshots preserve old predicate and debug geometry across mov
 }) => {
   const result = await page.evaluate(() => {
     const h = window.harness;
-    const engine = h.createHasta({ debug: { labels: false, panel: false } });
+    const engine = h.createHasta({ bounds: 'frame', debug: { labels: false, panel: false } });
     const element = h.element();
     const target = engine.track(element);
     const contexts = [];
