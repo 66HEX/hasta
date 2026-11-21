@@ -15,8 +15,7 @@ export interface KalmanPrediction extends Prediction {
   readonly points: readonly [TrajectoryPoint, TrajectoryPoint];
 }
 
-interface Projection {
-  horizonMs: number;
+interface BaseProjection {
   latest: PointerSample;
   dx: number;
   dy: number;
@@ -24,6 +23,10 @@ interface Projection {
   ageMs: number;
   x: number;
   y: number;
+}
+
+interface Projection extends BaseProjection {
+  horizonMs: number;
   endX: number;
   endY: number;
 }
@@ -60,6 +63,17 @@ const INITIAL_ADAPTATION = {
   durationMs: 0,
 };
 
+type Adaptation = typeof INITIAL_ADAPTATION;
+
+function resetAdaptation(target: Adaptation): void {
+  target.responsiveUntil = -Infinity;
+  target.maneuverScale = 1;
+  target.directionX = 0;
+  target.directionY = 0;
+  target.samples = 0;
+  target.durationMs = 0;
+}
+
 function displacement(delta: number, dt: number, durationMs: number): number {
   const velocity = delta / dt;
 
@@ -75,9 +89,15 @@ export class KalmanPredictor implements Predictor {
   readonly #minimumAssimilationDtMs: number;
   readonly #positionAnchor: 'filtered' | 'measured';
   readonly #measurementVariance: number;
+  readonly #measurementStd: number;
+  readonly #filteredAnchor = { timeStamp: 0, x: 0, y: 0 };
   #residualLength = 0;
+  #base: BaseProjection | null = null;
+  #baseTime = NaN;
+  #baseValid = false;
   #projection: Projection | null = null;
   #projectionTime = NaN;
+  #projectionValid = false;
   #filterSamples = 0;
   #previousAssimilated: PointerSample | null = null;
   #latestAssimilated: PointerSample | null = null;
@@ -103,7 +123,7 @@ export class KalmanPredictor implements Predictor {
     // responsiveness through settling, not only for the first turn/braking sample
     const length = Math.hypot(residualX, residualY);
     this.#residualLength = length;
-    const deviation = length / Math.sqrt(this.#measurementVariance);
+    const deviation = length / this.#measurementStd;
     const timeStamp = this.#latest?.timeStamp ?? 0;
     const directionX = length > 0 ? residualX / length : 0;
     const directionY = length > 0 ? residualY / length : 0;
@@ -240,6 +260,7 @@ export class KalmanPredictor implements Predictor {
   constructor(options: KalmanOptions = {}, config: KalmanPredictorConfig = {}) {
     this.#filter = new KalmanState(config);
     this.#measurementVariance = config.r ?? DEFAULT_KALMAN_CONFIG.r;
+    this.#measurementStd = Math.sqrt(this.#measurementVariance);
     this.#minimumAssimilationDtMs =
       config.minimumAssimilationDtMs ?? DEFAULT_ASSIMILATION_INTERVAL_MS;
     this.#positionAnchor = config.positionAnchor ?? DEFAULT_POSITION_ANCHOR;
@@ -301,8 +322,10 @@ export class KalmanPredictor implements Predictor {
       }
     }
 
-    this.#projection = null;
+    this.#baseTime = NaN;
+    this.#baseValid = false;
     this.#projectionTime = NaN;
+    this.#projectionValid = false;
     this.#latest = { x: sample.x, y: sample.y, timeStamp: sample.timeStamp };
     const assimilated = this.#latestAssimilated;
 
@@ -410,7 +433,7 @@ export class KalmanPredictor implements Predictor {
       );
     }
 
-    if (Object.is(this.#projectionTime, now)) {
+    if (this.#projectionValid && Object.is(this.#projectionTime, now)) {
       const cached = this.#projection;
 
       if (cached !== null && cached.horizonMs === horizonMs) {
@@ -418,6 +441,57 @@ export class KalmanPredictor implements Predictor {
       }
     }
 
+    let base: BaseProjection | null;
+
+    if (Object.is(this.#baseTime, now)) {
+      base = this.#baseValid ? this.#base : null;
+    } else {
+      base = this.#computeBase(now);
+      this.#baseTime = now;
+      this.#baseValid = base !== null;
+    }
+
+    if (base === null) {
+      return null;
+    }
+
+    const endX = base.x + displacement(base.dx, base.dt, horizonMs);
+    const endY = base.y + displacement(base.dy, base.dt, horizonMs);
+
+    if (!Number.isFinite(endX) || !Number.isFinite(endY)) {
+      return null;
+    }
+
+    const projection = (this.#projection ??= {
+      horizonMs,
+      latest: base.latest,
+      dx: base.dx,
+      dy: base.dy,
+      dt: base.dt,
+      ageMs: base.ageMs,
+      x: base.x,
+      y: base.y,
+      endX,
+      endY,
+    });
+
+    projection.horizonMs = horizonMs;
+    projection.latest = base.latest;
+    projection.dx = base.dx;
+    projection.dy = base.dy;
+    projection.dt = base.dt;
+    projection.ageMs = base.ageMs;
+    projection.x = base.x;
+    projection.y = base.y;
+    projection.endX = endX;
+    projection.endY = endY;
+    this.#projectionTime = now;
+    this.#projectionValid = true;
+
+    return projection;
+  }
+
+  #computeBase(now: number): BaseProjection | null {
     const previous = this.#previous;
     const latest = this.#latest;
 
@@ -447,15 +521,18 @@ export class KalmanPredictor implements Predictor {
     }
 
     const sampled = estimate === null || bootstrap;
+    let anchor: PointerSample;
 
-    const anchor =
-      sampled || this.#latestAssimilated === null
-        ? bootstrap && this.#positionAnchor === 'measured'
-          ? latest
-          : origin
-        : this.#positionAnchor === 'measured'
-          ? latest
-          : { timeStamp: this.#latestAssimilated.timeStamp, x: estimate.x, y: estimate.y };
+    if (sampled || this.#latestAssimilated === null) {
+      anchor = bootstrap && this.#positionAnchor === 'measured' ? latest : origin;
+    } else if (this.#positionAnchor === 'measured') {
+      anchor = latest;
+    } else {
+      this.#filteredAnchor.timeStamp = this.#latestAssimilated.timeStamp;
+      this.#filteredAnchor.x = estimate.x;
+      this.#filteredAnchor.y = estimate.y;
+      anchor = this.#filteredAnchor;
+    }
 
     const ageMs = now - anchor.timeStamp;
     const dt = sampled ? origin.timeStamp - preceding.timeStamp : 1;
@@ -465,25 +542,26 @@ export class KalmanPredictor implements Predictor {
     const vy = dy / dt;
     const x = anchor.x + displacement(dx, dt, ageMs);
     const y = anchor.y + displacement(dy, dt, ageMs);
-    const endX = x + displacement(dx, dt, horizonMs);
-    const endY = y + displacement(dy, dt, horizonMs);
 
     if (
       !Number.isFinite(vx) ||
       !Number.isFinite(vy) ||
       !Number.isFinite(x) ||
-      !Number.isFinite(y) ||
-      !Number.isFinite(endX) ||
-      !Number.isFinite(endY)
+      !Number.isFinite(y)
     ) {
       return null;
     }
 
-    const projection = { horizonMs, latest: anchor, dx, dy, dt, ageMs, x, y, endX, endY };
-    this.#projection = projection;
-    this.#projectionTime = now;
+    const base = (this.#base ??= { latest: anchor, dx, dy, dt, ageMs, x, y });
+    base.latest = anchor;
+    base.dx = dx;
+    base.dy = dy;
+    base.dt = dt;
+    base.ageMs = ageMs;
+    base.x = x;
+    base.y = y;
 
-    return projection;
+    return base;
   }
 
   reset(): void {
@@ -512,8 +590,10 @@ export class KalmanPredictor implements Predictor {
   }
 
   #resetFilter(): void {
-    this.#projection = null;
+    this.#baseTime = NaN;
+    this.#baseValid = false;
     this.#projectionTime = NaN;
+    this.#projectionValid = false;
     this.#filter.reset();
     this.#filterSamples = 0;
     this.#previousAssimilated = null;
@@ -530,7 +610,13 @@ export class KalmanPredictor implements Predictor {
     this.#checkpointDirectionY = 0;
     this.#checkpointManeuverSamples = 0;
     this.#checkpointManeuverDurationMs = 0;
-    this.#adaptation = { ...INITIAL_ADAPTATION };
-    this.#checkpointAdaptation = { ...INITIAL_ADAPTATION };
+
+    if (this.#adaptation !== INITIAL_ADAPTATION) {
+      resetAdaptation(this.#adaptation);
+    }
+
+    if (this.#checkpointAdaptation !== INITIAL_ADAPTATION) {
+      resetAdaptation(this.#checkpointAdaptation);
+    }
   }
 }

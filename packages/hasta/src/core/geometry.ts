@@ -79,8 +79,10 @@ export function firstTrajectoryRectIntersection(
 
   let start = first;
 
-  for (const [index, end] of points.entries()) {
-    if (index === 0) {
+  for (let index = 1; index < points.length; index++) {
+    const end = points[index];
+
+    if (end === undefined) {
       continue;
     }
 
