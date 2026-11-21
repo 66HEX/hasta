@@ -12,7 +12,7 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@66hex/hasta": "0.6.0",
+    "@66hex/hasta": "0.6.1",
     "@base-ui/react": "1.9.0",
     "@mdx-js/react": "3.1.1",
     "class-variance-authority": "0.7.1",
