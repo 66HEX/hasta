@@ -5,7 +5,13 @@ import { cn } from '@/lib/utils';
 
 import { Icon } from './icon';
 import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipText, TooltipTrigger } from './ui/tooltip';
+
+const anchorStates = [
+  'Copy link to this section',
+  'Section link copied',
+  'Could not copy section link',
+] as const;
 
 function HeadingAnchor({ id }: { id: string }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'error'>('idle');
@@ -68,7 +74,9 @@ function HeadingAnchor({ id }: { id: string }) {
             </span>
           </span>
         </TooltipTrigger>
-        <TooltipContent>{label}</TooltipContent>
+        <TooltipContent>
+          <TooltipText text={label} states={anchorStates} />
+        </TooltipContent>
       </Tooltip>
       <output className="sr-only" aria-atomic="true">
         {status === 'idle' ? '' : label}
@@ -111,7 +119,11 @@ export function Heading({
       <Tag
         {...props}
         id={id}
-        className={cn('min-w-0 scroll-mt-24 text-foreground', typography[Tag], className)}
+        className={cn(
+          'min-w-0 scroll-mt-24 font-medium text-foreground',
+          typography[Tag],
+          className,
+        )}
         data-mdx={Tag}
       >
         {children}

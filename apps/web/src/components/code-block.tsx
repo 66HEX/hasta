@@ -7,7 +7,9 @@ import { HorizontalScroll, ScrollCard } from './horizontal-scroll';
 import { Icon } from './icon';
 import { Button } from './ui/button';
 import { CardContent } from './ui/card';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipText, TooltipTrigger } from './ui/tooltip';
+
+const copyStates = ['Copy code', 'Code copied', 'Could not copy code'] as const;
 
 const CodeContext = createContext(false);
 
@@ -59,7 +61,9 @@ export function CodeBlock({ children, ...props }: ComponentProps<'pre'>) {
             </span>
           </span>
         </TooltipTrigger>
-        <TooltipContent>{label}</TooltipContent>
+        <TooltipContent>
+          <TooltipText text={label} states={copyStates} />
+        </TooltipContent>
       </Tooltip>
       <HorizontalScroll label="Code block">
         <CardContent className="py-(--card-spacing)">
