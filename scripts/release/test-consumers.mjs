@@ -79,15 +79,7 @@ try {
     const metadata = JSON.parse(
       run(
         'npm',
-        [
-          'pack',
-          '--json',
-          '--ignore-scripts',
-          '--workspace',
-          PACKAGE_NAME,
-          '--pack-destination',
-          temporary,
-        ],
+        ['pack', '--json', '--ignore-scripts', './packages/hasta', '--pack-destination', temporary],
         root,
       ),
     );
