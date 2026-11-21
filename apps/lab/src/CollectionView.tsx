@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { compatible, counts } from './protocol';
 import { Study } from './Study';
@@ -68,13 +69,11 @@ export function CollectionView({
           session should be on another day.
         </p>
         <label className="confirmation">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(event) => setConfirmed(event.target.checked)}
-          />
-          I am {session.participant} and I am using a{' '}
-          {session.device === 'mouse' ? 'mouse' : 'touchpad'}.
+          <Checkbox checked={confirmed} onCheckedChange={setConfirmed} />
+          <span>
+            I am {session.participant} and I am using a{' '}
+            {session.device === 'mouse' ? 'mouse' : 'touchpad'}.
+          </span>
         </label>
         <Button
           disabled={disabled || !confirmed}
@@ -189,14 +188,12 @@ export function CollectionView({
           <>
             <p className="backup-name">{currentDownload.filename}</p>
             <label className="confirmation">
-              <input
-                type="checkbox"
-                checked={rested}
-                onChange={(event) => setRested(event.target.checked)}
-              />
-              {complete
-                ? 'I have saved the file and will send it to the coordinator.'
-                : 'I have saved the file and taken a break.'}
+              <Checkbox checked={rested} onCheckedChange={setRested} />
+              <span>
+                {complete
+                  ? 'I have saved the file and will send it to the coordinator.'
+                  : 'I have saved the file and taken a break.'}
+              </span>
             </label>
             <Button
               disabled={disabled || !rested}

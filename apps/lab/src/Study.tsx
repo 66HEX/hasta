@@ -137,126 +137,130 @@ export function Study({
         </h2>
         <span className="meta">{plan.count} targets</span>
       </div>
-      <output className="instruction" aria-live="polite">
-        <span className={`status-square ${active ? 'recording' : ''}`} aria-hidden="true" />
-        <span>{instruction}</span>
-      </output>
-      <div
-        ref={board}
-        className="study-board"
-        data-mode={plan.mode}
-        data-intended={plan.intended ?? 'none'}
-        data-active={active}
-        data-approach={plan.approach}
-      >
-        {enoughSpace ? (
-          <>
-            {scene.targets.map((target) => (
-              <button
-                key={target.id}
-                type="button"
-                className="study-target"
-                data-target={target.id}
-                data-hasta-label={target.label}
-                aria-label={`Target ${target.label}`}
-                disabled={!active}
-                style={{
-                  left: target.rect.minX,
-                  top: target.rect.minY,
-                  width: target.rect.maxX - target.rect.minX,
-                  height: target.rect.maxY - target.rect.minY,
-                }}
-                onClick={(event) => {
-                  if (event.detail === 0) {
-                    recorder.current?.finish(
-                      'interrupted',
-                      null,
-                      'Keyboard selection is not a cursor recording.',
-                    );
-                  } else {
-                    recorder.current?.finish('selected', target.id);
-                  }
-                }}
-              >
-                {target.label}
-              </button>
-            ))}
-            {plan.mode === 'none' && (
-              <>
-                <div
-                  data-gate
-                  data-passed={gatePassed}
-                  className="passage-gate"
-                  aria-label={gatePassed ? 'Gate crossed' : 'Pass through this gate'}
-                  style={{
-                    left: scene.gate.minX,
-                    top: scene.gate.minY,
-                    width: scene.gate.maxX - scene.gate.minX,
-                    height: scene.gate.maxY - scene.gate.minY,
-                  }}
-                >
-                  <span>{gatePassed ? '✓' : 'Gate'}</span>
-                </div>
+      <div className="study-card">
+        <output className="instruction" aria-live="polite">
+          <span className={`status-dot ${active ? 'recording' : ''}`} aria-hidden="true" />
+          <span>{instruction}</span>
+        </output>
+        <div
+          ref={board}
+          className="study-board"
+          data-mode={plan.mode}
+          data-intended={plan.intended ?? 'none'}
+          data-active={active}
+          data-approach={plan.approach}
+        >
+          {enoughSpace ? (
+            <>
+              {scene.targets.map((target) => (
                 <button
+                  key={target.id}
                   type="button"
-                  className="finish-zone"
-                  disabled={!active || !gatePassed}
-                  style={{ left: scene.finish.x, top: scene.finish.y }}
+                  className="study-target"
+                  data-target={target.id}
+                  data-hasta-label={target.label}
+                  aria-label={`Target ${target.label}`}
+                  disabled={!active}
+                  style={{
+                    left: target.rect.minX,
+                    top: target.rect.minY,
+                    width: target.rect.maxX - target.rect.minX,
+                    height: target.rect.maxY - target.rect.minY,
+                  }}
                   onClick={(event) => {
                     if (event.detail === 0) {
-                      recorder.current?.finish('interrupted', null, 'Finish using the pointer.');
+                      recorder.current?.finish(
+                        'interrupted',
+                        null,
+                        'Keyboard selection is not a cursor recording.',
+                      );
                     } else {
-                      recorder.current?.finish('none');
+                      recorder.current?.finish('selected', target.id);
                     }
                   }}
                 >
-                  Finish
+                  {target.label}
                 </button>
-              </>
-            )}
-            {result === null && (
-              <div className="start-zone" style={{ left: scene.start.x, top: scene.start.y }}>
-                <Button
-                  variant="outline"
-                  className="start-button"
-                  data-start
-                  disabled={disabled || active}
-                  onPointerUp={begin}
-                  onClick={(event) => {
-                    if (event.detail === 0) {
-                      setMessage('Click Start using your mouse or touchpad.');
-                    }
-                  }}
-                >
-                  Start
-                </Button>
-              </div>
-            )}
-            {result && (
-              <div className="result-actions">
-                {result.reason !== null && <p>{result.reason}</p>}
-                {result.quality?.flags.includes('instruction-mismatch') === true && (
-                  <p>The selected target did not match the instruction.</p>
-                )}
-                <Button
-                  disabled={disabled}
-                  onClick={() => {
-                    setPlan(currentPlan(session));
-                    setResult(null);
-                    setGatePassed(false);
-                    setMessage('');
-                  }}
-                >
-                  {retry ? 'Retry task' : 'Next task'}
-                </Button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="board-empty">
-            <span>Recording needs a 580 × 440 px area. Enlarge the window or use full screen.</span>
-          </div>
-        )}
+              ))}
+              {plan.mode === 'none' && (
+                <>
+                  <div
+                    data-gate
+                    data-passed={gatePassed}
+                    className="passage-gate"
+                    aria-label={gatePassed ? 'Gate crossed' : 'Pass through this gate'}
+                    style={{
+                      left: scene.gate.minX,
+                      top: scene.gate.minY,
+                      width: scene.gate.maxX - scene.gate.minX,
+                      height: scene.gate.maxY - scene.gate.minY,
+                    }}
+                  >
+                    <span>{gatePassed ? '✓' : 'Gate'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="finish-zone"
+                    disabled={!active || !gatePassed}
+                    style={{ left: scene.finish.x, top: scene.finish.y }}
+                    onClick={(event) => {
+                      if (event.detail === 0) {
+                        recorder.current?.finish('interrupted', null, 'Finish using the pointer.');
+                      } else {
+                        recorder.current?.finish('none');
+                      }
+                    }}
+                  >
+                    Finish
+                  </button>
+                </>
+              )}
+              {result === null && (
+                <div className="start-zone" style={{ left: scene.start.x, top: scene.start.y }}>
+                  <Button
+                    variant="outline"
+                    className="start-button"
+                    data-start
+                    disabled={disabled || active}
+                    onPointerUp={begin}
+                    onClick={(event) => {
+                      if (event.detail === 0) {
+                        setMessage('Click Start using your mouse or touchpad.');
+                      }
+                    }}
+                  >
+                    Start
+                  </Button>
+                </div>
+              )}
+              {result && (
+                <div className="result-actions">
+                  {result.reason !== null && <p>{result.reason}</p>}
+                  {result.quality?.flags.includes('instruction-mismatch') === true && (
+                    <p>The selected target did not match the instruction.</p>
+                  )}
+                  <Button
+                    disabled={disabled}
+                    onClick={() => {
+                      setPlan(currentPlan(session));
+                      setResult(null);
+                      setGatePassed(false);
+                      setMessage('');
+                    }}
+                  >
+                    {retry ? 'Retry task' : 'Next task'}
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="board-empty">
+              <span>
+                Recording needs a 580 × 440 px area. Enlarge the window or use full screen.
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       <div className="board-footer">
         <span>

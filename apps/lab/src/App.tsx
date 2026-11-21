@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '@/components/icon';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PreferencesProvider, usePreferences } from '@/lib/preferences';
 
@@ -318,12 +319,13 @@ function Laboratory() {
       <div className="page-frame lab-frame">
         <div className="page-column lab-column">
           <header className="layout-band lab-header">
-            <a className="lab-brand" href="#lab-content">
-              <img src="/logo.svg" alt="" className="dark:invert" />
-              <h1>
-                hasta <span>/ lab</span>
-              </h1>
-            </a>
+            <div className="lab-brand-group">
+              <a className="lab-brand type-display" href="#lab-content">
+                <img src="/logo.svg" alt="" aria-hidden="true" className="h-4 w-auto dark:invert" />
+                <h1>hasta</h1>
+              </a>
+              <Badge variant="secondary">lab</Badge>
+            </div>
             <div className="header-tools">
               <output className="save-status">{active ? 'Recording' : status}</output>
               <Button
