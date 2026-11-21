@@ -1,5 +1,5 @@
 import type { DebugOptions, DebugSnapshot } from './debug/types.js';
-import { createHasta } from './engine.js';
+import { createHasta, scheduleTargetEvaluation } from './engine.js';
 import {
   debugConfiguration,
   debugOptionEnabled,
@@ -119,8 +119,13 @@ function sameDebug(a: Configuration['debug'], b: Configuration['debug']): boolea
   const previous = a === true ? {} : a;
   const next = b === true ? {} : b;
 
-  return (['bounds', 'trajectory', 'samples', 'intersections', 'labels', 'panel'] as const).every(
-    (key) => debugOptionEnabled(previous, key) === debugOptionEnabled(next, key),
+  return (
+    debugOptionEnabled(previous, 'bounds') === debugOptionEnabled(next, 'bounds') &&
+    debugOptionEnabled(previous, 'trajectory') === debugOptionEnabled(next, 'trajectory') &&
+    debugOptionEnabled(previous, 'samples') === debugOptionEnabled(next, 'samples') &&
+    debugOptionEnabled(previous, 'intersections') === debugOptionEnabled(next, 'intersections') &&
+    debugOptionEnabled(previous, 'labels') === debugOptionEnabled(next, 'labels') &&
+    debugOptionEnabled(previous, 'panel') === debugOptionEnabled(next, 'panel')
   );
 }
 
@@ -339,7 +344,7 @@ export function createHastaController(input: HastaOptions = {}): HastaController
           }
 
           if (element !== null) {
-            const view = element.ownerDocument?.defaultView;
+            const view = element?.ownerDocument?.defaultView;
 
             if (
               !view ||
@@ -395,8 +400,8 @@ export function createHastaController(input: HastaOptions = {}): HastaController
             if (!destroyed && !disposed && version === revision) {
               subscribe(state);
             }
-          } else if (changedPredicate) {
-            state.target?.invalidate();
+          } else if (changedPredicate && state.target !== null) {
+            scheduleTargetEvaluation(state.target);
           }
         },
         getBounds: () => state.target?.getBounds() ?? null,

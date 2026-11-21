@@ -33,6 +33,14 @@ import type {
 
 type IntersectionContext = Omit<IntersectionEvent, 'signal'>;
 
+const EMPTY_SAMPLES: readonly PointerSample[] = [];
+const EMPTY_SHADOW_ROOTS = new Set<ShadowRoot>();
+const predicateSchedulers = new WeakMap<TrackedTarget, () => void>();
+
+export function scheduleTargetEvaluation(target: TrackedTarget): void {
+  predicateSchedulers.get(target)?.();
+}
+
 type Rule = {
   id: number;
   active: boolean;
@@ -100,10 +108,24 @@ function observedIntersection(
   points: readonly PointerSample[],
   rect: Rect,
 ): PredictionContext['intersection'] {
-  let previous = points[0];
+  const first = points[0];
 
-  for (const point of points) {
-    if (!previous) {
+  if (!first) {
+    return null;
+  }
+
+  if (points.length === 1) {
+    const hit = firstSegmentRectIntersection(first, first, rect);
+
+    return hit ? Object.freeze({ etaMs: 0, point: Object.freeze(hit.point) }) : null;
+  }
+
+  let previous = first;
+
+  for (let index = 1; index < points.length; index++) {
+    const point = points[index];
+
+    if (!point) {
       break;
     }
 
@@ -146,9 +168,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   const predictor = new KalmanPredictor({ maxSampleAgeMs });
   const observedPath = new ObservedPath(maxSampleAgeMs);
   const targets = new Map<TrackedElement, TargetRecord>();
+  const targetById = new Map<number, TargetRecord>();
   let targetList: readonly TargetRecord[] | null = null;
   const snapshotTargets = () => (targetList ??= [...targets.values()]);
   let selectionVersion = 0;
+  let structureVersion = 0;
   let scannableRuleCount = 0;
   let activeRuleCount = 0;
   let predicateRuleCount = 0;
@@ -160,7 +184,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   let nextId = 0;
   let frame: number | null = null;
   let samples: PointerSample[] = [];
-  let evaluatingFrame = false;
+  let evaluatingDepth = 0;
   let frameHidden = document.hidden;
   let pendingInput = false;
   let latestSample: PointerSample | null = null;
@@ -172,6 +196,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   let maxHorizon = horizonMs;
   let maxMargin = 0;
   let nextRuleId = 0;
+  const queryBounds = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   let debugOptions: DebugOptions | null = null;
   let debugOverlay: ReturnType<typeof createDebugOverlay> | null = null;
   let debugSnapshot: DebugSnapshot | null = null;
@@ -238,7 +263,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           Object.freeze({
             id: target.id,
             label: (
-              (target.element.dataset.hastaLabel ?? '') ||
+              (target.element.dataset?.hastaLabel ?? '') ||
               target.element.id ||
               `${target.element.tagName.toLowerCase()} ${target.id}`
             ).slice(0, 80),
@@ -307,7 +332,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   }
 
   const isRunning = () =>
-    !destroyed && !paused && !(evaluatingFrame ? frameHidden : document.hidden);
+    !destroyed && !paused && !(evaluatingDepth > 0 ? frameHidden : document.hidden);
 
   const requestFrame = () => {
     if (isRunning() && targets.size > 0 && frame === null) {
@@ -335,6 +360,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       for (const rule of snapshotRules(target)) {
         if (epoch !== generation) {
           return;
+        }
+
+        if (!target.tracked || !rule.active) {
+          continue;
         }
 
         applyMiss(target, rule);
@@ -432,6 +461,15 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           return false;
         }
 
+        if (
+          latestSample !== null &&
+          sample.timeStamp === latestSample.timeStamp &&
+          sample.x === latestSample.x &&
+          sample.y === latestSample.y
+        ) {
+          return true;
+        }
+
         if (latestSample !== null && sample.timeStamp - latestSample.timeStamp >= maxSampleAgeMs) {
           const epoch = generation;
           resetInput();
@@ -452,7 +490,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         latestSample = sample;
         pendingInput = true;
 
-        if (evaluatingFrame) {
+        if (evaluatingDepth > 0) {
           const last = samples.at(-1);
 
           if (last?.timeStamp === sample.timeStamp) {
@@ -500,6 +538,43 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     ),
   );
 
+  function collectShadowRoots(
+    element: TrackedElement,
+    roots: Set<ShadowRoot> | null,
+  ): Set<ShadowRoot> | null {
+    let node: Node = element;
+
+    while (true) {
+      const root = node.getRootNode();
+
+      if (root === document || !(root instanceof window.ShadowRoot)) {
+        return roots;
+      }
+
+      roots ??= new Set();
+      roots.add(root);
+      node = root.host;
+    }
+  }
+
+  function syncShadowRoots(roots: Set<ShadowRoot>): void {
+    geometryCache?.observeRoots(roots);
+
+    for (const root of scrollRoots) {
+      if (!roots.has(root)) {
+        root.removeEventListener('scroll', invalidateGeometry, true);
+        scrollRoots.delete(root);
+      }
+    }
+
+    for (const root of roots) {
+      if (!scrollRoots.has(root)) {
+        root.addEventListener('scroll', invalidateGeometry, { capture: true, passive: true });
+        scrollRoots.add(root);
+      }
+    }
+  }
+
   function refreshBounds(now: number, epoch: number): boolean {
     const dirtyTargets = geometryCache?.consume() ?? null;
 
@@ -507,7 +582,9 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       return true;
     }
 
-    const roots = new Set<ShadowRoot>(dirtyTargets === null ? [] : scrollRoots);
+    let roots: Set<ShadowRoot> | null =
+      dirtyTargets !== null && scrollRoots.size > 0 ? new Set(scrollRoots) : null;
+
     // A nested frame must not overwrite this frame's measurement scratch
     const measurement: MeasuredBounds = { measuredAt: now, minX: 0, minY: 0, maxX: 0, maxY: 0 };
 
@@ -553,12 +630,21 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         previous.maxY !== measurement.maxY;
 
       if (measured) {
-        const bounds = (target.bounds ??= { ...measurement });
-        bounds.measuredAt = measurement.measuredAt;
-        bounds.minX = measurement.minX;
-        bounds.minY = measurement.minY;
-        bounds.maxX = measurement.maxX;
-        bounds.maxY = measurement.maxY;
+        if (previous === null) {
+          target.bounds = {
+            measuredAt: measurement.measuredAt,
+            minX: measurement.minX,
+            minY: measurement.minY,
+            maxX: measurement.maxX,
+            maxY: measurement.maxY,
+          };
+        } else {
+          previous.measuredAt = measurement.measuredAt;
+          previous.minX = measurement.minX;
+          previous.minY = measurement.minY;
+          previous.maxX = measurement.maxX;
+          previous.maxY = measurement.maxY;
+        }
       } else {
         target.bounds = null;
       }
@@ -566,39 +652,20 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       target.snapshot = null;
 
       if (target.bounds === null) {
-        spatial?.delete(target.id);
+        if (previous !== null) {
+          spatial?.delete(target.id);
+        }
       } else if (changed) {
         spatial?.set(target.id, target.bounds);
       }
 
-      let node: Node = target.element;
-
-      while (true) {
-        const root = node.getRootNode();
-
-        if (!(root instanceof window.ShadowRoot)) {
-          break;
-        }
-
-        roots.add(root);
-        node = root.host;
-      }
+      roots = collectShadowRoots(target.element, roots);
     }
 
-    geometryCache?.observeRoots(roots);
-
-    for (const root of scrollRoots) {
-      if (!roots.has(root)) {
-        root.removeEventListener('scroll', invalidateGeometry, true);
-        scrollRoots.delete(root);
-      }
-    }
-
-    for (const root of roots) {
-      if (!scrollRoots.has(root)) {
-        root.addEventListener('scroll', invalidateGeometry, { capture: true, passive: true });
-        scrollRoots.add(root);
-      }
+    if (roots !== null) {
+      syncShadowRoots(roots);
+    } else if (dirtyTargets === null && scrollRoots.size > 0) {
+      syncShadowRoots(EMPTY_SHADOW_ROOTS);
     }
 
     return true;
@@ -614,13 +681,16 @@ export function createHasta(input: HastaOptions = {}): Hasta {
   }
 
   function tick(): void {
-    evaluatingFrame = true;
+    evaluatingDepth++;
 
     try {
       evaluateFrame();
     } finally {
-      evaluatingFrame = false;
-      flushSamples();
+      evaluatingDepth--;
+
+      if (evaluatingDepth === 0) {
+        flushSamples();
+      }
     }
   }
 
@@ -644,7 +714,6 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     pendingInput = false;
 
     const pointer = latestSample;
-    const observed = observedPath.take(now);
 
     if (pointer === null || now - pointer.timeStamp >= maxSampleAgeMs) {
       resetInput();
@@ -658,6 +727,8 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       return;
     }
 
+    const observed = currentRuleCount > 0 ? observedPath.take(now) : EMPTY_SAMPLES;
+
     // Registration changes invalidate these limits, pointer frames do not
     if (ruleExtentsDirty) {
       maxHorizon = horizonMs;
@@ -665,7 +736,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
       for (const target of targets.values()) {
         for (const rule of target.rules) {
-          if (rule.kind === 'intersection') {
+          if (
+            rule.kind === 'intersection' &&
+            (rule.scannable || rule.subscription.needsEvaluation)
+          ) {
             maxHorizon = Math.max(maxHorizon, rule.condition.withinMs);
             maxMargin = Math.max(maxMargin, rule.condition.marginPx);
           }
@@ -675,9 +749,9 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       ruleExtentsDirty = false;
     }
 
-    const forecasts = new Map<number, KalmanPrediction | null>();
-    let prediction = predictor.predict(now, maxHorizon);
-    forecasts.set(maxHorizon, prediction);
+    const primaryForecast = predictor.predict(now, maxHorizon);
+    let prediction = primaryForecast;
+    let extraForecasts: Map<number, KalmanPrediction | null> | null = null;
 
     // One overflowing rule must not silence independent, representable forecasts
     if (!prediction) {
@@ -685,11 +759,16 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
       for (const target of targets.values()) {
         for (const rule of target.rules) {
-          if (rule.kind === 'intersection') {
+          if (
+            rule.kind === 'intersection' &&
+            (rule.scannable || rule.subscription.needsEvaluation)
+          ) {
             horizons.add(rule.condition.withinMs);
           }
         }
       }
+
+      extraForecasts = new Map([[maxHorizon, null]]);
 
       // oxlint-disable-next-line unicorn/no-array-sort -- Sort a private scratch copy without requiring ES2023
       for (const horizon of [...horizons].sort((a, b) => b - a)) {
@@ -698,7 +777,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         prediction = predictor.predict(now, horizon);
-        forecasts.set(horizon, prediction);
+        extraForecasts.set(horizon, prediction);
 
         if (prediction) {
           break;
@@ -727,53 +806,68 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     const start = prediction.points[0];
     const end = prediction.points[1];
 
-    const pathBounds = {
-      minX: Math.min(pointer.x, start.x, end.x),
-      minY: Math.min(pointer.y, start.y, end.y),
-      maxX: Math.max(pointer.x, start.x, end.x),
-      maxY: Math.max(pointer.y, start.y, end.y),
-    };
+    let pathMinX = Math.min(pointer.x, start.x, end.x);
+    let pathMinY = Math.min(pointer.y, start.y, end.y);
+    let pathMaxX = Math.max(pointer.x, start.x, end.x);
+    let pathMaxY = Math.max(pointer.y, start.y, end.y);
 
     for (const point of observed) {
-      pathBounds.minX = Math.min(pathBounds.minX, point.x);
-      pathBounds.minY = Math.min(pathBounds.minY, point.y);
-      pathBounds.maxX = Math.max(pathBounds.maxX, point.x);
-      pathBounds.maxY = Math.max(pathBounds.maxY, point.y);
+      pathMinX = Math.min(pathMinX, point.x);
+      pathMinY = Math.min(pathMinY, point.y);
+      pathMaxX = Math.max(pathMaxX, point.x);
+      pathMaxY = Math.max(pathMaxY, point.y);
     }
 
-    const query = expand(pathBounds, maxMargin);
+    const expandedMinX = finiteBound(pathMinX - maxMargin, -Number.MAX_VALUE);
+    const expandedMinY = finiteBound(pathMinY - maxMargin, -Number.MAX_VALUE);
+    const expandedMaxX = finiteBound(pathMaxX + maxMargin, Number.MAX_VALUE);
+    const expandedMaxY = finiteBound(pathMaxY + maxMargin, Number.MAX_VALUE);
 
     // Candidate padding accounts for rounding without changing the target margin
     const rounding =
       Math.max(
         1,
-        Math.abs(query.minX),
-        Math.abs(query.minY),
-        Math.abs(query.maxX),
-        Math.abs(query.maxY),
+        Math.abs(expandedMinX),
+        Math.abs(expandedMinY),
+        Math.abs(expandedMaxX),
+        Math.abs(expandedMaxY),
       ) *
       (4 * Number.EPSILON);
 
-    const conservativeQuery = expand(query, rounding);
+    const queryMinX = finiteBound(expandedMinX - rounding, -Number.MAX_VALUE);
+    const queryMinY = finiteBound(expandedMinY - rounding, -Number.MAX_VALUE);
+    const queryMaxX = finiteBound(expandedMaxX + rounding, Number.MAX_VALUE);
+    const queryMaxY = finiteBound(expandedMaxY + rounding, Number.MAX_VALUE);
 
     // Overflowing a conservative query must never discard a real candidate
-    const finiteQuery = Object.values(conservativeQuery).every((value) => Number.isFinite(value));
+    const finiteQuery =
+      Number.isFinite(queryMinX) &&
+      Number.isFinite(queryMinY) &&
+      Number.isFinite(queryMaxX) &&
+      Number.isFinite(queryMaxY);
 
-    const candidates =
-      spatial?.query(
-        finiteQuery
-          ? conservativeQuery
-          : { minX: -Infinity, minY: -Infinity, maxX: Infinity, maxY: Infinity },
-      ) ?? new Set<number>();
+    if (finiteQuery) {
+      queryBounds.minX = queryMinX;
+      queryBounds.minY = queryMinY;
+      queryBounds.maxX = queryMaxX;
+      queryBounds.maxY = queryMaxY;
+    } else {
+      queryBounds.minX = -Infinity;
+      queryBounds.minY = -Infinity;
+      queryBounds.maxX = Infinity;
+      queryBounds.maxY = Infinity;
+    }
 
-    // No user code can run between this check and committing the shared miss
-    if (
+    const candidates = spatial?.query(queryBounds) ?? new Set<number>();
+
+    const sparse =
       spatial !== null &&
-      candidates.size === 0 &&
       activeRuleCount === 0 &&
       predicateRuleCount === 0 &&
-      debugOptions === null
-    ) {
+      debugOptions === null;
+
+    // No user code can run between this check and committing the shared miss
+    if (sparse && candidates.size === 0) {
       allMissEvidence = pointer.timeStamp;
       allMissVersion = ++missVersion;
       requestFrame();
@@ -781,78 +875,17 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       return;
     }
 
-    const frameTargets = snapshotTargets();
-    let selected: number[] = [];
-
-    for (let position = 0; position < frameTargets.length; position++) {
-      const target = frameTargets[position];
-
-      if (target === undefined) {
-        continue;
-      }
-
-      const bounds = target.bounds;
-
-      if (
-        spatial === null &&
-        (!finiteQuery ||
-          (bounds !== null &&
-            conservativeQuery.minX <= bounds.maxX &&
-            conservativeQuery.maxX >= bounds.minX &&
-            conservativeQuery.minY <= bounds.maxY &&
-            conservativeQuery.maxY >= bounds.minY))
-      ) {
-        candidates.add(target.id);
-      }
-
-      if (
-        debugOptions !== null ||
-        target.predicates > 0 ||
-        target.activeRules > 0 ||
-        (target.scannableRules > 0 && candidates.has(target.id))
-      ) {
-        selected.push(position);
-      }
-    }
-
-    if (debugOptions !== null) {
-      debugCandidates = new Set(candidates);
-    }
-
     const queue: (() => void)[] = [];
-    // Commit cold misses in registration order, including across reentrant frames
-    let cursor = 0;
-    const version = selectionVersion;
-    let scanningRemainder = false;
 
-    for (let work = 0; work < selected.length; work++) {
-      if (!isRunning() || epoch !== generation) {
-        return;
-      }
-
-      const position = selected[work];
-
-      if (position === undefined) {
-        continue;
-      }
-
-      for (; cursor < position; cursor++) {
-        recordMiss(frameTargets[cursor], pointer.timeStamp);
-      }
-
-      const target = frameTargets[position];
-
-      if (target === undefined) {
-        continue;
-      }
-
-      cursor = position + 1;
+    const evaluateTarget = (target: TargetRecord): boolean => {
+      const targetRules = snapshotRules(target);
+      const cacheSharedHits = targetRules.length > 1;
       let intersections: Map<number, Map<number, PredictionContext['intersection']>> | null = null;
       let contacts: Map<number, PredictionContext['intersection']> | null = null;
 
-      for (const rule of snapshotRules(target)) {
+      for (const rule of targetRules) {
         if (!isRunning() || epoch !== generation) {
-          return;
+          return false;
         }
 
         if (!target.tracked || !rule.active) {
@@ -867,6 +900,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         if (!target.bounds) {
+          if (rule.kind === 'intersection') {
+            rule.hysteresis.reset();
+          }
+
           rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
@@ -885,14 +922,27 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         const horizon = rule.kind === 'intersection' ? rule.condition.withinMs : horizonMs;
-        let forecast = forecasts.get(horizon);
+        let forecast: KalmanPrediction | null;
 
-        if (forecast === undefined) {
-          forecast = predictor.predict(now, horizon);
-          forecasts.set(horizon, forecast);
+        if (horizon === maxHorizon) {
+          forecast = primaryForecast;
+        } else {
+          extraForecasts ??= new Map();
+          const cached = extraForecasts.get(horizon);
+
+          if (cached === undefined) {
+            forecast = predictor.predict(now, horizon);
+            extraForecasts.set(horizon, forecast);
+          } else {
+            forecast = cached;
+          }
         }
 
         if (!forecast) {
+          if (rule.kind === 'intersection') {
+            rule.hysteresis.reset();
+          }
+
           rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
           continue;
         }
@@ -901,15 +951,21 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           const rect = target.bounds;
           const margin = rule.kind === 'intersection' ? rule.condition.marginPx : 0;
           const targetRect = margin === 0 ? rect : expand(rect, margin);
-          intersections ??= new Map();
-          let byHorizon = intersections.get(margin);
+          let intersection: PredictionContext['intersection'] | undefined;
+          let byHorizon: Map<number, PredictionContext['intersection']> | undefined;
 
-          if (!byHorizon) {
-            byHorizon = new Map<number, PredictionContext['intersection']>();
-            intersections.set(margin, byHorizon);
+          if (cacheSharedHits) {
+            intersections ??= new Map();
+            byHorizon = intersections.get(margin);
+
+            if (!byHorizon) {
+              byHorizon = new Map<number, PredictionContext['intersection']>();
+              intersections.set(margin, byHorizon);
+            }
+
+            intersection = byHorizon.get(horizon);
           }
 
-          let intersection = byHorizon.get(horizon);
           let observedContact = false;
 
           if (intersection === undefined) {
@@ -924,16 +980,20 @@ export function createHasta(input: HastaOptions = {}): Hasta {
                     etaMs: hit.offsetMs,
                     point: Object.freeze(hit.point),
                   });
-            byHorizon.set(horizon, intersection);
+            byHorizon?.set(horizon, intersection);
           }
 
           if (rule.kind === 'intersection' && rule.condition.includeCurrent) {
-            contacts ??= new Map();
-            let contact = contacts.get(margin);
+            let contact: PredictionContext['intersection'] | undefined;
+
+            if (cacheSharedHits) {
+              contacts ??= new Map();
+              contact = contacts.get(margin);
+            }
 
             if (contact === undefined) {
-              contact = observedIntersection(observed, targetRect);
-              contacts.set(margin, contact);
+              contact = observed.length === 0 ? null : observedIntersection(observed, targetRect);
+              contacts?.set(margin, contact);
             }
 
             intersection = contact ?? intersection;
@@ -1005,33 +1065,13 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               continue;
             }
 
+            rule.hysteresis.reset();
             rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
             continue;
           }
 
           if (rule.kind === 'intersection') {
             rule.hysteresis.match(forecast, observedContact);
-          }
-
-          const context: PredictionContext = Object.freeze({
-            element: target.element,
-            ...(target.snapshot ??= snapshotBounds(target.bounds)),
-            evaluatedAt: now,
-            forecast,
-            intersection,
-          });
-
-          let callback: (() => void) | null;
-
-          if (rule.kind === 'intersection') {
-            const event: IntersectionContext | null =
-              intersection &&
-              Object.freeze({
-                ...context,
-                intersection,
-                etaMs: intersection.etaMs,
-                predictedAt: now + intersection.etaMs,
-              });
 
             const eligible =
               rule.condition.includeCurrent ||
@@ -1046,15 +1086,36 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               };
             }
 
-            callback = rule.subscription.evaluate(
+            const shouldCommit = rule.subscription.prepare(
               intersection !== null,
               now,
-              event,
               eligible,
               pointer.timeStamp,
               observedContact,
             );
+
+            if (shouldCommit && intersection !== null) {
+              const event: IntersectionContext = Object.freeze({
+                element: target.element,
+                ...(target.snapshot ??= snapshotBounds(rect)),
+                evaluatedAt: now,
+                forecast,
+                intersection,
+                etaMs: intersection.etaMs,
+                predictedAt: now + intersection.etaMs,
+              });
+
+              queue.push(rule.subscription.commit(event, now));
+            }
           } else {
+            const context: PredictionContext = Object.freeze({
+              element: target.element,
+              ...(target.snapshot ??= snapshotBounds(rect)),
+              evaluatedAt: now,
+              forecast,
+              intersection,
+            });
+
             const matches: unknown = rule.condition(context);
 
             if (typeof matches !== 'boolean') {
@@ -1063,7 +1124,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
             }
 
             if (!isRunning() || epoch !== generation) {
-              return;
+              return false;
             }
 
             if (!target.tracked || !rule.active) {
@@ -1074,15 +1135,25 @@ export function createHasta(input: HastaOptions = {}): Hasta {
               rule.debug = { matches, eligible: matches, intersection };
             }
 
-            callback = rule.subscription.evaluate(matches, now, context, true, pointer.timeStamp);
-          }
+            const callback = rule.subscription.evaluate(
+              matches,
+              now,
+              context,
+              true,
+              pointer.timeStamp,
+            );
 
-          if (callback) {
-            queue.push(callback);
+            if (callback) {
+              queue.push(callback);
+            }
           }
         } catch (error) {
           if (epoch === generation) {
-            rule.subscription.evaluate(false, now, null, true, pointer.timeStamp);
+            if (rule.kind === 'intersection') {
+              rule.hysteresis.reset();
+            }
+
+            rule.subscription.recordMiss(pointer.timeStamp);
             rule.subscription.invalidate('error');
           }
 
@@ -1090,29 +1161,189 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         }
 
         if (!isRunning() || epoch !== generation) {
-          return;
+          return false;
         }
       }
 
-      // A predicate or abort listener can activate a later target
-      if (!scanningRemainder && version !== selectionVersion) {
-        scanningRemainder = true;
-        selected = [];
+      return true;
+    };
 
-        for (let remaining = cursor; remaining < frameTargets.length; remaining++) {
-          selected.push(remaining);
+    if (sparse && candidates.size * 4 < targets.size) {
+      const candidateIds =
+        candidates.size > 1
+          ? // oxlint-disable-next-line unicorn/no-array-sort -- Sort candidate IDs in registration order without requiring ES2023
+            [...candidates].sort((a, b) => a - b)
+          : [...candidates];
+
+      const evaluated: TargetRecord[] = [];
+      const entryStructureVersion = structureVersion;
+      const entryAllMissVersion = allMissVersion;
+      let interruptedId: number | null = null;
+
+      for (const id of candidateIds) {
+        if (!isRunning() || epoch !== generation) {
+          return;
         }
 
-        work = -1;
+        const target = targetById.get(id);
+
+        if (target === undefined || !target.tracked || target.scannableRules === 0) {
+          continue;
+        }
+
+        evaluated.push(target);
+
+        if (!evaluateTarget(target)) {
+          return;
+        }
+
+        if (structureVersion !== entryStructureVersion || allMissVersion !== entryAllMissVersion) {
+          interruptedId = target.id;
+          break;
+        }
+      }
+
+      if (!isRunning() || epoch !== generation) {
+        return;
+      }
+
+      if (interruptedId === null) {
+        const frameMissVersion = ++missVersion;
+        allMissEvidence = pointer.timeStamp;
+        allMissVersion = frameMissVersion;
+
+        for (const target of evaluated) {
+          target.missVersion = frameMissVersion;
+          target.missEvidence = null;
+        }
+      } else {
+        const frameTargets = snapshotTargets();
+        let cursor = 0;
+
+        while (cursor < frameTargets.length) {
+          const entry = frameTargets[cursor];
+          cursor++;
+
+          if (entry === undefined) {
+            continue;
+          }
+
+          if (entry.id === interruptedId) {
+            break;
+          }
+
+          if (!candidates.has(entry.id) || entry.scannableRules === 0) {
+            recordMiss(entry, pointer.timeStamp);
+          }
+        }
+
+        for (; cursor < frameTargets.length; cursor++) {
+          if (!isRunning() || epoch !== generation) {
+            return;
+          }
+
+          const entry = frameTargets[cursor];
+
+          if (entry !== undefined && !evaluateTarget(entry)) {
+            return;
+          }
+        }
+      }
+    } else {
+      const frameTargets = snapshotTargets();
+      let selected: number[] = [];
+
+      for (let position = 0; position < frameTargets.length; position++) {
+        const target = frameTargets[position];
+
+        if (target === undefined) {
+          continue;
+        }
+
+        const bounds = target.bounds;
+
+        if (
+          spatial === null &&
+          (!finiteQuery ||
+            (bounds !== null &&
+              queryMinX <= bounds.maxX &&
+              queryMaxX >= bounds.minX &&
+              queryMinY <= bounds.maxY &&
+              queryMaxY >= bounds.minY))
+        ) {
+          candidates.add(target.id);
+        }
+
+        if (
+          debugOptions !== null ||
+          target.predicates > 0 ||
+          target.activeRules > 0 ||
+          (target.scannableRules > 0 && candidates.has(target.id))
+        ) {
+          selected.push(position);
+        }
+      }
+
+      if (debugOptions !== null) {
+        debugCandidates = new Set(candidates);
+      }
+
+      // Commit cold misses in registration order, including across reentrant frames
+      let cursor = 0;
+      const version = selectionVersion;
+      let scanningRemainder = false;
+
+      for (let work = 0; work < selected.length; work++) {
+        if (!isRunning() || epoch !== generation) {
+          return;
+        }
+
+        const position = selected[work];
+
+        if (position === undefined) {
+          continue;
+        }
+
+        for (; cursor < position; cursor++) {
+          recordMiss(frameTargets[cursor], pointer.timeStamp);
+        }
+
+        const target = frameTargets[position];
+
+        if (target === undefined) {
+          continue;
+        }
+
+        cursor = position + 1;
+
+        if (!evaluateTarget(target)) {
+          return;
+        }
+
+        // A predicate or abort listener can activate a later target
+        if (!scanningRemainder && version !== selectionVersion) {
+          scanningRemainder = true;
+          selected = [];
+
+          for (let remaining = cursor; remaining < frameTargets.length; remaining++) {
+            selected.push(remaining);
+          }
+
+          work = -1;
+        }
+      }
+
+      if (!isRunning() || epoch !== generation) {
+        return;
+      }
+
+      for (; cursor < frameTargets.length; cursor++) {
+        recordMiss(frameTargets[cursor], pointer.timeStamp);
       }
     }
 
     if (!isRunning() || epoch !== generation) {
       return;
-    }
-
-    for (; cursor < frameTargets.length; cursor++) {
-      recordMiss(frameTargets[cursor], pointer.timeStamp);
     }
 
     for (const callback of queue) {
@@ -1145,13 +1376,14 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
     target.ruleList = null;
     selectionVersion++;
+    structureVersion++;
 
     if (rule.kind === 'predicate') {
       target.predicates--;
       predicateRuleCount--;
+    } else {
+      ruleExtentsDirty = true;
     }
-
-    ruleExtentsDirty = true;
 
     if (rule.kind === 'intersection' && rule.condition.includeCurrent) {
       currentRuleCount--;
@@ -1221,6 +1453,7 @@ export function createHasta(input: HastaOptions = {}): Hasta {
           rule.scannable = false;
           record.scannableRules--;
           scannableRuleCount--;
+          ruleExtentsDirty = true;
         }
 
         selectionVersion++;
@@ -1273,10 +1506,12 @@ export function createHasta(input: HastaOptions = {}): Hasta {
       if (rule.kind === 'predicate') {
         record.predicates++;
         predicateRuleCount++;
+      } else {
+        ruleExtentsDirty = true;
       }
 
       selectionVersion++;
-      ruleExtentsDirty = true;
+      structureVersion++;
 
       if (rule.kind === 'intersection' && rule.condition.includeCurrent) {
         if (currentRuleCount === 0 && latestSample !== null) {
@@ -1313,10 +1548,11 @@ export function createHasta(input: HastaOptions = {}): Hasta {
 
         record.tracked = false;
         targets.delete(element);
+        targetById.delete(record.id);
         spatial?.delete(record.id);
-        geometryCache?.invalidate();
         targetList = null;
         selectionVersion++;
+        structureVersion++;
         resizeObserver?.unobserve(element);
         record.bounds = null;
         record.snapshot = null;
@@ -1328,20 +1564,32 @@ export function createHasta(input: HastaOptions = {}): Hasta {
         record.rules.clear();
 
         if (targets.size === 0) {
-          geometryCache?.observeRoots(new Set());
+          syncShadowRoots(EMPTY_SHADOW_ROOTS);
           resetInput();
+        } else {
+          if (scrollRoots.size > 0) {
+            let remainingRoots: Set<ShadowRoot> | null = null;
 
-          for (const root of scrollRoots) {
-            root.removeEventListener('scroll', invalidateGeometry, true);
+            for (const target of targets.values()) {
+              remainingRoots = collectShadowRoots(target.element, remainingRoots);
+            }
+
+            syncShadowRoots(remainingRoots ?? EMPTY_SHADOW_ROOTS);
           }
 
-          scrollRoots.clear();
-        } else {
-          requestFrame();
+          if (latestSample !== null || debugOptions !== null) {
+            requestFrame();
+          }
         }
 
         publishDebug();
       },
+    });
+
+    predicateSchedulers.set(handle, () => {
+      if (active() && latestSample !== null) {
+        requestFrame();
+      }
     });
 
     const record: TargetRecord = {
@@ -1361,8 +1609,10 @@ export function createHasta(input: HastaOptions = {}): Hasta {
     };
 
     targets.set(element, record);
+    targetById.set(record.id, record);
     targetList = null;
     selectionVersion++;
+    structureVersion++;
     resizeObserver?.observe(element);
     invalidateGeometry();
 
