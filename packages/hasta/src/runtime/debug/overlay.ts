@@ -196,6 +196,10 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
       --hasta-muted: var(--muted-foreground, #71717a);
       --hasta-border: var(--border, #e4e4e7);
       --hasta-accent: #059669;
+      --hasta-radius: calc(var(--radius, 0.625rem) * 1.4);
+      --hasta-shadow-dark: var(--shadow-dark, #18181b);
+      --hasta-shadow-light: var(--shadow-light, #fff);
+      --hasta-shadow-boost: var(--shadow-outline-opacity-boost, 0%);
     }
     @media (prefers-color-scheme: dark) {
       :host {
@@ -203,6 +207,9 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
         --hasta-ink: var(--foreground, #fafafa);
         --hasta-muted: var(--muted-foreground, #a1a1aa);
         --hasta-border: var(--border, #3f3f46);
+        --hasta-shadow-dark: var(--shadow-dark, #000);
+        --hasta-shadow-light: var(--shadow-light, #fafafa);
+        --hasta-shadow-boost: var(--shadow-outline-opacity-boost, 20%);
       }
     }
     :host, :host * { pointer-events: none !important; box-sizing: border-box; }
@@ -211,9 +218,17 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
       position: absolute; right: max(12px, env(safe-area-inset-right));
       bottom: max(12px, env(safe-area-inset-bottom));
       width: min(240px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: hidden;
-      padding: 12px; border: 1px solid var(--hasta-border); border-radius: 0;
+      padding: 12px; border-radius: var(--hasta-radius);
       background: var(--hasta-surface); color: var(--hasta-ink);
-      box-shadow: 0 1px 3px #0000000d;
+      box-shadow:
+        0px 0px 0px 1px color-mix(in oklab, var(--hasta-shadow-light) 5.1%, transparent) inset,
+        0px 1px 0px 0px color-mix(in oklab, var(--hasta-shadow-light) 8.16%, transparent) inset,
+        0px 0px 0px 1px color-mix(in oklab, var(--hasta-shadow-dark) calc(10.2% + var(--hasta-shadow-boost)), transparent),
+        0px 1px 0px 0px color-mix(in oklab, var(--hasta-shadow-dark) 10.2%, transparent),
+        0px 2px 5px -1px color-mix(in oklab, var(--hasta-shadow-dark) 5.88%, transparent),
+        0px 8px 12px -1px color-mix(in oklab, var(--hasta-shadow-dark) 5.1%, transparent),
+        0px 22px 16px -2px color-mix(in oklab, var(--hasta-shadow-dark) 3.92%, transparent),
+        0px 32px 18px -2px color-mix(in oklab, var(--hasta-shadow-dark) 1.18%, transparent);
       font: 12px/16px var(--font-sans, ui-sans-serif, system-ui, sans-serif);
       font-variant-numeric: tabular-nums; letter-spacing: 0; text-align: left;
     }
@@ -222,7 +237,7 @@ export function createDebugOverlay(document: Document, initialOptions: DebugOpti
     .brand { font-weight:600; }
     .status, .summary { color:var(--hasta-muted); }
     .status { display:flex; align-items:center; gap:6px; }
-    .status::before { content:''; width:5px; height:5px; border-radius:0; background:currentColor; }
+    .status::before { content:''; width:5px; height:5px; border-radius:9999px; background:currentColor; }
     .status[data-hasta-status="tracking"] { color:var(--hasta-accent); }
     .summary { margin-top:8px; }
     .label {
