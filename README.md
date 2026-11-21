@@ -30,15 +30,15 @@ Call `hasta.destroy()` when removing the view. Use predictions for work that can
 Requires Node.js 24 or later.
 
 ```sh
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-The documentation site lives in [`apps/web`](apps/web), and the library in [`packages/hasta`](packages/hasta). Run `npm run build` to build all workspaces. To run all checks, install the test browsers with `npm run browsers:install`, then run `npm run check`.
+The documentation site lives in [`apps/web`](apps/web), and the library in [`packages/hasta`](packages/hasta). Run `pnpm build` to build all workspaces. To run all checks, install the test browsers with `pnpm browsers:install`, then run `pnpm check`.
 
-The cursor data collector lives in [`apps/lab`](apps/lab). Run `npm run dev:lab` to open it at [localhost:5174](http://localhost:5174). Participants P01–P05 each complete two sessions of 12 practice tasks and 120 collection tasks, using their own mouse or touchpad. Each block has 18 target selections and six gate tasks, followed by a break and a verified compressed JSON backup. Recordings stay in IndexedDB until the participant downloads and sends them. The lab shares the documentation site's styles, fonts, and UI components.
+The cursor data collector lives in [`apps/lab`](apps/lab). Run `pnpm dev:lab` to open it at [localhost:5174](http://localhost:5174). Participants P01–P05 each complete two sessions of 12 practice tasks and 120 collection tasks, using their own mouse or touchpad. Each block has 18 target selections and six gate tasks, followed by a break and a verified compressed JSON backup. Recordings stay in IndexedDB until the participant downloads and sends them. The lab shares the documentation site's styles, fonts, and UI components.
 
-Run `npm run test:lab` for browser and data checks. Build once with `npm run build:lab` and host `apps/lab/dist` on a separate HTTPS origin for collection; keep the build unchanged throughout the study. Prepare received backups with `node apps/lab/scripts/prepare.mjs --out DATASET BACKUP...`. This validates integrity and progress, removes duplicate checkpoints, extracts causal features, and reports recording quality and the native Hasta baseline. The study protocol and coordinator instructions are in the intentionally untracked `docs/lab.md`.
+Run `pnpm test:lab` for browser and data checks. Build once with `pnpm build:lab` and host `apps/lab/dist` on a separate HTTPS origin for collection; keep the build unchanged throughout the study. Prepare received backups with `node apps/lab/scripts/prepare.mjs --out DATASET BACKUP...`. This validates integrity and progress, removes duplicate checkpoints, extracts causal features, and reports recording quality and the native Hasta baseline. The study protocol and coordinator instructions are in the intentionally untracked `docs/lab.md`.
 
 ## Releases
 
@@ -46,9 +46,9 @@ Publishing a stable GitHub Release tagged `vX.Y.Z` runs the npm release pipeline
 
 ## Deployment
 
-The site runs on Cloudflare Workers at [hasta.madebyhex.com](https://hasta.madebyhex.com). Run `npx wrangler login` once, then `npm run deploy` to build and publish the site, including its Open Graph image. Use `npm run deploy:check` to validate the build without publishing.
+The site runs on Cloudflare Workers at [hasta.madebyhex.com](https://hasta.madebyhex.com). Run `pnpm exec wrangler login` once, then `pnpm deploy` to build and publish the site, including its Open Graph image. Use `pnpm deploy:check` to validate the build without publishing.
 
-The collection app has its own Worker and domain at [hasta-lab.madebyhex.com](https://hasta-lab.madebyhex.com), configured in `wrangler.lab.jsonc`. Run `npm run deploy:lab:check` to validate its deployment and `npm run deploy:lab` to publish it. Participant links can prefill setup, for example `https://hasta-lab.madebyhex.com/?participant=P01&session=1`. Keep the deployed collector unchanged while participants complete the study.
+The collection app has its own Worker and domain at [hasta-lab.madebyhex.com](https://hasta-lab.madebyhex.com), configured in `wrangler.lab.jsonc`. Run `pnpm deploy:lab:check` to validate its deployment and `pnpm deploy:lab` to publish it. Participant links can prefill setup, for example `https://hasta-lab.madebyhex.com/?participant=P01&session=1`. Keep the deployed collector unchanged while participants complete the study.
 
 ## License
 

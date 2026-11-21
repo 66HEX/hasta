@@ -4,7 +4,7 @@
   "account_id": "77c1178f8a0ea36c2d6d7b3dd19fea97",
   "compatibility_date": "2026-11-14",
   "build": {
-    "command": "npm run build:lab",
+    "command": "pnpm build:lab",
   },
   "assets": {
     "directory": "./apps/lab/dist",

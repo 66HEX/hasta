@@ -13,7 +13,7 @@ const collector = createHash('sha256');
 const labSource = fileURLToPath(new URL('./src/', import.meta.url));
 const webSource = fileURLToPath(new URL('../web/src/', import.meta.url));
 
-for (const file of ['./vite.config.ts', './index.html', '../../package-lock.json']) {
+for (const file of ['./vite.config.ts', './index.html', '../../pnpm-lock.yaml']) {
   collector.update(file).update(readFileSync(new URL(file, import.meta.url)));
 }
 

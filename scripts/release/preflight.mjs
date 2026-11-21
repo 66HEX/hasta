@@ -22,10 +22,6 @@ const manifests = Object.fromEntries(
 
 assertReleaseIdentity(manifests['packages/hasta'], version, repository);
 
-assertWorkspaceVersions(
-  manifests,
-  JSON.parse(readFileSync(resolve(root, 'package-lock.json'), 'utf8')),
-  version,
-);
+assertWorkspaceVersions(manifests, readFileSync(resolve(root, 'pnpm-lock.yaml'), 'utf8'), version);
 
 process.stdout.write(`version=${version}\n`);

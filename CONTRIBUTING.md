@@ -1,16 +1,16 @@
 # Contributing
 
-Use the Node.js version in `.node-version` and npm 11.19.0. Install dependencies with `npm ci`.
+Use the Node.js version in `.node-version` and pnpm 11.28.3. Install dependencies with `pnpm install --frozen-lockfile`.
 
-The web apps use licensed Nucleo Pixel icons. Set `NUCLEO_LICENSE_KEY` before installing dependencies, as described in [Nucleo's installation instructions](https://nucleoapp.com/react-packages). If you keep the key in the ignored root `.env`, load it for installation with `node --env-file=.env "$(command -v npm)" ci`. The published Hasta library does not depend on Nucleo.
+The web apps use licensed Nucleo UI Outline 18 and Social Media icons. Set `NUCLEO_LICENSE_KEY` before installing dependencies, as described in [Nucleo's installation instructions](https://nucleoapp.com/react-packages). If you keep the key in the ignored root `.env`, load it for installation with `node --env-file=.env "$(command -v pnpm)" install --frozen-lockfile`. The published Hasta library does not depend on Nucleo.
 
 ## Checks
 
 ```sh
-npm run audit:dependencies
-npx playwright install --with-deps chromium firefox webkit
-npm run check
-npm run release:consumers
+pnpm audit:dependencies
+pnpm exec playwright install --with-deps chromium firefox webkit
+pnpm check
+pnpm release:consumers
 ```
 
 `ci:quality` checks formatting, lint rules, release tooling, workspace types, builds, unit tests, and package contents. `ci:e2e` tests the library, framework adapters, documentation site, and collector in Chromium, Firefox, and WebKit. It requires a completed build. `check` runs both gates in order.
@@ -23,14 +23,13 @@ GitHub Actions reads the `NUCLEO_LICENSE_KEY` repository secret only during depe
 
 Publishing a stable GitHub Release starts `.github/workflows/release.yml`. Pushing a tag alone does not publish a package.
 
-1. Choose an unused version and update the library and both workspace references together:
+1. Choose an unused version and update the library manifest:
 
    ```sh
    RELEASE_VERSION=0.1.0
-   npm pkg set "version=$RELEASE_VERSION" --workspace=@66hex/hasta
-   npm pkg set "dependencies.@66hex/hasta=$RELEASE_VERSION" --workspace=@hasta/web --workspace=@hasta/lab
-   npm install --package-lock-only --ignore-scripts
-   npm run format
+   pnpm --filter @66hex/hasta version "$RELEASE_VERSION" --no-git-tag-version
+   pnpm install --lockfile-only --ignore-scripts
+   pnpm format
    ```
 
 2. Run the checks above. Commit the manifests and lockfile, and merge to `main` after CI passes.
@@ -66,9 +65,9 @@ For a new npm package, the owner first establishes the package through an authen
 ```sh
 RELEASE_DIRECTORY="$(mktemp -d)"
 RELEASE_VERSION="$(node -p 'require("./packages/hasta/package.json").version')"
-npm pack --json --ignore-scripts --workspace @66hex/hasta --pack-destination "$RELEASE_DIRECTORY" > "$RELEASE_DIRECTORY/npm-pack.json"
+npm pack --json --ignore-scripts ./packages/hasta --pack-destination "$RELEASE_DIRECTORY" > "$RELEASE_DIRECTORY/npm-pack.json"
 node scripts/release/validate-packed-artifact.mjs "$RELEASE_DIRECTORY/npm-pack.json" "$RELEASE_DIRECTORY" "$RELEASE_VERSION"
-npm run release:consumers -- "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz"
+pnpm release:consumers -- "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz"
 npm publish "$RELEASE_DIRECTORY/66hex-hasta-$RELEASE_VERSION.tgz" --dry-run --ignore-scripts --access public --tag latest
 ```
 

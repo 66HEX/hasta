@@ -4,7 +4,7 @@
   "account_id": "77c1178f8a0ea36c2d6d7b3dd19fea97",
   "compatibility_date": "2026-11-13",
   "build": {
-    "command": "npm run build",
+    "command": "pnpm build",
   },
   "assets": {
     "directory": "./apps/web/dist",

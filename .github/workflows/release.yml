@@ -37,12 +37,12 @@ jobs:
           node-version-file: .node-version
           package-manager-cache: false
 
-      - name: Pin npm
+      - name: Pin pnpm
         shell: bash
         run: |
-          npm install --global npm@11.19.0
+          npm install --global pnpm@11.28.3
           test "$(node --version)" = "v$(cat .node-version)"
-          test "npm@$(npm --version)" = "$(node -p 'require("./package.json").packageManager')"
+          test "pnpm@$(pnpm --version)" = "$(node -p 'require("./package.json").packageManager')"
           test "$(npm config get registry)" = "https://registry.npmjs.org/"
 
       - name: Validate stable release identity and workspace versions
@@ -67,16 +67,16 @@ jobs:
       - name: Install dependencies from lockfile
         env:
           NUCLEO_LICENSE_KEY: ${{ secrets.NUCLEO_LICENSE_KEY }}
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Audit high-severity dependencies
-        run: npm run audit:dependencies
+        run: pnpm audit:dependencies
 
       - name: Install test browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
 
       - name: Run full release gate and build
-        run: npm run check
+        run: pnpm check
 
       - name: Pack the release artifact once
         id: pack
@@ -86,11 +86,11 @@ jobs:
         run: |
           mkdir -p "$PACK_DIRECTORY"
           PACK_METADATA="$PACK_DIRECTORY/npm-pack.json"
-          npm pack --json --ignore-scripts --pack-destination "$PACK_DIRECTORY" --workspace @66hex/hasta > "$PACK_METADATA"
+          npm pack --json --ignore-scripts --pack-destination "$PACK_DIRECTORY" ./packages/hasta > "$PACK_METADATA"
           node scripts/release/validate-packed-artifact.mjs "$PACK_METADATA" "$PACK_DIRECTORY" "${{ steps.release.outputs.version }}" >> "$GITHUB_OUTPUT"
 
       - name: Smoke test exact tarball with current and minimum peers
-        run: npm run release:consumers -- "${{ steps.pack.outputs.tarball }}"
+        run: pnpm release:consumers -- "${{ steps.pack.outputs.tarball }}"
 
       - name: Dry-run exact tarball publication
         run: npm publish "${{ steps.pack.outputs.tarball }}" --dry-run --ignore-scripts --access public --tag latest
@@ -102,7 +102,7 @@ jobs:
         run: node scripts/release/verify-publication.mjs "${{ steps.release.outputs.version }}" "${{ steps.pack.outputs.tarball }}"
 
       - name: Smoke test exact registry version with current and minimum peers
-        run: npm run release:consumers -- "${{ steps.release.outputs.version }}"
+        run: pnpm release:consumers -- "${{ steps.release.outputs.version }}"
 
       - name: Preserve exact release artifact and metadata
         if: ${{ !cancelled() && steps.pack.outcome == 'success' }}

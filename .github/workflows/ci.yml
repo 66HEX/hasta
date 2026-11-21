@@ -31,22 +31,22 @@ jobs:
           node-version-file: .node-version
           package-manager-cache: false
 
-      - name: Pin npm
-        run: npm install --global npm@11.19.0
+      - name: Pin pnpm
+        run: npm install --global pnpm@11.28.3
 
       - name: Install dependencies from lockfile
         env:
           NUCLEO_LICENSE_KEY: ${{ secrets.NUCLEO_LICENSE_KEY }}
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Audit high-severity dependencies
-        run: npm run audit:dependencies
+        run: pnpm audit:dependencies
 
       - name: Run quality gate and build
-        run: npm run ci:quality
+        run: pnpm ci:quality
 
       - name: Test packed consumers with current and minimum peers
-        run: npm run release:consumers
+        run: pnpm release:consumers
 
   browser:
     name: browser (${{ matrix.suite }})
@@ -59,16 +59,16 @@ jobs:
         include:
           - suite: library
             directory: packages/hasta
-            command: npx playwright test
+            command: pnpm exec playwright test
           - suite: adapters
             directory: packages/hasta
-            command: npm run test:frameworks
+            command: pnpm test:frameworks
           - suite: web
             directory: apps/web
-            command: npm test
+            command: pnpm test
           - suite: lab
             directory: apps/lab
-            command: npm test
+            command: pnpm test
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -81,19 +81,19 @@ jobs:
           node-version-file: .node-version
           package-manager-cache: false
 
-      - name: Pin npm
-        run: npm install --global npm@11.19.0
+      - name: Pin pnpm
+        run: npm install --global pnpm@11.28.3
 
       - name: Install dependencies from lockfile
         env:
           NUCLEO_LICENSE_KEY: ${{ secrets.NUCLEO_LICENSE_KEY }}
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install test browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
 
       - name: Build all workspaces
-        run: npm run build
+        run: pnpm build
 
       - name: Test ${{ matrix.suite }} in all browsers
         working-directory: ${{ matrix.directory }}

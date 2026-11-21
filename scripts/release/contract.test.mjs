@@ -119,7 +119,7 @@ test('rejects wrong repository, version, private packages, and publication metad
 
 test('keeps workspace dependencies, the lockfile, and distributed MIT license consistent', () => {
   const manifests = Object.fromEntries(
-    ['', 'apps/web', 'apps/lab'].map((workspace) => [
+    ['', 'packages/hasta', 'apps/web', 'apps/lab'].map((workspace) => [
       workspace,
       JSON.parse(
         readFileSync(new URL(`${workspace ? `${workspace}/` : ''}package.json`, root), 'utf8'),
@@ -127,14 +127,11 @@ test('keeps workspace dependencies, the lockfile, and distributed MIT license co
     ]),
   );
 
-  const lock = JSON.parse(readFileSync(new URL('package-lock.json', root), 'utf8'));
+  const lock = readFileSync(new URL('pnpm-lock.yaml', root), 'utf8');
   assertWorkspaceVersions(manifests, lock, version);
-  const stale = structuredClone(lock);
-  stale.packages['apps/lab'].dependencies[PACKAGE_NAME] = '999.0.0';
+  const stale = lock.replace('link:../../packages/hasta', '999.0.0');
   assert.throws(() => assertWorkspaceVersions(manifests, stale, version));
-  const unscoped = structuredClone(lock);
-  unscoped.packages['node_modules/hasta'] = unscoped.packages[`node_modules/${PACKAGE_NAME}`];
-  delete unscoped.packages[`node_modules/${PACKAGE_NAME}`];
+  const unscoped = lock.replaceAll(PACKAGE_NAME, 'hasta');
   assert.throws(() => assertWorkspaceVersions(manifests, unscoped, version));
   assert.throws(() => assertWorkspaceVersions(manifests, lock, '999.0.0'));
   const unsafe = structuredClone(manifests);
@@ -146,9 +143,8 @@ test('keeps workspace dependencies, the lockfile, and distributed MIT license co
   );
   assert.equal(manifest.license, 'MIT');
 
-  for (const [workspace, value] of Object.entries(manifests)) {
+  for (const value of Object.values(manifests)) {
     assert.equal(value.license, 'MIT');
-    assert.equal(lock.packages[workspace].license, 'MIT');
   }
 });
 

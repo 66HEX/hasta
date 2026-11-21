@@ -49,27 +49,30 @@ export function assertReleaseIdentity(manifest, version, repository) {
   assert.notEqual(manifest.publishConfig?.provenance, false);
 }
 
-export function assertWorkspaceVersions(manifests, lock, version) {
-  assert.equal(lock.lockfileVersion, 3);
-  assert.equal(lock.packages['packages/hasta']?.version, version, 'Stale library lockfile version');
-  assert.deepEqual(lock.packages[`node_modules/${PACKAGE_NAME}`], {
-    resolved: 'packages/hasta',
-    link: true,
-  });
+export function assertWorkspaceVersions(manifests, lockfileText, version) {
+  assert.match(lockfileText, /^lockfileVersion:\s*'9\.\d+'/mu, 'Unexpected pnpm lockfile version');
   assert.equal(manifests[''].private, true, 'The monorepo must remain private');
+  assert.equal(manifests['packages/hasta']?.version, version, 'Stale library version');
+  assert.match(
+    lockfileText,
+    /\n  packages\/hasta:/u,
+    'Missing packages/hasta importer in lockfile',
+  );
 
   for (const workspace of ['apps/web', 'apps/lab']) {
     assert.equal(manifests[workspace].private, true, `${workspace} must remain private`);
     assert.equal(
       manifests[workspace].dependencies[PACKAGE_NAME],
-      version,
-      `${workspace} has a stale Hasta dependency`,
+      'workspace:*',
+      `${workspace} must link Hasta via workspace:*`,
     );
-    assert.equal(
-      lock.packages[workspace]?.dependencies[PACKAGE_NAME],
-      version,
-      `${workspace} has a stale lockfile`,
+
+    const importerPattern = new RegExp(
+      `\\n  ${workspace.replace('/', '\\/')}:(?:\\n    [^\\n]*)*\\n      '${PACKAGE_NAME.replace('/', '\\/')}':\\n        specifier: workspace:\\*\\n        version: link:\\.\\./\\.\\./packages/hasta`,
+      'u',
     );
+
+    assert.match(lockfileText, importerPattern, `${workspace} has a stale lockfile`);
   }
 }
 

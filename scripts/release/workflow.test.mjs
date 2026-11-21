@@ -35,16 +35,16 @@ test('publication is gated by validation and tests of the exact tarball', () => 
     'node scripts/release/preflight.mjs',
     'git merge-base --is-ancestor',
     'node scripts/release/assert-unpublished.mjs',
-    'npm ci',
-    'npm run audit:dependencies',
-    'npm run check',
+    'pnpm install --frozen-lockfile',
+    'pnpm audit:dependencies',
+    'pnpm check',
     'npm pack --json --ignore-scripts',
     'node scripts/release/validate-packed-artifact.mjs',
-    'npm run release:consumers -- "${{ steps.pack.outputs.tarball }}"',
+    'pnpm release:consumers -- "${{ steps.pack.outputs.tarball }}"',
     'npm publish "${{ steps.pack.outputs.tarball }}" --dry-run --ignore-scripts --access public --tag latest',
     'npm publish "${{ steps.pack.outputs.tarball }}" --ignore-scripts --access public --tag latest',
     'node scripts/release/verify-publication.mjs "${{ steps.release.outputs.version }}" "${{ steps.pack.outputs.tarball }}"',
-    'npm run release:consumers -- "${{ steps.release.outputs.version }}"',
+    'pnpm release:consumers -- "${{ steps.release.outputs.version }}"',
   ];
 
   let previous = -1;
@@ -56,5 +56,5 @@ test('publication is gated by validation and tests of the exact tarball', () => 
   }
 
   assert.doesNotMatch(workflow, /wrangler|deploy:lab/u);
-  assert.match(workflow, /--workspace @66hex\/hasta > "\$PACK_METADATA"/u);
+  assert.match(workflow, /\.\/packages\/hasta > "\$PACK_METADATA"/u);
 });
