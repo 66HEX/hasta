@@ -1,4 +1,4 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 import { useHasta, useHastaTarget } from '@66hex/hasta/solid';
 import type {
   HastaController,
@@ -7,9 +7,8 @@ import type {
   TargetBinding,
   TargetOptions,
 } from '@66hex/hasta/solid';
-import { createRoot, createSignal, Show } from 'solid-js';
-import { createStore } from 'solid-js/store';
-import { hydrate, render } from 'solid-js/web';
+import { hydrate, render } from '@solidjs/web';
+import { createRoot, createSignal, createStore, flush, resetErrorHalt, Show } from 'solid-js';
 
 import SolidSSR from './solid-ssr.js';
 
@@ -77,7 +76,10 @@ window.cancelAnimationFrame = (id) => {
 
 function App() {
   const [settings, setSettings] = createSignal(initial);
-  update = (value) => setSettings((current) => ({ ...current, ...value }));
+  update = (value) => {
+    setSettings((current) => ({ ...current, ...value }));
+    flush();
+  };
 
   const options = () => ({
     debug: settings().debug,
@@ -173,7 +175,7 @@ function rawFixture() {
     const [configuration, configure] = createStore({ horizonMs: 120, debug: { samples: false } });
     const first = useHasta(configuration);
     const second = useHasta({ debug: true });
-    const [selected, select] = createSignal(first);
+    const [selected, select] = createSignal(first, { ownedWrite: true });
     const [noise, setNoise] = createSignal(0);
     const [settings, change] = createStore({ withinMs: 120, marginPx: 0, version: 1 });
     const signals: AbortSignal[] = [];
@@ -199,18 +201,44 @@ function rawFixture() {
     node.style.cssText = 'position:absolute;left:100px;top:100px;width:20px;height:20px';
     document.body.append(node);
     target.ref(node);
+    flush();
+
+    const syncFlush = () => {
+      try {
+        flush();
+      } catch (error) {
+        resetErrorHalt();
+        throw error;
+      }
+    };
 
     return {
       target,
       node,
       first,
       second,
-      change,
-      configure,
+      change: (partial: { withinMs?: number; marginPx?: number; version?: number }) => {
+        change((draft) => {
+          Object.assign(draft, partial);
+        });
+        syncFlush();
+      },
+      configure: (partial: { horizonMs?: number; debug?: boolean | { samples?: boolean } }) => {
+        configure((draft) => {
+          Object.assign(draft, partial);
+        });
+        syncFlush();
+      },
       signals,
-      noise: setNoise,
+      noise: (value: number) => {
+        setNoise(value);
+        syncFlush();
+      },
       reads: () => reads,
-      switch: () => select(second),
+      switch: () => {
+        select(second);
+        syncFlush();
+      },
       abort: (callback: () => void) => {
         abort = callback;
       },

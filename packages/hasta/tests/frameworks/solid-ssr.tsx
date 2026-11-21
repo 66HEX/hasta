@@ -1,4 +1,4 @@
-/** @jsxImportSource solid-js */
+/** @jsxImportSource @solidjs/web */
 import { useHasta, useHastaTarget } from '@66hex/hasta/solid';
 import type { HastaController, IntersectionEvent } from '@66hex/hasta/solid';
 

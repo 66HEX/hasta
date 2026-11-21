@@ -1,9 +1,9 @@
 import { fileURLToPath } from 'node:url';
 
+import solid from '@solidjs/vite-plugin';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import solid from 'vite-plugin-solid';
 
 export default defineConfig({
   root: fileURLToPath(new URL('./tests/frameworks', import.meta.url)),

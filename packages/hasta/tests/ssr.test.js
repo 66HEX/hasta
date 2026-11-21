@@ -77,7 +77,7 @@ test('Svelte server compilation and render skip actions and browser lifecycle wo
 });
 
 test('Solid server rendering keeps controllers inert and disposes owned bindings', async () => {
-  const { renderToString } = await import('solid-js/web');
+  const { renderToString } = await import('@solidjs/web');
   const { useHasta, useHastaTarget } = await import('@66hex/hasta/solid');
   const owners = [];
   const bindings = [];

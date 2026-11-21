@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
 import { expect, test } from '@playwright/test';
+import solid from '@solidjs/vite-plugin';
+import { generateHydrationScript, renderToString } from '@solidjs/web';
 import { createComponent } from 'solid-js';
-import { generateHydrationScript, renderToString } from 'solid-js/web';
 import { build } from 'vite';
-import solid from 'vite-plugin-solid';
 
 let serverDirectory;
 let serverMarkup;
@@ -124,20 +124,23 @@ test('Solid target configuration updates replace the rule without replacing its 
 test('Solid conditional refs and node replacement remove stale registrations and signals', async ({
   page,
 }) => {
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const h = window.solidHarness;
     h.pointer(1000, 0);
     h.pointer(1020, 20);
     h.frame();
     const element = document.querySelector('[data-testid="solid-target"]');
     h.update({ targetKey: 1 });
+    await Promise.resolve();
     h.frame(1030);
     const replacement = h.state();
     const changedNode = element !== document.querySelector('[data-testid="solid-target"]');
     h.update({ visible: false });
+    await Promise.resolve();
     h.frame(1040);
     const hidden = h.state();
     h.update({ visible: true });
+    await Promise.resolve();
     h.pointer(1050, 0);
     h.pointer(1070, 20);
     h.frame();
@@ -432,7 +435,7 @@ test('Solid repeated conditional DOM disposal keeps its owner alive and restores
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const h = window.solidHarness;
     const cycles = [];
 
@@ -442,11 +445,13 @@ test('Solid repeated conditional DOM disposal keeps its owner alive and restores
       h.pointer(time + 20, 20);
       h.frame();
       h.update({ visible: false });
+      await Promise.resolve();
       const hidden = h.state();
       h.update({ alternate: cycle % 2 === 1, version: cycle + 2, marginPx: cycle + 1 });
       h.frame(time + 30);
       const absent = h.state();
       h.update({ visible: true });
+      await Promise.resolve();
       h.frame(time + 40);
       const restored = h.state();
       cycles.push({
@@ -658,7 +663,7 @@ test('Solid stale ref owner cleanup and abort-side reattachment preserve the lat
 test('Solid an abort-side controller change during ref replacement retains the new node and owner cleanup', async ({
   page,
 }) => {
-  const result = await page.evaluate(() => {
+  const result = await page.evaluate(async () => {
     const h = window.solidHarness;
     h.mount(false);
     const raw = h.rawFixture();
@@ -670,6 +675,7 @@ test('Solid an abort-side controller change during ref replacement retains the n
     document.body.append(replacement);
     raw.abort(() => raw.switch());
     const disposeReplacement = raw.ownedRef(replacement);
+    await Promise.resolve();
     h.frame(1030);
 
     const targets = [raw.first, raw.second].map(
@@ -737,6 +743,8 @@ test('Solid invalid reactive target and instance options preserve live registrat
   expect(result.errors).toHaveLength(2);
   expect(result.errors[0]).toContain('withinMs');
   expect(result.errors[1]).toContain('horizonMs');
+  expect(browserErrors).toEqual(result.errors);
+  browserErrors = [];
   expect(result.preserved).toEqual({ aborted: false, targets: 1 });
   expect(result.recovered.maxSampleAgeMs).toBe(100);
   expect(result.recovered.targets[0].rules[0].marginPx).toBe(10);

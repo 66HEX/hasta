@@ -7,6 +7,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `@66hex/hasta/solid` and its `solid-js` peer dependency (`>=2.0 <3`) for Solid 2.0 (`onSettled`, split `createEffect`, and `runWithOwner`-deferred ref cleanup).
+
 ## [0.6.0] - 2026-11-20
 
 ### Added

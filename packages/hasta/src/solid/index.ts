@@ -1,4 +1,4 @@
-import { createEffect, getOwner, onCleanup, onMount, untrack } from 'solid-js';
+import { createEffect, getOwner, onCleanup, onSettled, runWithOwner, untrack } from 'solid-js';
 import type { Accessor } from 'solid-js';
 
 import { createHastaController } from '../runtime/controller.js';
@@ -76,14 +76,15 @@ export function useHasta(options: Reactive<HastaOptions> = {}): HastaController 
     disposed = true;
     untrack(() => controller.destroy());
   });
-  createEffect(() => {
-    const next = instanceOptions(options);
-
-    if (!disposed) {
-      untrack(() => controller.updateOptions(next));
-    }
-  });
-  onMount(() => {
+  createEffect(
+    () => instanceOptions(options),
+    (next) => {
+      if (!disposed) {
+        controller.updateOptions(next);
+      }
+    },
+  );
+  onSettled(() => {
     if (!disposed) {
       controller.connect();
     }
@@ -110,6 +111,7 @@ export function useHastaTarget(
   let node: TrackedElement | null = null;
   let disposed = false;
   let attachmentRevision = 0;
+  let pendingAttach: (() => void) | null = null;
 
   function destroy(): void {
     if (disposed) {
@@ -118,16 +120,20 @@ export function useHastaTarget(
 
     disposed = true;
     attachmentRevision++;
+    pendingAttach = null;
     node = null;
     untrack(() => binding.destroy());
   }
 
   onCleanup(destroy);
-  createEffect(() => {
-    const nextOwner = read(controller);
-    const nextOptions = targetOptions(options);
-
-    untrack(() => {
+  onSettled(() => {
+    const attach = pendingAttach;
+    pendingAttach = null;
+    attach?.();
+  });
+  createEffect(
+    () => [read(controller), targetOptions(options)] as const,
+    ([nextOwner, nextOptions]) => {
       if (disposed) {
         return;
       }
@@ -151,8 +157,8 @@ export function useHastaTarget(
       binding = replacement;
       owner = nextOwner;
       previous.destroy();
-    });
-  });
+    },
+  );
 
   return Object.freeze({
     ref(element: TrackedElement | null) {
@@ -167,10 +173,22 @@ export function useHastaTarget(
       const previousRevision = attachmentRevision;
       const version = ++attachmentRevision;
 
-      const deferred =
-        element !== null && element.ownerDocument?.defaultView === null && getOwner() !== null;
+      const elementOwner = getOwner();
+      const deferred = element !== null && element.ownerDocument?.defaultView === null;
 
       node = element;
+
+      const registerCleanup = () => {
+        if (element !== null && elementOwner) {
+          onCleanup(() => {
+            if (!disposed && version === attachmentRevision) {
+              attachmentRevision++;
+              node = null;
+              untrack(() => binding.ref(null));
+            }
+          });
+        }
+      };
 
       try {
         if (deferred) {
@@ -180,13 +198,33 @@ export function useHastaTarget(
             throw new TypeError('Target refs require an HTMLElement, SVGElement, or null.');
           }
 
-          onMount(() => {
+          const attach = () => {
             if (!disposed && version === attachmentRevision) {
               binding.ref(element);
+            }
+          };
+
+          pendingAttach = attach;
+          queueMicrotask(() => {
+            if (pendingAttach === attach) {
+              pendingAttach = null;
+              attach();
+            }
+
+            if (!disposed && version === attachmentRevision && elementOwner) {
+              runWithOwner(elementOwner, registerCleanup);
             }
           });
         } else {
           untrack(() => binding.ref(element));
+
+          if (element !== null && elementOwner) {
+            queueMicrotask(() => {
+              if (!disposed && version === attachmentRevision) {
+                runWithOwner(elementOwner, registerCleanup);
+              }
+            });
+          }
         }
       } catch (error) {
         if (version === attachmentRevision && binding === previousBinding) {
@@ -195,21 +233,6 @@ export function useHastaTarget(
         }
 
         throw error;
-      }
-
-      if (version !== attachmentRevision || disposed) {
-        return;
-      }
-
-      if (element !== null && getOwner()) {
-        // Solid refs never receive null, so cleanup belongs to the element's owner
-        onCleanup(() => {
-          if (!disposed && version === attachmentRevision) {
-            attachmentRevision++;
-            node = null;
-            untrack(() => binding.ref(null));
-          }
-        });
       }
     },
     update: (next: TargetOptions) => untrack(() => binding.update(next)),

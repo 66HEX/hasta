@@ -45,6 +45,8 @@
   "devDependencies": {
     "@aranlucas/oxlint-plugin-anti-slop": "0.1.1",
     "@playwright/test": "1.65.0",
+    "@solidjs/vite-plugin": "3.0.1",
+    "@solidjs/web": "2.0.3",
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
@@ -56,13 +58,12 @@
     "oxlint-tsgolint": "7.0.2007",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "solid-js": "1.9.19",
+    "solid-js": "2.0.3",
     "svelte": "5.57.3",
     "svelte-check": "4.7.8",
     "svelte-min": "npm:svelte@5.32.0",
     "typescript": "6.0.3",
     "vite": "8.3.8",
-    "vite-plugin-solid": "2.11.16",
     "vue": "3.5.45",
     "wrangler": "4.162.0"
   },

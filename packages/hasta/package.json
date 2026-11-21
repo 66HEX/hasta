@@ -87,7 +87,7 @@
   },
   "peerDependencies": {
     "react": ">=19 <20",
-    "solid-js": ">=1.9 <2",
+    "solid-js": ">=2.0 <3",
     "svelte": ">=5.32 <6",
     "vue": ">=3.5 <4"
   },
