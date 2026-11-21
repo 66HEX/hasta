@@ -80,16 +80,16 @@ export function listenToPointer(
       if (pointerId !== null && pointerId !== event.pointerId) {
         clear();
 
-        if (pointerId !== null) {
+        if (pointerId !== null || !accepts(point)) {
           return;
         }
       }
 
-      pointerId = event.pointerId;
-
       if (!sample(point)) {
         break;
       }
+
+      pointerId = event.pointerId;
     }
   });
 
